@@ -2,13 +2,15 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Search, ShoppingBag } from "lucide-react"
+import { Heart, Search, ShoppingBag } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { AccountButton } from "@/components/layout/account-button"
+import { useWishlist } from "@/components/wishlist/wishlist-provider"
 import { cn } from "@/lib/utils"
 
 export function HeaderActions({ className }: { className?: string }) {
   const { cart, openCart } = useCart()
+  const { count: wishlistCount } = useWishlist()
 
   return (
     <div
@@ -25,6 +27,24 @@ export function HeaderActions({ className }: { className?: string }) {
           aria-hidden
           className="size-4.5 stroke-[1.4] text-noir transition-colors group-hover:text-stone"
         />
+      </Link>
+      <Link
+        href="/wishlist"
+        aria-label={`Saved pieces, ${wishlistCount} item${wishlistCount === 1 ? "" : "s"}`}
+        className="group relative inline-flex size-9 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+      >
+        <Heart
+          aria-hidden
+          className="size-4.5 stroke-[1.4] text-noir transition-colors group-hover:text-stone"
+        />
+        {wishlistCount > 0 ? (
+          <span
+            aria-hidden
+            className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-noir px-1 text-[0.5625rem] font-medium leading-none text-warm-white"
+          >
+            {wishlistCount > 9 ? "9+" : wishlistCount}
+          </span>
+        ) : null}
       </Link>
       <AccountButton />
       <button

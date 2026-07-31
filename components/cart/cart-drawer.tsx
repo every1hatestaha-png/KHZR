@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import Link from "next/link"
 import { ArrowRight, ShoppingBag } from "lucide-react"
 import {
@@ -11,19 +12,37 @@ import {
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart/cart-provider"
 import { CartItem } from "@/components/cart/cart-item"
+import { discountAmount } from "@/lib/discounts"
 import { SITE } from "@/lib/constants"
 import { formatMoney } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
 export function CartDrawer() {
-  const { cart, isOpen, closeCart, hydrated } = useCart()
+  const {
+    cart,
+    isOpen,
+    closeCart,
+    hydrated,
+    discount,
+    applyDiscount,
+    clearDiscount,
+  } = useCart()
   const { lines, subtotal, count, currency } = cart
+  const [code, setCode] = React.useState("")
 
   const remaining = Math.max(0, SITE.freeShippingThreshold - subtotal)
   const progress = Math.min(
     100,
     (subtotal / SITE.freeShippingThreshold) * 100
   )
+  const saved = discountAmount(discount, subtotal)
+  const total = Math.max(0, subtotal - saved)
+
+  function handleApply(e: React.FormEvent) {
+    e.preventDefault()
+    if (!code.trim()) return
+    if (applyDiscount(code.trim())) setCode("")
+  }
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
@@ -89,13 +108,80 @@ export function CartDrawer() {
             </ul>
 
             <div className="border-t border-hairline px-7 py-6">
-              <div className="flex items-center justify-between">
-                <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-taupe">
-                  Subtotal
-                </span>
-                <span className="font-display text-xl text-noir">
-                  {formatMoney(subtotal, currency)}
-                </span>
+              <form onSubmit={handleApply} className="flex items-stretch gap-2">
+                <label htmlFor="drawer-discount-code" className="sr-only">
+                  Discount code
+                </label>
+                <input
+                  id="drawer-discount-code"
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="Promo code"
+                  className="h-10 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
+                />
+                <Button
+                  type="submit"
+                  variant="outline"
+                  size="sm"
+                  disabled={!code.trim()}
+                >
+                  Apply
+                </Button>
+              </form>
+
+              {discount ? (
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  <span className="uppercase tracking-[0.2em] text-taupe">
+                    {discount.label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={clearDiscount}
+                    className="uppercase tracking-[0.2em] text-taupe underline-offset-4 hover:text-noir hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : null}
+
+              <div className="mt-5 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-taupe">
+                    Subtotal
+                  </span>
+                  <span className="font-display text-lg text-noir">
+                    {formatMoney(subtotal, currency)}
+                  </span>
+                </div>
+                {saved > 0 ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-taupe">
+                      Discount
+                    </span>
+                    <span className="font-display text-base text-champagne">
+                      −{formatMoney(saved, currency)}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="flex items-center justify-between">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-taupe">
+                    Shipping
+                  </span>
+                  <span className="text-xs text-taupe">
+                    {subtotal >= SITE.freeShippingThreshold
+                      ? "Complimentary"
+                      : "Calculated at checkout"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-hairline pt-3">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-noir">
+                    Total
+                  </span>
+                  <span className="font-display text-xl text-noir">
+                    {formatMoney(total, currency)}
+                  </span>
+                </div>
               </div>
               <p className="mt-2 text-xs leading-relaxed text-taupe">
                 Duties and taxes calculated at checkout.

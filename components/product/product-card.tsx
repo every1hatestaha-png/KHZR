@@ -6,6 +6,8 @@ import { Plus } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { LazyImage } from "@/components/shared/lazy-image"
 import { Price } from "@/components/shared/price"
+import { WishlistToggle } from "@/components/wishlist/wishlist-toggle"
+import { cardToSummary } from "@/lib/product-summary"
 import type { ProductCardDTO } from "@/lib/data-access/site"
 
 const BADGE_LABEL: Record<string, string> = {
@@ -17,22 +19,11 @@ const BADGE_LABEL: Record<string, string> = {
 export function ProductCard({ product }: { product: ProductCardDTO }) {
   const { addItem } = useCart()
   const inStock = product.defaultVariant.stock > 0
+  const summary = React.useMemo(() => cardToSummary(product), [product])
 
   function quickAdd() {
     if (!inStock) return
-    void addItem({
-      productId: product.slug,
-      productSlug: product.slug,
-      variantId: product.defaultVariant.variantId,
-      name: product.name,
-      subtitle: product.subtitle,
-      size: product.defaultVariant.size,
-      color: product.defaultVariant.color,
-      colorHex: product.defaultVariant.colorHex,
-      imageUrl: product.imageUrl,
-      unitPrice: product.price,
-      available: product.defaultVariant.stock,
-    })
+    void addItem(summary)
   }
 
   return (
@@ -58,6 +49,11 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
               : "New"}
           </span>
         ) : null}
+
+        <WishlistToggle
+          item={summary}
+          className="absolute right-3.5 top-3.5 size-9 bg-background/85 backdrop-blur-sm"
+        />
 
         {inStock ? (
           <button

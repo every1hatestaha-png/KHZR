@@ -6,6 +6,8 @@ import { ProductAccordions } from "@/components/product/product-accordions"
 import { Price } from "@/components/shared/price"
 import { QuantityStepper } from "@/components/shared/quantity-stepper"
 import { Button } from "@/components/ui/button"
+import { WishlistToggle } from "@/components/wishlist/wishlist-toggle"
+import { detailToSummary } from "@/lib/product-summary"
 import type { ProductDetailDTO } from "@/lib/data-access/site"
 import { cn } from "@/lib/utils"
 
@@ -13,17 +15,26 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   const { addItem } = useCart()
 
   const sizes = Array.from(new Set(product.variants.map((v) => v.size)))
+  const colors = Array.from(new Set(product.variants.map((v) => v.color)))
   const inStockVariants = product.variants.filter((v) => v.stock > 0)
   const soldOut = inStockVariants.length === 0
 
+  const [selectedColor, setSelectedColor] = React.useState<string | null>(
+    () => inStockVariants[0]?.color ?? null
+  )
   const [selectedSize, setSelectedSize] = React.useState<string | null>(
     () => inStockVariants[0]?.size ?? null
   )
   const [quantity, setQuantity] = React.useState(1)
 
+  const hasColor = colors.length > 1
+
   const selectedVariant =
     product.variants.find(
-      (v) => v.size === selectedSize && v.stock > 0
+      (v) =>
+        v.size === selectedSize &&
+        v.color === selectedColor &&
+        v.stock > 0
     ) ?? null
 
   const label = soldOut
@@ -37,24 +48,51 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   const lowStock =
     selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 5
 
+  const wishlistItem = React.useMemo(
+    () =>
+      detailToSummary(product, selectedVariant ?? inStockVariants[0] ?? {
+        variantId: "",
+        size: "One Size",
+        color: "Noir",
+        colorHex: null,
+        stock: 0,
+      }),
+    [product, selectedVariant, inStockVariants]
+  )
+
+  function selectColor(color: string) {
+    setSelectedColor(color)
+    if (
+      selectedSize &&
+      !product.variants.some(
+        (v) => v.size === selectedSize && v.color === color && v.stock > 0
+      )
+    ) {
+      setSelectedSize(
+        product.variants.find((v) => v.color === color && v.stock > 0)?.size ??
+          null
+      )
+    }
+  }
+
+  function selectSize(size: string) {
+    setSelectedSize(size)
+    if (
+      selectedColor &&
+      !product.variants.some(
+        (v) => v.size === size && v.color === selectedColor && v.stock > 0
+      )
+    ) {
+      setSelectedColor(
+        product.variants.find((v) => v.size === size && v.stock > 0)?.color ??
+          null
+      )
+    }
+  }
+
   function handleAdd() {
     if (!selectedVariant) return
-    void addItem(
-      {
-        productId: product.slug,
-        productSlug: product.slug,
-        variantId: selectedVariant.variantId,
-        name: product.name,
-        subtitle: product.subtitle,
-        size: selectedVariant.size,
-        color: selectedVariant.color,
-        colorHex: selectedVariant.colorHex,
-        imageUrl: product.images[0] ?? null,
-        unitPrice: product.price,
-        available: selectedVariant.stock,
-      },
-      quantity
-    )
+    void addItem(detailToSummary(product, selectedVariant), quantity)
   }
 
   return (
@@ -89,6 +127,61 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
 
         <div className="h-px bg-hairline" aria-hidden />
 
+        {hasColor ? (
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
+                Colour
+              </span>
+              <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
+                {selectedVariant?.color ?? "Select a colour"}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {colors.map((color) => {
+                const available =
+                  product.variants.filter(
+                    (v) =>
+                      v.color === color &&
+                      v.stock > 0 &&
+                      (!selectedSize || v.size === selectedSize)
+                  ).length > 0
+                const isSelected = selectedColor === color
+                const swatch = product.variants.find(
+                  (v) => v.color === color && v.colorHex
+                )?.colorHex
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    disabled={!available}
+                    aria-pressed={isSelected}
+                    onClick={() => selectColor(color)}
+                    className={cn(
+                      "flex h-11 items-center gap-2 border px-4 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
+                      isSelected
+                        ? "border-noir bg-noir text-warm-white"
+                        : "border-hairline text-noir hover:border-stone",
+                      !available &&
+                        "pointer-events-none border-transparent opacity-30 line-through"
+                    )}
+                  >
+                    {swatch ? (
+                      <span
+                        aria-hidden
+                        className="size-3 rounded-full border border-black/10"
+                        style={{ backgroundColor: swatch }}
+                      />
+                    ) : null}
+                    {color}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : null}
+
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
@@ -103,7 +196,10 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
             {sizes.map((size) => {
               const available =
                 product.variants.filter(
-                  (v) => v.size === size && v.stock > 0
+                  (v) =>
+                    v.size === size &&
+                    v.stock > 0 &&
+                    (!selectedColor || v.color === selectedColor)
                 ).length > 0
               const isSelected = selectedSize === size
               return (
@@ -112,7 +208,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
                   type="button"
                   disabled={!available}
                   aria-pressed={isSelected}
-                  onClick={() => setSelectedSize(size)}
+                  onClick={() => selectSize(size)}
                   className={cn(
                     "h-11 min-w-11 border px-3 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
                     isSelected
@@ -147,18 +243,24 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
             />
           </div>
 
-          <Button
-            size="lg"
-            className="w-full"
-            onClick={handleAdd}
-            disabled={soldOut || !selectedVariant}
-          >
-            {soldOut
-              ? "Sold Out"
-              : selectedVariant
-                ? "Add to Bag"
-                : "Select a Size"}
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              size="lg"
+              className="flex-1"
+              onClick={handleAdd}
+              disabled={soldOut || !selectedVariant}
+            >
+              {soldOut
+                ? "Sold Out"
+                : selectedVariant
+                  ? "Add to Bag"
+                  : "Select a Size"}
+            </Button>
+            <WishlistToggle
+              item={wishlistItem}
+              className="size-14 shrink-0 border border-hairline hover:border-stone"
+            />
+          </div>
 
           <p className="text-center text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
             Complimentary shipping · Made to be kept

@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "@/components/ui/sonner"
 import { CartProvider } from "@/components/cart/cart-provider"
 import { CartDrawer } from "@/components/cart/cart-drawer"
+import { WishlistProvider } from "@/components/wishlist/wishlist-provider"
 
 const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 
@@ -12,8 +13,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const app = (
     <>
       <CartProvider>
-        {children}
-        <CartDrawer />
+        <WishlistProvider>
+          {children}
+          <CartDrawer />
+        </WishlistProvider>
       </CartProvider>
       <Toaster
         position="top-center"

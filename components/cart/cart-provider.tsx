@@ -5,23 +5,30 @@ import { useCallback, useMemo, useState } from "react"
 import { toast } from "sonner"
 import {
   addItemAction,
+  clearCartAction,
   getCartAction,
   removeItemAction,
   updateQuantityAction,
 } from "@/lib/actions/cart-actions"
+import { ClerkAuth, clerkEnabled } from "@/components/providers/clerk-auth"
+import { applyDiscountCode } from "@/lib/discounts"
 import { emptyCart } from "@/types"
-import type { CartState, ProductSummary } from "@/types"
+import type { CartState, Discount, ProductSummary } from "@/types"
 import { cn } from "@/lib/utils"
 
 type CartContextValue = {
   cart: CartState
   isOpen: boolean
   hydrated: boolean
+  discount: Discount | null
   openCart: () => void
   closeCart: () => void
   addItem: (product: ProductSummary, quantity?: number) => Promise<void>
   updateQuantity: (lineId: string, quantity: number) => Promise<void>
   removeItem: (lineId: string) => Promise<void>
+  clearCart: () => Promise<void>
+  applyDiscount: (code: string) => boolean
+  clearDiscount: () => void
 }
 
 const CartContext = React.createContext<CartContextValue | null>(null)
@@ -30,16 +37,32 @@ function localLineId() {
   return `local-${Math.random().toString(36).slice(2, 10)}`
 }
 
-export function CartProvider({
-  children,
-  className,
-}: {
+type CartProviderProps = {
   children: React.ReactNode
   className?: string
-}) {
+  clerkUserId?: string | null
+}
+
+export function CartProvider(props: CartProviderProps) {
+  if (clerkEnabled) {
+    return (
+      <ClerkAuth>
+        {(userId) => <CartProviderCore {...props} clerkUserId={userId} />}
+      </ClerkAuth>
+    )
+  }
+  return <CartProviderCore {...props} clerkUserId={null} />
+}
+
+function CartProviderCore({
+  children,
+  className,
+  clerkUserId,
+}: CartProviderProps) {
   const [cart, setCart] = useState<CartState>(emptyCart())
   const [isOpen, setIsOpen] = useState(false)
   const [hydrated, setHydrated] = useState(false)
+  const [discount, setDiscount] = useState<Discount | null>(null)
 
   const applyServer = useCallback((next: CartState | null) => {
     if (next) setCart(next)
@@ -57,7 +80,7 @@ export function CartProvider({
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [clerkUserId])
 
   const addItem = useCallback(
     async (product: ProductSummary, quantity = 1) => {
@@ -174,18 +197,61 @@ export function CartProvider({
     [applyServer]
   )
 
+  const clearCart = useCallback(async () => {
+    setCart(emptyCart())
+    const res = await clearCartAction()
+    if (res.ok && res.cart) {
+      setCart(res.cart)
+    } else if (res.ok) {
+      toast.success("Your selection has been cleared.")
+    } else {
+      toast.error(res.error ?? "Could not clear your selection.")
+    }
+    setDiscount(null)
+  }, [])
+
+  const applyDiscount = useCallback((code: string) => {
+    const applied = applyDiscountCode(code)
+    if (!applied) {
+      toast.error("That code isn't recognised.")
+      return false
+    }
+    setDiscount(applied)
+    toast.success("Code applied.")
+    return true
+  }, [])
+
+  const clearDiscount = useCallback(() => {
+    setDiscount(null)
+  }, [])
+
   const value = useMemo(
     () => ({
       cart,
       isOpen,
       hydrated,
+      discount,
       openCart: () => setIsOpen(true),
       closeCart: () => setIsOpen(false),
       addItem,
       updateQuantity,
       removeItem,
+      clearCart,
+      applyDiscount,
+      clearDiscount,
     }),
-    [cart, isOpen, hydrated, addItem, updateQuantity, removeItem]
+    [
+      cart,
+      isOpen,
+      hydrated,
+      discount,
+      addItem,
+      updateQuantity,
+      removeItem,
+      clearCart,
+      applyDiscount,
+      clearDiscount,
+    ]
   )
 
   return (

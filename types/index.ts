@@ -45,3 +45,21 @@ export type ProductSummary = {
   unitPrice: number
   available: number
 }
+
+export type Discount = {
+  code: string
+  label: string
+  /** Percentage off the subtotal, e.g. 10 for 10%. */
+  percent?: number
+  /** Fixed amount off the subtotal, in the site currency. */
+  amount?: number
+  /** Minimum pre-discount subtotal required to qualify. */
+  minSpend: number
+}
+
+export type WishlistActionResult = {
+  ok: boolean
+  error?: string
+  /** Full saved list from the server (signed-in sessions). */
+  items?: ProductSummary[]
+}

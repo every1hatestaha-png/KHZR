@@ -99,7 +99,8 @@ export async function getCartState(token: string | null): Promise<CartState> {
 
 /** Ensures a cart row exists for the token; creates one if missing. */
 export async function ensureCartToken(
-  token: string | null
+  token: string | null,
+  userId?: string | null
 ): Promise<string | null> {
   if (!isDatabaseConfigured()) return null
 
@@ -109,6 +110,7 @@ export async function ensureCartToken(
       data: {
         token,
         expiresAt: new Date(Date.now() + CART_TTL_DAYS * 86_400_000),
+        ...(userId ? { userId } : {}),
       },
     })
     return token
@@ -120,10 +122,81 @@ export async function ensureCartToken(
       data: {
         token,
         expiresAt: new Date(Date.now() + CART_TTL_DAYS * 86_400_000),
+        ...(userId ? { userId } : {}),
       },
+    })
+  } else if (userId && !existing.userId) {
+    await prisma.cart.update({
+      where: { id: existing.id },
+      data: { userId },
     })
   }
   return token
+}
+
+/**
+ * Resolves the effective cart for a signed-in user: links an anonymous token
+ * cart to the user, or merges it into their existing account cart.
+ * Returns the token the cookie should hold, or null when untouched.
+ */
+export async function resolveCartForUser(
+  clerkId: string,
+  token: string | null
+): Promise<{ token: string } | null> {
+  if (!isDatabaseConfigured()) return null
+
+  const userCart = await prisma.cart.findUnique({ where: { userId: clerkId } })
+  const tokenCart = token
+    ? await prisma.cart.findUnique({ where: { token } })
+    : null
+
+  if (tokenCart && !userCart) {
+    await prisma.cart.update({
+      where: { id: tokenCart.id },
+      data: { userId: clerkId },
+    })
+    return { token: tokenCart.token }
+  }
+
+  if (tokenCart && userCart && tokenCart.id !== userCart.id) {
+    await mergeCarts(userCart.id, tokenCart.id)
+    return { token: userCart.token }
+  }
+
+  if (userCart) return { token: userCart.token }
+  return null
+}
+
+/** Moves every line from the source cart into the target, then deletes the source. */
+async function mergeCarts(targetId: string, sourceId: string) {
+  const [targetItems, sourceItems] = await Promise.all([
+    prisma.cartItem.findMany({ where: { cartId: targetId } }),
+    prisma.cartItem.findMany({ where: { cartId: sourceId } }),
+  ])
+
+  const targetByVariant = new Map(
+    targetItems.map((item) => [item.variantId, item])
+  )
+
+  await prisma.$transaction([
+    ...sourceItems.map((item) => {
+      const existing = targetByVariant.get(item.variantId)
+      if (existing) {
+        return prisma.cartItem.update({
+          where: { id: existing.id },
+          data: { quantity: Math.min(10, existing.quantity + item.quantity) },
+        })
+      }
+      return prisma.cartItem.create({
+        data: {
+          cartId: targetId,
+          variantId: item.variantId,
+          quantity: item.quantity,
+        },
+      })
+    }),
+    prisma.cart.delete({ where: { id: sourceId } }),
+  ])
 }
 
 /** Adds a variant to the cart, merging same-variant lines. */
