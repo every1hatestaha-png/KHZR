@@ -1,0 +1,41 @@
+"use client"
+
+import * as React from "react"
+import { motion, useReducedMotion, type Transition } from "framer-motion"
+
+const EASE: Transition["ease"] = [0.16, 1, 0.3, 1]
+
+type RevealProps = {
+  children: React.ReactNode
+  className?: string
+  delay?: number
+  y?: number
+  duration?: number
+  once?: boolean
+  as?: "div" | "span" | "li" | "section" | "figure" | "header"
+}
+
+export function Reveal({
+  children,
+  className,
+  delay = 0,
+  y = 24,
+  duration = 1.1,
+  once = true,
+  as = "div",
+}: RevealProps) {
+  const reduceMotion = useReducedMotion()
+  const Comp = motion[as]
+
+  return (
+    <Comp
+      className={className}
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y }}
+      whileInView={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      viewport={{ once, margin: "-72px" }}
+      transition={{ duration, delay, ease: EASE }}
+    >
+      {children}
+    </Comp>
+  )
+}

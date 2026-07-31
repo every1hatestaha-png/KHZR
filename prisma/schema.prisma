@@ -1,0 +1,392 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  EDITOR
+  ADMIN
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+  PRE_ORDER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  FULFILLED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum Currency {
+  USD
+  EUR
+  GBP
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+}
+
+model User {
+  id         String   @id @default(cuid())
+  clerkId    String   @unique
+  email      String   @unique
+  firstName  String?
+  lastName   String?
+  phone      String?
+  role       Role     @default(CUSTOMER)
+  newsletter Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  addresses Address[]
+  orders    Order[]
+  wishlist  WishlistItem[]
+  reviews   Review[]
+
+  @@map("users")
+}
+
+model Address {
+  id         String      @id @default(cuid())
+  userId     String
+  type       AddressType @default(SHIPPING)
+  firstName  String
+  lastName   String
+  company    String?
+  line1      String
+  line2      String?
+  city       String
+  region     String?
+  postalCode String
+  country    String
+  isDefault  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders   Order[] @relation("OrderShippingAddress")
+  billings Order[] @relation("OrderBillingAddress")
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+model Collection {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  name          String
+  description   String?
+  editorial     String?
+  imageUrl      String?
+  isFeatured    Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  publishedAt   DateTime?
+  seoTitle      String?
+  seoDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products   ProductCollection[]
+  campaigns  CampaignCollection[]
+
+  @@map("collections")
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  subtitle        String?
+  description     String?
+  composition     String?
+  care            String?
+  price           Decimal       @db.Decimal(10, 2)
+  compareAtPrice  Decimal?      @db.Decimal(10, 2)
+  currency        Currency      @default(USD)
+  status          ProductStatus @default(DRAFT)
+  stockStatus     StockStatus   @default(IN_STOCK)
+  sku             String?       @unique
+  isNew           Boolean       @default(false)
+  isFeatured      Boolean       @default(false)
+  sortOrder       Int           @default(0)
+  seoTitle        String?
+  seoDescription  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  collections     ProductCollection[]
+  variants        ProductVariant[]
+  media           ProductMedia[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  wishlistItems   WishlistItem[]
+  lookbookEntries LookbookEntry[]
+
+  @@index([status, isFeatured])
+  @@index([status, slug])
+  @@map("products")
+}
+
+model ProductVariant {
+  id            String   @id @default(cuid())
+  productId     String
+  size          String
+  color         String
+  colorHex      String?
+  sku           String   @unique
+  priceOverride Decimal? @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  lowStockAt    Int      @default(5)
+  active        Boolean  @default(true)
+
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
+  orderItems OrderItem[]
+
+  @@unique([productId, size, color])
+  @@index([sku])
+  @@map("product_variants")
+}
+
+model ProductMedia {
+  id        String    @id @default(cuid())
+  productId String
+  publicId  String
+  url       String
+  alt       String
+  kind      MediaKind @default(IMAGE)
+  position  Int       @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, position])
+  @@map("product_media")
+}
+
+model ProductCollection {
+  productId    String
+  collectionId String
+  position     Int @default(0)
+
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([productId, collectionId])
+  @@index([collectionId, position])
+  @@map("product_collections")
+}
+
+model Cart {
+  id        String    @id @default(cuid())
+  userId    String?   @unique
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int    @default(1)
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([cartId, variantId])
+  @@map("cart_items")
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  orderNumber      String      @unique
+  userId           String?
+  email            String
+  status           OrderStatus @default(PENDING)
+  currency         Currency    @default(USD)
+  subtotal         Decimal     @db.Decimal(10, 2)
+  shippingTotal    Decimal     @db.Decimal(10, 2)
+  taxTotal         Decimal     @db.Decimal(10, 2)
+  discountTotal    Decimal     @db.Decimal(10, 2) @default(0)
+  total            Decimal     @db.Decimal(10, 2)
+  shippingAddressId String?
+  billingAddressId String?
+  customerNotes    String?
+  paymentProvider  String      @default("mock")
+  providerSessionId String?    @unique
+  providerPaymentId String?    @unique
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  items           OrderItem[]
+  user            User?       @relation(fields: [userId], references: [id])
+  shippingAddress Address?    @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddress  Address?    @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
+
+  @@index([userId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  variantId String?
+  productId String
+  sku       String
+  name      String
+  size      String
+  color     String
+  unitPrice Decimal @db.Decimal(10, 2)
+  quantity  Int
+  imageUrl  String?
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+  product Product         @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  userId     String?
+  productId  String
+  rating     Int
+  title      String?
+  body       String?
+  isVerified Boolean  @default(false)
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user    User?   @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId, isApproved])
+  @@map("reviews")
+}
+
+model JournalPost {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  excerpt        String
+  body           String
+  coverImage     String
+  author         String
+  publishedAt    DateTime?
+  seoTitle       String?
+  seoDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([publishedAt])
+  @@map("journal_posts")
+}
+
+model Lookbook {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String?
+  coverImage  String
+  publishedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries LookbookEntry[]
+
+  @@map("lookbooks")
+}
+
+model LookbookEntry {
+  id         String    @id @default(cuid())
+  lookbookId String
+  productId  String?
+  imageUrl   String
+  caption    String?
+  position   Int       @default(0)
+
+  lookbook Lookbook  @relation(fields: [lookbookId], references: [id], onDelete: Cascade)
+  product  Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([lookbookId, position])
+  @@map("lookbook_entries")
+}
+
+model Campaign {
+  id        String   @id @default(cuid())
+  name      String
+  kicker    String?
+  title     String
+  subtitle  String?
+  ctaLabel  String?
+  ctaHref   String?
+  imageUrl  String
+  position  Int      @default(0)
+  isActive  Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+
+  collections CampaignCollection[]
+
+  @@map("campaigns")
+}
+
+model CampaignCollection {
+  campaignId   String
+  collectionId String
+
+  campaign   Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([campaignId, collectionId])
+  @@map("campaign_collections")
+}
