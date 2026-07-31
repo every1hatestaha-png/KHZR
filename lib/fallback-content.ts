@@ -50,20 +50,20 @@ export type FallbackProduct = {
 
 export const FALLBACK_CAMPAIGNS: FallbackCampaign[] = [
   {
-    kicker: "Autumn — Winter MMXXVI",
-    title: "Silhouettes in Monochrome",
+    kicker: "Summer — Lawn Collection",
+    title: "Elegance in Bloom",
     subtitle:
-      "A study in restraint — double-faced wool, bias-cut silk and the discipline of a single colour field.",
+      "A celebration of intricate embroidery, delicate lace borders, and fine lawn prints for the modern wardrobe.",
     ctaLabel: "Explore the Collection",
     ctaHref: "/collections",
     imageUrl: img("1515886657613-9f3515b0c78f", 2400),
   },
   {
-    kicker: "The Evening Atelier",
-    title: "Dressed in Light",
+    kicker: "The Atelier",
+    title: "Chiffon & Organza",
     subtitle:
-      "Champagne silk, hand-rolled edges and the hour between dusk and midnight.",
-    ctaLabel: "The Evening Atelier",
+      "Hand-finished lace details, printed silk dupattas, and timeless luxury silhouettes.",
+    ctaLabel: "View Atelier",
     ctaHref: "/collection/evening",
     imageUrl: img("1469334031218-e382a71b716b", 2000),
   },
@@ -141,6 +141,23 @@ const PRODUCTS: Array<{
     sizes: APP_SIZES,
     media: ["1515372039744-b8f02a3ae446", "1537832816519-689ad163238b", "1503341504253-dff4815485f1"],
     stockPlan: [12, 8, 20, 5, 14, 9, 11, 3, 16, 7],
+  },
+  {
+    slug: "ivory-butterfly-embroidered-suit",
+    name: "Ivory Butterfly Embroidered Lawn",
+    subtitle: "Monochrome floral print with butterfly lace embroidery and printed chiffon dupatta",
+    description:
+      "A three-piece ensemble in fine lawn — a monochrome floral print traced by hand with butterfly lace embroidery, finished with a printed chiffon dupatta. Cut for ease and lined in cotton; made to be kept.",
+    composition: "100% lawn cotton · printed chiffon dupatta",
+    care: "Dry clean only. Cool iron.",
+    price: "8950.00",
+    isNew: true,
+    collectionSlug: "tailoring",
+    sku: "KHZR-LAWN-BUTTERFLY",
+    colorways: ["Ivory", "Sand"],
+    sizes: APP_SIZES,
+    media: ["1515372039744-b8f02a3ae446", "1467043237213-65f2da53396f", "1521577352947-9bb58764b69a"],
+    stockPlan: [8, 5, 10, 4, 7, 6, 9, 3, 5, 8],
   },
   {
     slug: "structured-oversized-blazer",
@@ -383,3 +400,4 @@ export const FALLBACK_FEATURED: FallbackCard[] = FEATURED_SLUGS.map((slug) => {
     isNew: p.isNew,
   }
 })
+
