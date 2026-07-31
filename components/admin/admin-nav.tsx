@@ -7,6 +7,7 @@ import {
   FolderIcon,
   LayoutDashboardIcon,
   PackageIcon,
+  ReceiptTextIcon,
   WalletCardsIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -16,6 +17,7 @@ const NAV = [
   { href: "/admin/products", label: "Products", icon: PackageIcon, exact: false },
   { href: "/admin/categories", label: "Categories", icon: FolderIcon, exact: false },
   { href: "/admin/inventory", label: "Inventory", icon: WalletCardsIcon, exact: false },
+  { href: "/admin/orders", label: "Orders", icon: ReceiptTextIcon, exact: false },
 ]
 
 export function AdminNav() {

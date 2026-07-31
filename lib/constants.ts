@@ -57,3 +57,42 @@ export const SORT_OPTIONS = [
 
 export const CART_COOKIE = "khzr_cart"
 export const CART_TTL_DAYS = 30
+
+/** Shipping pricing architecture — flat standard rate, complimentary over the threshold. */
+export const SHIPPING = {
+  standardRate: 15,
+  standardLabel: "Standard Shipping",
+  complimentaryLabel: "Complimentary Shipping",
+} as const
+
+/** Tax architecture — single flat rate applied to the discounted subtotal (US default). */
+export const TAX_RATE = 0.08875
+export const TAX_LABEL = "Duties & Taxes"
+
+/** Countries offered for checkout shipping (ISO 3166-1 alpha-2, Stripe-compatible). */
+export const CHECKOUT_COUNTRIES = [
+  "US",
+  "CA",
+  "GB",
+  "IE",
+  "FR",
+  "DE",
+  "IT",
+  "ES",
+  "PT",
+  "NL",
+  "BE",
+  "CH",
+  "AT",
+  "SE",
+  "DK",
+  "NO",
+  "FI",
+  "AU",
+  "NZ",
+  "JP",
+  "AE",
+  "SG",
+] as const
+
+export const ORDER_NUMBER_PREFIX = "KHZR"

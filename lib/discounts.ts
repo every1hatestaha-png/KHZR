@@ -1,6 +1,6 @@
 import type { Discount } from "@/types"
 
-/** Client-recognised discount codes. A server-verified catalogue arrives with the checkout phase. */
+/** Recognised discount codes, re-verified server-side at checkout. */
 const DISCOUNT_CODES: Discount[] = [
   {
     code: "KHZR10",

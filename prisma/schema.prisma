@@ -36,6 +36,20 @@ enum OrderStatus {
   REFUNDED
 }
 
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum FulfillmentStatus {
+  UNFULFILLED
+  PARTIALLY_FULFILLED
+  FULFILLED
+  CANCELLED
+}
+
 enum Currency {
   USD
   EUR
@@ -74,7 +88,7 @@ model User {
 
 model Address {
   id         String      @id @default(cuid())
-  userId     String
+  userId     String?
   type       AddressType @default(SHIPPING)
   firstName  String
   lastName   String
@@ -88,7 +102,7 @@ model Address {
   isDefault  Boolean     @default(false)
   createdAt  DateTime    @default(now())
 
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders   Order[] @relation("OrderShippingAddress")
   billings Order[] @relation("OrderBillingAddress")
 
@@ -235,18 +249,24 @@ model Order {
   userId           String?
   email            String
   status           OrderStatus @default(PENDING)
+  paymentStatus    PaymentStatus    @default(PENDING)
+  fulfillmentStatus FulfillmentStatus @default(UNFULFILLED)
   currency         Currency    @default(USD)
   subtotal         Decimal     @db.Decimal(10, 2)
   shippingTotal    Decimal     @db.Decimal(10, 2)
   taxTotal         Decimal     @db.Decimal(10, 2)
   discountTotal    Decimal     @db.Decimal(10, 2) @default(0)
   total            Decimal     @db.Decimal(10, 2)
+  shippingMethod   String?
+  cartToken        String?
+  customerNotes    String?
   shippingAddressId String?
   billingAddressId String?
-  customerNotes    String?
-  paymentProvider  String      @default("mock")
+  paymentProvider  String      @default("stripe")
   providerSessionId String?    @unique
   providerPaymentId String?    @unique
+  refundedAt       DateTime?
+  cancelledAt      DateTime?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
@@ -256,6 +276,8 @@ model Order {
   billingAddress  Address?    @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
 
   @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([cartToken])
   @@map("orders")
 }
 

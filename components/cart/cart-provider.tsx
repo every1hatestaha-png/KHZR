@@ -112,6 +112,7 @@ function CartProviderCore({
           variantId: product.variantId,
           productId: product.productId,
           productSlug: product.productSlug,
+          sku: "",
           name: product.name,
           subtitle: product.subtitle,
           size: product.size,

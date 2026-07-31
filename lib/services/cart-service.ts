@@ -19,6 +19,7 @@ function toLine(item: {
   quantity: number
   variant: {
     id: string
+    sku: string
     size: string
     color: string
     colorHex: string | null
@@ -39,6 +40,7 @@ function toLine(item: {
     variantId: item.variant.id,
     productId: item.variant.product.id,
     productSlug: item.variant.product.slug,
+    sku: item.variant.sku,
     name: item.variant.product.name,
     subtitle: item.variant.product.subtitle,
     size: item.variant.size,

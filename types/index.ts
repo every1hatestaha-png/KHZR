@@ -3,6 +3,7 @@ export type CartLine = {
   variantId: string
   productId: string
   productSlug: string
+  sku: string
   name: string
   subtitle: string | null
   size: string
