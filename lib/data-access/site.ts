@@ -5,8 +5,10 @@ import { isDatabaseConfigured } from "@/lib/services/cart-service"
 import {
   FALLBACK_CAMPAIGNS,
   FALLBACK_FEATURED,
+  FALLBACK_PRODUCTS,
+  getFallbackProduct,
   type FallbackCampaign,
-  type FallbackCard,
+  type FallbackProduct,
 } from "@/lib/fallback-content"
 
 export type CampaignDTO = {
@@ -34,6 +36,42 @@ export type ProductCardDTO = {
     color: string
     colorHex: string | null
     stock: number
+  }
+}
+
+/** Runs a DB query, returning null on any failure so callers fall back. */
+async function safeQuery<T>(query: () => Promise<T>): Promise<T | null> {
+  try {
+    return await query()
+  } catch {
+    return null
+  }
+}
+
+function fallbackCard(p: FallbackProduct): ProductCardDTO {
+  const variant = p.variants.find((v) => v.stock > 0) ?? p.variants[0]
+  return {
+    slug: p.slug,
+    name: p.name,
+    subtitle: p.subtitle,
+    price: Number(p.price),
+    compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+    currency: p.currency,
+    imageUrl: p.images[0],
+    isNew: p.isNew,
+    badge:
+      p.stockStatus === "OUT_OF_STOCK"
+        ? "OUT_OF_STOCK"
+        : p.stockStatus === "LOW_STOCK"
+          ? "LOW_STOCK"
+          : null,
+    defaultVariant: {
+      variantId: variant?.id ?? "",
+      size: variant?.size ?? "One Size",
+      color: variant?.color ?? "Noir",
+      colorHex: variant?.colorHex ?? null,
+      stock: p.variants.reduce((n, v) => n + v.stock, 0),
+    },
   }
 }
 
@@ -73,17 +111,241 @@ function cardDTO(product: {
   }
 }
 
+export type ProductDetailDTO = {
+  slug: string
+  name: string
+  subtitle: string | null
+  description: string
+  composition: string
+  care: string
+  price: number
+  compareAtPrice: number | null
+  currency: string
+  isNew: boolean
+  badge: "NEW" | "LOW_STOCK" | "OUT_OF_STOCK" | null
+  sku: string
+  collectionSlug: string
+  collectionName: string
+  images: string[]
+  variants: {
+    variantId: string
+    size: string
+    color: string
+    colorHex: string | null
+    stock: number
+  }[]
+}
+
+function fallbackToDetail(p: FallbackProduct): ProductDetailDTO {
+  const badge =
+    p.stockStatus === "OUT_OF_STOCK"
+      ? "OUT_OF_STOCK"
+      : p.stockStatus === "LOW_STOCK"
+        ? "LOW_STOCK"
+        : null
+  return {
+    slug: p.slug,
+    name: p.name,
+    subtitle: p.subtitle,
+    description: p.description,
+    composition: p.composition,
+    care: p.care,
+    price: Number(p.price),
+    compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
+    currency: p.currency,
+    isNew: p.isNew,
+    badge,
+    sku: p.sku,
+    collectionSlug: p.collectionSlug,
+    collectionName: p.collectionName,
+    images: p.images,
+    variants: p.variants.map((v) => ({
+      variantId: v.id,
+      size: v.size,
+      color: v.color,
+      colorHex: v.colorHex,
+      stock: v.stock,
+    })),
+  }
+}
+
+function detailDTO(row: {
+  slug: string
+  name: string
+  subtitle: string | null
+  description: string | null
+  composition: string | null
+  care: string | null
+  price: { toString(): string }
+  compareAtPrice: { toString(): string } | null
+  currency: string
+  isNew: boolean
+  stockStatus: string
+  sku: string | null
+  status: string
+  media: { url: string }[]
+  variants: {
+    id: string
+    size: string
+    color: string
+    colorHex: string | null
+    stock: number
+  }[]
+  collections: { collection: { slug: string; name: string } }[]
+}): ProductDetailDTO {
+  const badge =
+    row.stockStatus === "OUT_OF_STOCK"
+      ? "OUT_OF_STOCK"
+      : row.stockStatus === "LOW_STOCK"
+        ? "LOW_STOCK"
+        : null
+  const collection = row.collections[0]?.collection
+  return {
+    slug: row.slug,
+    name: row.name,
+    subtitle: row.subtitle,
+    description: row.description ?? "",
+    composition: row.composition ?? "",
+    care: row.care ?? "",
+    price: Number(row.price.toString()),
+    compareAtPrice: row.compareAtPrice
+      ? Number(row.compareAtPrice.toString())
+      : null,
+    currency: row.currency,
+    isNew: row.isNew,
+    badge,
+    sku: row.sku ?? "",
+    collectionSlug: collection?.slug ?? "",
+    collectionName: collection?.name ?? "",
+    images: row.media.map((m) => m.url),
+    variants: row.variants.map((v) => ({
+      variantId: v.id,
+      size: v.size,
+      color: v.color,
+      colorHex: v.colorHex,
+      stock: v.stock,
+    })),
+  }
+}
+
+/** A full product for the detail page, or null when not found. */
+export async function getProductBySlug(
+  slug: string
+): Promise<ProductDetailDTO | null> {
+  if (isDatabaseConfigured()) {
+    try {
+      const row = await prisma.product.findUnique({
+        where: { slug },
+        include: {
+          media: { orderBy: { position: "asc" } },
+          variants: {
+            where: { active: true },
+            orderBy: { size: "asc" },
+          },
+          collections: {
+            take: 1,
+            include: { collection: { select: { slug: true, name: true } } },
+          },
+        },
+      })
+      if (row && row.status === "ACTIVE") return detailDTO(row)
+    } catch {
+      // Database unreachable — fall through to the editorial catalogue.
+    }
+  }
+
+  const p = getFallbackProduct(slug)
+  return p ? fallbackToDetail(p) : null
+}
+
+/** Same-collection pieces, backfilled from the wider catalogue. */
+export async function getRelatedProducts(
+  slug: string,
+  collectionSlug: string,
+  limit = 4
+): Promise<ProductCardDTO[]> {
+  const fallback = () => {
+    const same = FALLBACK_PRODUCTS.filter(
+      (p) => p.collectionSlug === collectionSlug && p.slug !== slug
+    )
+    const others = FALLBACK_PRODUCTS.filter(
+      (p) => p.collectionSlug !== collectionSlug && p.slug !== slug
+    )
+    return [...same, ...others].slice(0, limit).map((p) => fallbackCard(p))
+  }
+
+  if (!isDatabaseConfigured()) {
+    return fallback()
+  }
+
+  const selected = await safeQuery(() =>
+    prisma.product.findMany({
+      where: {
+        status: "ACTIVE",
+        slug: { not: slug },
+        collections: { some: { collection: { slug: collectionSlug } } },
+      },
+      include: {
+        media: { orderBy: { position: "asc" }, take: 1 },
+        variants: {
+          where: { active: true },
+          select: { id: true, size: true, color: true, colorHex: true, stock: true },
+          orderBy: { size: "asc" },
+          take: 3,
+        },
+      },
+      orderBy: { sortOrder: "asc" },
+      take: limit,
+    })
+  )
+
+  if (!selected) return fallback()
+
+  if (selected.length < limit) {
+    const missing = limit - selected.length
+    const backfill = await safeQuery(() =>
+      prisma.product.findMany({
+        where: {
+          status: "ACTIVE",
+          slug: { not: slug },
+          collections: { none: { collection: { slug: collectionSlug } } },
+        },
+        include: {
+          media: { orderBy: { position: "asc" }, take: 1 },
+          variants: {
+            where: { active: true },
+            select: { id: true, size: true, color: true, colorHex: true, stock: true },
+            orderBy: { size: "asc" },
+            take: 3,
+          },
+        },
+        orderBy: { sortOrder: "asc" },
+        take: missing,
+      })
+    )
+    const combined = backfill
+      ? [...selected, ...backfill]
+      : selected
+    if (combined.length === 0) return fallback()
+    return combined.map((p) => cardDTO(p))
+  }
+
+  return selected.map((p) => cardDTO(p))
+}
+
 export async function getHomeCampaigns(): Promise<CampaignDTO[]> {
   if (!isDatabaseConfigured()) {
     return FALLBACK_CAMPAIGNS.map((c: FallbackCampaign) => ({ ...c }))
   }
 
-  const rows = await prisma.campaign.findMany({
-    where: { isActive: true },
-    orderBy: { position: "asc" },
-    take: 2,
-  })
-  if (rows.length === 0) {
+  const rows = await safeQuery(() =>
+    prisma.campaign.findMany({
+      where: { isActive: true },
+      orderBy: { position: "asc" },
+      take: 2,
+    })
+  )
+  if (!rows || rows.length === 0) {
     return FALLBACK_CAMPAIGNS.map((c: FallbackCampaign) => ({ ...c }))
   }
   return rows.map((c) => ({
@@ -97,60 +359,31 @@ export async function getHomeCampaigns(): Promise<CampaignDTO[]> {
 }
 
 export async function getFeaturedProducts(): Promise<ProductCardDTO[]> {
+  const fallback = () =>
+    FALLBACK_FEATURED.map((c) => fallbackCard(getFallbackProduct(c.slug)!))
+
   if (!isDatabaseConfigured()) {
-    return FALLBACK_FEATURED.map((c: FallbackCard) => ({
-      slug: c.slug,
-      name: c.name,
-      subtitle: c.subtitle,
-      price: Number(c.price),
-      compareAtPrice: c.compareAtPrice ? Number(c.compareAtPrice) : null,
-      currency: "USD",
-      imageUrl: c.imageUrl,
-      isNew: c.isNew,
-      badge: null,
-      defaultVariant: {
-        variantId: `fallback-${c.slug}`,
-        size: "M",
-        color: "Noir",
-        colorHex: "#121110",
-        stock: 5,
-      },
-    }))
+    return fallback()
   }
 
-  const rows = await prisma.product.findMany({
-    where: { status: "ACTIVE", isFeatured: true },
-    include: {
-      media: { orderBy: { position: "asc" }, take: 1 },
-      variants: {
-        where: { active: true },
-        select: { id: true, size: true, color: true, colorHex: true, stock: true },
-        orderBy: { size: "asc" },
-        take: 3,
+  const rows = await safeQuery(() =>
+    prisma.product.findMany({
+      where: { status: "ACTIVE", isFeatured: true },
+      include: {
+        media: { orderBy: { position: "asc" }, take: 1 },
+        variants: {
+          where: { active: true },
+          select: { id: true, size: true, color: true, colorHex: true, stock: true },
+          orderBy: { size: "asc" },
+          take: 3,
+        },
       },
-    },
-    orderBy: { sortOrder: "asc" },
-    take: 8,
-  })
-  if (rows.length === 0) {
-    return FALLBACK_FEATURED.map((c: FallbackCard) => ({
-      slug: c.slug,
-      name: c.name,
-      subtitle: c.subtitle,
-      price: Number(c.price),
-      compareAtPrice: c.compareAtPrice ? Number(c.compareAtPrice) : null,
-      currency: "USD",
-      imageUrl: c.imageUrl,
-      isNew: c.isNew,
-      badge: null,
-      defaultVariant: {
-        variantId: `fallback-${c.slug}`,
-        size: "M",
-        color: "Noir",
-        colorHex: "#121110",
-        stock: 5,
-      },
-    }))
+      orderBy: { sortOrder: "asc" },
+      take: 8,
+    })
+  )
+  if (!rows || rows.length === 0) {
+    return fallback()
   }
   return rows.map((p) => cardDTO(p))
 }
