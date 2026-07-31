@@ -1,10 +1,6 @@
 "use client"
 
-import * as React from "react"
-
-const MESSAGES = [
-  "Coming Soon",
-]
+import React from "react"
 
 export function AnnouncementBar() {
   return (
@@ -14,7 +10,7 @@ export function AnnouncementBar() {
         aria-live="polite"
       >
         <span className="text-[0.625rem] font-medium uppercase tracking-[0.3em] text-warm-white/90">
-          {MESSAGES[0]}
+          Coming Soon
         </span>
       </div>
     </div>
