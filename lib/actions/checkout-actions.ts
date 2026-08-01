@@ -13,6 +13,7 @@ import { applyDiscountCode } from "@/lib/discounts"
 import { createCheckoutSchema } from "@/lib/validations/checkout"
 import { CHECKOUT_COUNTRIES } from "@/lib/constants"
 import { rateLimit } from "@/lib/services/rate-limit"
+import { assertProductionEnvironment } from "@/lib/env"
 
 export type CheckoutActionResult = {
   ok: boolean
@@ -30,6 +31,13 @@ export async function createCheckoutSessionAction(
     return { ok: false, error: "Enter a valid email address to continue." }
   }
   const { email, notes, discountCode } = parsed.data
+
+  try {
+    assertProductionEnvironment()
+  } catch (err) {
+    console.error("[checkout] invalid production environment:", err)
+    return { ok: false, error: "Checkout is unavailable right now." }
+  }
 
   const allowed = await rateLimit("checkout", 20, 60 * 60 * 1000)
   if (!allowed) {
@@ -134,7 +142,10 @@ export async function createCheckoutSessionAction(
     })
   } catch (err) {
     console.error("[checkout] failed to record pending order:", err)
-    await expireCheckoutSession(session.id)
+    const expired = await expireCheckoutSession(session.id)
+    if (!expired) {
+      console.error("[checkout] failed to expire orphaned Stripe session:", session.id)
+    }
     return { ok: false, error: "Checkout could not be started." }
   }
 

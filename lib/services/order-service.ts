@@ -213,6 +213,17 @@ export async function attachOrderAddresses(
 
 export type StockEntry = { variantId: string; quantity: number }
 
+function mergeStockEntries(entries: StockEntry[]): StockEntry[] {
+  const quantities = new Map<string, number>()
+  for (const { variantId, quantity } of entries) {
+    quantities.set(variantId, (quantities.get(variantId) ?? 0) + quantity)
+  }
+  return [...quantities.entries()].map(([variantId, quantity]) => ({
+    variantId,
+    quantity,
+  }))
+}
+
 export async function orderItemsToStock(
   items: Array<{ variantId: string | null; quantity: number }>
 ): Promise<StockEntry[]> {
@@ -223,15 +234,52 @@ export async function orderItemsToStock(
 
 /** Decrements variant stock, never below zero, atomically. */
 export async function decrementInventory(entries: StockEntry[]): Promise<void> {
-  if (entries.length === 0) return
-  await prisma.$transaction(
-    entries.map(({ variantId, quantity }) =>
-      prisma.productVariant.updateMany({
+  const stockEntries = mergeStockEntries(entries)
+  if (stockEntries.length === 0) return
+
+  await prisma.$transaction(async (tx) => {
+    for (const { variantId, quantity } of stockEntries) {
+      const result = await tx.productVariant.updateMany({
         where: { id: variantId, stock: { gte: quantity } },
         data: { stock: { decrement: quantity } },
       })
-    )
-  )
+      if (result.count !== 1) {
+        throw new Error(`Insufficient stock for variant ${variantId}.`)
+      }
+    }
+  })
+}
+
+export async function markOrderPaidAndDecrementInventory(
+  orderNumber: string,
+  paymentIntentId: string,
+  entries: StockEntry[]
+): Promise<boolean> {
+  const stockEntries = mergeStockEntries(entries)
+
+  return prisma.$transaction(async (tx) => {
+    const paid = await tx.order.updateMany({
+      where: { orderNumber, paymentStatus: "PENDING" },
+      data: {
+        paymentStatus: "PAID",
+        providerPaymentId: paymentIntentId,
+        status: "CONFIRMED",
+      },
+    })
+    if (paid.count !== 1) return false
+
+    for (const { variantId, quantity } of stockEntries) {
+      const decremented = await tx.productVariant.updateMany({
+        where: { id: variantId, stock: { gte: quantity } },
+        data: { stock: { decrement: quantity } },
+      })
+      if (decremented.count !== 1) {
+        throw new Error(`Insufficient stock for variant ${variantId}.`)
+      }
+    }
+
+    return true
+  })
 }
 
 /** Restores variant stock after a failed or cancelled order. */
@@ -247,25 +295,14 @@ export async function restoreInventory(entries: StockEntry[]): Promise<void> {
   )
 }
 
-export async function markOrderPaid(
-  orderNumber: string,
-  paymentIntentId: string
-): Promise<Order> {
-  return prisma.order.update({
-    where: { orderNumber },
-    data: {
-      paymentStatus: "PAID",
-      providerPaymentId: paymentIntentId,
-      status: "CONFIRMED",
-    },
-  })
-}
-
-export async function markOrderFailed(orderNumber: string): Promise<Order> {
-  return prisma.order.update({
-    where: { orderNumber },
+export async function markOrderFailedIfPending(
+  orderNumber: string
+): Promise<boolean> {
+  const result = await prisma.order.updateMany({
+    where: { orderNumber, paymentStatus: "PENDING" },
     data: { paymentStatus: "FAILED" },
   })
+  return result.count === 1
 }
 
 export async function cancelOrder(orderNumber: string): Promise<Order> {

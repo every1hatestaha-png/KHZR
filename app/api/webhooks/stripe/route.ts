@@ -4,14 +4,11 @@ import { prisma } from "@/lib/prisma"
 import { constructWebhookEvent, stripeConfigured } from "@/lib/services/stripe-service"
 import {
   attachOrderAddresses,
-  decrementInventory,
   findOrderByProviderSession,
   getOrderWithRelations,
-  markOrderFailed,
-  markOrderPaid,
+  markOrderFailedIfPending,
+  markOrderPaidAndDecrementInventory,
   orderItemsToStock,
-  restoreInventory,
-  setFulfillmentStatus,
 } from "@/lib/services/order-service"
 import type { OrderAddressInput } from "@/lib/services/order-service"
 import { clearCart } from "@/lib/services/cart-service"
@@ -20,6 +17,7 @@ import {
   sendOrderConfirmationEmail,
   sendPaymentFailedEmail,
 } from "@/lib/services/email-service"
+import { assertProductionEnvironment } from "@/lib/env"
 
 export const runtime = "nodejs"
 
@@ -56,18 +54,41 @@ async function orderByPaymentIntent(paymentIntentId: string) {
   })
 }
 
-async function markOrderRefunded(orderNumber: string) {
-  await prisma.order.update({
-    where: { orderNumber },
-    data: {
-      paymentStatus: "REFUNDED",
-      status: "REFUNDED",
-      refundedAt: new Date(),
-    },
+async function markOrderRefundedAndRestoreInventory(
+  order: NonNullable<Awaited<ReturnType<typeof orderByPaymentIntent>>>
+) {
+  const entries = await orderItemsToStock(order.items)
+  return prisma.$transaction(async (tx) => {
+    const refunded = await tx.order.updateMany({
+      where: { id: order.id, paymentStatus: "PAID" },
+      data: {
+        paymentStatus: "REFUNDED",
+        status: "REFUNDED",
+        fulfillmentStatus: "CANCELLED",
+        refundedAt: new Date(),
+      },
+    })
+    if (refunded.count !== 1) return false
+
+    for (const { variantId, quantity } of entries) {
+      await tx.productVariant.updateMany({
+        where: { id: variantId },
+        data: { stock: { increment: quantity } },
+      })
+    }
+
+    return true
   })
 }
 
 export async function POST(request: Request) {
+  try {
+    assertProductionEnvironment()
+  } catch (err) {
+    console.error("[webhook] invalid production environment:", err)
+    return NextResponse.json({ error: "Invalid environment." }, { status: 500 })
+  }
+
   if (!stripeConfigured()) {
     return NextResponse.json(
       { error: "Stripe is not configured." },
@@ -101,7 +122,12 @@ export async function POST(request: Request) {
           : null
         if (!paymentIntentId) break
 
-        await markOrderPaid(orderNumber, paymentIntentId)
+        const confirmed = await markOrderPaidAndDecrementInventory(
+          orderNumber,
+          paymentIntentId,
+          await orderItemsToStock(order.items)
+        )
+        if (!confirmed) break
 
         const shipping = toAddressInput(
           session.collected_information?.shipping_details?.address,
@@ -118,8 +144,6 @@ export async function POST(request: Request) {
             userId: session.metadata?.userId || null,
           })
         }
-
-        await decrementInventory(await orderItemsToStock(order.items))
 
         if (order.cartToken) {
           await clearCart(order.cartToken)
@@ -138,8 +162,10 @@ export async function POST(request: Request) {
         if (!orderNumber) break
         const order = await findOrderByProviderSession(session.id)
         if (!order || order.paymentStatus !== "PENDING") break
-        await markOrderFailed(orderNumber)
-        await sendPaymentFailedEmail(toOrderEmailData(order))
+        const failed = await markOrderFailedIfPending(orderNumber)
+        if (failed) {
+          await sendPaymentFailedEmail(toOrderEmailData(order))
+        }
         break
       }
 
@@ -149,7 +175,7 @@ export async function POST(request: Request) {
         if (!orderNumber) break
         const order = await findOrderByProviderSession(session.id)
         if (!order || order.paymentStatus !== "PENDING") break
-        await markOrderFailed(orderNumber)
+        await markOrderFailedIfPending(orderNumber)
         break
       }
 
@@ -161,9 +187,7 @@ export async function POST(request: Request) {
         if (!paymentIntentId) break
         const order = await orderByPaymentIntent(paymentIntentId)
         if (!order || order.paymentStatus !== "PAID") break
-        await restoreInventory(await orderItemsToStock(order.items))
-        await setFulfillmentStatus(order, "CANCELLED")
-        await markOrderRefunded(order.orderNumber)
+        await markOrderRefundedAndRestoreInventory(order)
         break
       }
 
