@@ -109,7 +109,7 @@ export function Nav({ className }: { className?: string }) {
               <div
                 role="menu"
                 className={cn(
-                  "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 shadow-[0_24px_48px_-24px_rgba(18,17,16,0.12)] backdrop-blur-md transition-all duration-500 ease-lux",
+                  "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 backdrop-blur-md transition-all duration-500 ease-lux",
                   mega && "visible opacity-100"
                 )}
               >

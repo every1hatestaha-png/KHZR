@@ -47,7 +47,7 @@ export function CartDrawer() {
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
         <SheetContent
           side="right"
-          className="w-full max-w-[32rem] gap-0 border-l-hairline bg-background p-0"
+          className="w-full max-w-[32rem] gap-0 border-l border-hairline bg-background p-0"
         >
         <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-7 py-7 lg:px-9">
           <SheetTitle className="font-display text-3xl font-light text-noir">

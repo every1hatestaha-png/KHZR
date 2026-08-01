@@ -22,10 +22,10 @@ export function MobileMenu({
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
       <SheetContent
         side="left"
-        className="w-full max-w-sm gap-0 border-r-hairline bg-background p-0"
+        className="w-full max-w-sm gap-0 border-r border-hairline bg-background p-0"
       >
         <SheetTitle className="sr-only">Menu</SheetTitle>
-        <div className="flex h-16 items-center border-b border-hairline px-7">
+        <div className="flex h-16 items-center border-b border-hairline px-7 lg:h-[4.5rem]">
           <span className="font-display text-xl tracking-[0.4em] text-noir">
             KHZR
           </span>

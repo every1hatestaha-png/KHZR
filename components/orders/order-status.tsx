@@ -24,7 +24,7 @@ const STATUS_TONES: Record<string, string> = {
   CANCELLED: "border-hairline text-taupe",
   REFUNDED: "border-hairline text-taupe",
   PAID: "border-hairline text-stone",
-  FAILED: "border-hairline text-destructive",
+  FAILED: "border-hairline text-stone",
 }
 
 export function StatusBadge({

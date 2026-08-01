@@ -35,7 +35,7 @@ export function Footer() {
 
   return (
     <footer className="mt-24 border-t border-hairline bg-ivory/60">
-      <div className="mx-auto max-w-[1400px] px-5 pb-10 pt-16 lg:px-10 lg:pt-20">
+      <div className="mx-auto max-w-[1400px] px-5 pb-10 pt-16 lg:px-10 lg:pt-24">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col gap-6">
             <p className="font-display text-3xl font-light leading-snug text-noir lg:text-4xl">

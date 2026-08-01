@@ -35,7 +35,7 @@ export default function AboutPage() {
       />
 
       <section className="border-y border-hairline bg-ivory/50">
-        <div className="mx-auto grid max-w-[1400px] gap-10 px-5 py-16 lg:grid-cols-3 lg:gap-0 lg:px-10 lg:py-24">
+        <div className="mx-auto grid max-w-[1400px] gap-10 px-5 py-20 lg:grid-cols-3 lg:gap-0 lg:px-10 lg:py-28">
           {PRINCIPLES.map((p, i) => (
             <div
               key={p.title}
@@ -44,7 +44,7 @@ export default function AboutPage() {
               <span className="font-display text-sm tracking-[0.3em] text-champagne">
                 0{i + 1}
               </span>
-              <h2 className="font-display text-2xl font-light text-noir">
+              <h2 className="font-display text-3xl font-light text-noir">
                 {p.title}
               </h2>
               <p className="max-w-sm text-sm leading-relaxed text-stone">
@@ -55,11 +55,11 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <div className="overflow-hidden py-10" aria-hidden>
+      <div className="overflow-hidden py-12" aria-hidden>
         <Marquee slow>
           <span className="flex items-center gap-16 pr-16 font-display text-4xl font-light text-noir/25 lg:text-5xl">
             <span>Made to be kept</span>
-            <span className="text-champagne/60">✦</span>
+            <span className="h-px w-16 bg-champagne/60" />
           </span>
         </Marquee>
       </div>
@@ -67,14 +67,14 @@ export default function AboutPage() {
       <section className="mx-auto max-w-[1400px] px-5 pb-24 lg:px-10">
         <div className="grid gap-8 border-t border-hairline pt-12 lg:grid-cols-2">
           <div>
-            <h2 className="font-display text-3xl font-light text-noir">
+            <h2 className="font-display text-3xl font-light text-noir lg:text-4xl">
               Correspondence
             </h2>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone">
               Letters from the maison are answered by people, within a day.
             </p>
           </div>
-          <div className="flex flex-col gap-2 text-sm">
+          <div className="flex flex-col gap-3 text-sm leading-relaxed">
             <a
               href={`mailto:${SITE.email}`}
               className="w-fit text-noir underline-offset-8 transition-colors hover:text-champagne focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne"
