@@ -66,7 +66,7 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
             Quick Add
           </button>
         ) : (
-          <span className="absolute inset-x-0 bottom-0 flex h-11 items-center justify-center bg-sand/90 text-[0.625rem] font-medium uppercase tracking-[0.3em] text-taupe backdrop-blur-sm">
+          <span className="absolute inset-x-0 bottom-0 flex h-11 items-center justify-center bg-sand/90 text-[0.625rem] font-medium uppercase tracking-[0.3em] text-taupe backdrop-blur-sm" role="status" aria-live="polite">
             Sold Out
           </span>
         )}

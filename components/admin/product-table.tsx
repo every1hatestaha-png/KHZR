@@ -70,7 +70,7 @@ export function ProductTable({ products }: ProductTableProps) {
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
-        <BoxesIcon className="size-6 text-taupe" />
+        <BoxesIcon className="size-6 text-taupe" aria-hidden />
         <p className="font-display text-2xl font-light text-noir">
           No products match.
         </p>
@@ -84,15 +84,16 @@ export function ProductTable({ products }: ProductTableProps) {
   return (
     <>
       <div className="overflow-x-auto border border-hairline">
-        <table className="w-full min-w-[860px] text-left text-sm">
+        <table className="w-full min-w-[860px] text-left text-sm" role="table">
+          <caption className="sr-only">Products</caption>
           <thead>
             <tr className="border-b border-hairline bg-ivory/60 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
-              <th className="px-4 py-3 font-medium">Product</th>
-              <th className="px-4 py-3 font-medium">Price</th>
-              <th className="px-4 py-3 font-medium">Stock</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 text-center font-medium">Featured</th>
-              <th className="px-4 py-3 text-right font-medium">Actions</th>
+              <th scope="col" className="px-4 py-3 font-medium">Product</th>
+              <th scope="col" className="px-4 py-3 font-medium">Price</th>
+              <th scope="col" className="px-4 py-3 font-medium">Stock</th>
+              <th scope="col" className="px-4 py-3 font-medium">Status</th>
+              <th scope="col" className="px-4 py-3 text-center font-medium">Featured</th>
+              <th scope="col" className="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -117,7 +118,7 @@ export function ProductTable({ products }: ProductTableProps) {
                           height={44}
                         />
                       ) : (
-                        <BoxesIcon className="size-4 text-taupe" />
+                        <BoxesIcon className="size-4 text-taupe" aria-hidden />
                       )}
                     </span>
                     <span className="min-w-0">
@@ -167,7 +168,7 @@ export function ProductTable({ products }: ProductTableProps) {
                     className="inline-flex size-9 items-center justify-center transition-colors duration-300 ease-lux hover:bg-noir/[0.05] disabled:opacity-50"
                   >
                     {busyId === p.id ? (
-                      <Loader2Icon className="size-4 animate-spin text-taupe" />
+                      <Loader2Icon className="size-4 animate-spin text-taupe" aria-hidden />
                     ) : (
                       <StarIcon
                         className={cn(
@@ -176,6 +177,7 @@ export function ProductTable({ products }: ProductTableProps) {
                             ? "fill-champagne text-champagne"
                             : "text-taupe/60"
                         )}
+                        aria-hidden
                       />
                     )}
                   </button>
@@ -187,7 +189,7 @@ export function ProductTable({ products }: ProductTableProps) {
                         href={`/admin/products/${p.slug}`}
                         aria-label={`Edit ${p.name}`}
                       >
-                        <PencilIcon />
+                        <PencilIcon aria-hidden />
                       </Link>
                     </Button>
                     <Button
@@ -197,7 +199,7 @@ export function ProductTable({ products }: ProductTableProps) {
                       onClick={() => setPendingDelete(p)}
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     >
-                      <TrashIcon />
+                      <TrashIcon aria-hidden />
                     </Button>
                   </div>
                 </td>
@@ -226,9 +228,9 @@ export function ProductTable({ products }: ProductTableProps) {
               onClick={handleDelete}
             >
               {busyId === pendingDelete?.id ? (
-                <Loader2Icon className="size-4 animate-spin" />
+                <Loader2Icon className="size-4 animate-spin" aria-hidden />
               ) : (
-                <TrashIcon />
+                <TrashIcon aria-hidden />
               )}
               Delete product
             </Button>

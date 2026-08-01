@@ -60,11 +60,12 @@ export function ProductFilters({
         className="flex w-full items-center gap-2"
       >
         <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-taupe" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-taupe" aria-hidden />
           <Input
             name="q"
             defaultValue={query}
             placeholder="Search by name, SKU or slug…"
+            aria-label="Search products"
             className="h-10 rounded-none border-hairline bg-card pl-9"
           />
         </div>
@@ -74,9 +75,9 @@ export function ProductFilters({
       </form>
 
       <div className="flex flex-wrap items-center gap-2">
-        <SlidersHorizontalIcon className="size-4 text-taupe" />
+        <SlidersHorizontalIcon className="size-4 text-taupe" aria-hidden />
         <Select value={status || "all"} onValueChange={(v) => push({ status: v === "all" ? undefined : v })}>
-          <SelectTrigger className="h-9 rounded-none border-hairline bg-card">
+          <SelectTrigger aria-label="Filter by status" className="h-9 rounded-none border-hairline bg-card">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -91,7 +92,7 @@ export function ProductFilters({
           value={collection || "all"}
           onValueChange={(v) => push({ collection: v === "all" ? undefined : v })}
         >
-          <SelectTrigger className="h-9 rounded-none border-hairline bg-card">
+          <SelectTrigger aria-label="Filter by collection" className="h-9 rounded-none border-hairline bg-card">
             <SelectValue placeholder="Collection" />
           </SelectTrigger>
           <SelectContent>
@@ -108,7 +109,7 @@ export function ProductFilters({
           value={featured || "all"}
           onValueChange={(v) => push({ featured: v === "all" ? undefined : v })}
         >
-          <SelectTrigger className="h-9 rounded-none border-hairline bg-card">
+          <SelectTrigger aria-label="Filter by featured" className="h-9 rounded-none border-hairline bg-card">
             <SelectValue placeholder="Featured" />
           </SelectTrigger>
           <SelectContent>

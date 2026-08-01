@@ -49,7 +49,7 @@ export default async function AdminDashboardPage() {
           description="Catalogue, orders, campaigns and content management."
         />
         <section className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
-          <TriangleAlertIcon className="size-6 text-taupe" />
+          <TriangleAlertIcon className="size-6 text-taupe" aria-hidden />
           <p className="font-display text-2xl font-light text-noir">
             The database is not reachable.
           </p>
@@ -105,14 +105,15 @@ export default async function AdminDashboardPage() {
         </div>
 
         <div className="overflow-x-auto border border-hairline">
-          <table className="w-full min-w-[720px] text-left text-sm">
+          <table className="w-full min-w-[720px] text-left text-sm" role="table">
+            <caption className="sr-only">Recently added products</caption>
             <thead>
               <tr className="border-b border-hairline bg-ivory/60 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Stock</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Added</th>
+                <th scope="col" className="px-4 py-3 font-medium">Product</th>
+                <th scope="col" className="px-4 py-3 font-medium">Price</th>
+                <th scope="col" className="px-4 py-3 font-medium">Stock</th>
+                <th scope="col" className="px-4 py-3 font-medium">Status</th>
+                <th scope="col" className="px-4 py-3 font-medium">Added</th>
               </tr>
             </thead>
             <tbody>
@@ -137,7 +138,7 @@ export default async function AdminDashboardPage() {
                             height={40}
                           />
                         ) : (
-                          <BoxesIcon className="size-4 text-taupe" />
+                          <BoxesIcon className="size-4 text-taupe" aria-hidden />
                         )}
                       </span>
                       <span className="min-w-0">
@@ -224,7 +225,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <p className="flex items-center gap-2 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
-        <SparklesIcon className="size-3.5" />
+        <SparklesIcon className="size-3.5" aria-hidden />
         The storefront renders live from this catalogue.
       </p>
     </>

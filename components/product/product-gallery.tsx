@@ -18,9 +18,10 @@ export function ProductGallery({
 
   if (images.length === 0) return null
   const current = images[Math.min(index, images.length - 1)]
+  const currentAlt = `${alt} — view ${index + 1} of ${images.length}`
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4" role="region" aria-label="Product gallery">
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-ivory">
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div
@@ -33,7 +34,7 @@ export function ProductGallery({
           >
             <LazyImage
               src={current}
-              alt={alt}
+              alt={currentAlt}
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />

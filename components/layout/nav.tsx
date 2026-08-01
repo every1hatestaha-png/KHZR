@@ -41,6 +41,7 @@ function NavLink({
   return (
     <Link
       href={href}
+      aria-current={active ? "page" : undefined}
       className={cn(
         "group relative inline-flex items-center py-2 text-[0.6875rem] font-medium uppercase tracking-[0.26em] text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne",
         active && "text-noir"
@@ -80,16 +81,18 @@ export function Nav({ className }: { className?: string }) {
         >
           <NavLink href="/collections" label="Collections" active={isCollections} />
           <div
+            role="menu"
             className={cn(
               "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 shadow-[0_24px_48px_-24px_rgba(18,17,16,0.18)] backdrop-blur-md transition-all duration-500 ease-lux",
               mega && "visible opacity-100"
             )}
           >
             <div className="mx-auto grid max-w-6xl grid-cols-[1fr_1.4fr] gap-10 px-8 py-10">
-              <ul className="flex flex-col">
-                <li>
+              <ul className="flex flex-col" role="none">
+                <li role="none">
                   <Link
                     href="/collections"
+                    role="menuitem"
                     className="group flex flex-col gap-1 border-b border-hairline py-3.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
                     tabIndex={mega ? 0 : -1}
                     onMouseDown={() => setMega(false)}
@@ -103,9 +106,10 @@ export function Nav({ className }: { className?: string }) {
                   </Link>
                 </li>
                 {COLLECTION_MENU.map((c) => (
-                  <li key={c.slug}>
+                  <li key={c.slug} role="none">
                     <Link
                       href={`/collection/${c.slug}`}
+                      role="menuitem"
                       className="group flex flex-col gap-1 border-b border-hairline py-3.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
                       tabIndex={mega ? 0 : -1}
                       onMouseDown={() => setMega(false)}

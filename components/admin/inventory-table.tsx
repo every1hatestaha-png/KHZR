@@ -72,7 +72,7 @@ export function InventoryTable({
 
       {products.length === 0 ? (
         <div className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
-          <BoxesIcon className="size-6 text-taupe" />
+          <BoxesIcon className="size-6 text-taupe" aria-hidden />
           <p className="font-display text-2xl font-light text-noir">
             Nothing to count yet.
           </p>
@@ -100,7 +100,7 @@ export function InventoryTable({
                     height={48}
                   />
                 ) : (
-                  <BoxesIcon className="size-4 text-taupe" />
+                  <BoxesIcon className="size-4 text-taupe" aria-hidden />
                 )}
               </span>
               <div>
@@ -133,15 +133,18 @@ export function InventoryTable({
           </header>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-sm">
+            <table className="w-full min-w-[640px] text-left text-sm" role="table">
+              <caption className="sr-only">
+                Stock by size and colour for {product.name}
+              </caption>
               <thead>
                 <tr className="border-b border-hairline text-[0.625rem] uppercase tracking-[0.22em] text-taupe">
-                  <th className="px-4 py-2.5 font-medium sm:px-5">Size</th>
-                  <th className="px-4 py-2.5 font-medium sm:px-5">Colour</th>
-                  <th className="px-4 py-2.5 font-medium sm:px-5">SKU</th>
-                  <th className="px-4 py-2.5 font-medium sm:px-5">Low at</th>
-                  <th className="px-4 py-2.5 font-medium sm:px-5">Stock</th>
-                  <th className="px-4 py-2.5 text-center font-medium sm:px-5">
+                  <th scope="col" className="px-4 py-2.5 font-medium sm:px-5">Size</th>
+                  <th scope="col" className="px-4 py-2.5 font-medium sm:px-5">Colour</th>
+                  <th scope="col" className="px-4 py-2.5 font-medium sm:px-5">SKU</th>
+                  <th scope="col" className="px-4 py-2.5 font-medium sm:px-5">Low at</th>
+                  <th scope="col" className="px-4 py-2.5 font-medium sm:px-5">Stock</th>
+                  <th scope="col" className="px-4 py-2.5 text-center font-medium sm:px-5">
                     Active
                   </th>
                 </tr>

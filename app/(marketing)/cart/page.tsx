@@ -40,9 +40,9 @@ export default function CartPage() {
         <p className="mt-3 text-sm text-taupe">{SITE.shippingNote}</p>
       </header>
 
-      {lines.length === 0 ? (
+{lines.length === 0 ? (
         <div className="flex flex-col items-center gap-6 py-28 text-center">
-          <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" />
+          <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
           <div className="flex flex-col gap-1">
             <p className="font-display text-2xl font-light text-noir">
               Your selection is empty
@@ -103,6 +103,7 @@ export default function CartPage() {
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="Promo code"
                 className="h-11 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
+                aria-label="Discount code"
               />
               <Button
                 type="submit"
@@ -153,7 +154,7 @@ export default function CartPage() {
                 </dd>
               </div>
               <div className="flex items-center justify-between">
-                <dt className="text-taupe">Duties &amp; taxes</dt>
+                <dt className="text-taupe">Duties & taxes</dt>
                 <dd className="text-stone">Calculated at checkout</dd>
               </div>
               <div className="flex items-center justify-between border-t border-hairline pt-4">

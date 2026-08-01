@@ -42,11 +42,12 @@ export function NewsletterForm({ className }: { className?: string }) {
       onSubmit={onSubmit}
       className={cn("flex items-end gap-3", className)}
     >
-      <label className="flex flex-1 flex-col gap-2">
+      <label htmlFor="newsletter-email" className="flex flex-1 flex-col gap-2">
         <span className="text-[0.625rem] uppercase tracking-[0.28em] text-taupe">
           Email
         </span>
         <input
+          id="newsletter-email"
           type="email"
           required
           value={email}

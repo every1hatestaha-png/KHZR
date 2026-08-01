@@ -46,11 +46,10 @@ export function CartDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
-      <SheetContent
-        side="right"
-        className="w-full max-w-md gap-0 border-l-hairline bg-background p-0"
-        aria-describedby={undefined}
-      >
+<SheetContent
+          side="right"
+          className="w-full max-w-md gap-0 border-l-hairline bg-background p-0"
+        >
         <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-7 py-6">
           <SheetTitle className="font-display text-2xl font-light text-noir">
             Your Selection
@@ -64,7 +63,7 @@ export function CartDrawer() {
 
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-5 px-8 py-20 text-center">
-            <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" />
+            <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
             <div className="flex flex-col gap-1">
               <p className="font-display text-xl font-light text-noir">
                 Your selection is empty
@@ -90,7 +89,7 @@ export function CartDrawer() {
                 </span>
                 <span>{Math.round(progress)}%</span>
               </div>
-              <div className="mt-3 h-px w-full bg-sand" role="presentation">
+              <div className="mt-3 h-px w-full bg-sand" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Free shipping progress">
                 <div
                   className={cn(
                     "h-px bg-champagne transition-all duration-700 ease-lux",
@@ -119,6 +118,7 @@ export function CartDrawer() {
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Promo code"
                   className="h-10 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
+                  aria-label="Discount code"
                 />
                 <Button
                   type="submit"

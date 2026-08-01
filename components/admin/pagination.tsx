@@ -41,10 +41,11 @@ export function Pagination({ page, totalPages, basePath, params }: PaginationPro
     >
       <Link
         aria-label="Previous page"
+        aria-disabled={page <= 1}
         className={linkClasses(page <= 1)}
         href={pageHref(basePath, params, Math.max(1, page - 1))}
       >
-        <ChevronLeftIcon className="size-4" />
+        <ChevronLeftIcon className="size-4" aria-hidden />
       </Link>
 
       {pages.map((p) => (
@@ -63,10 +64,11 @@ export function Pagination({ page, totalPages, basePath, params }: PaginationPro
 
       <Link
         aria-label="Next page"
+        aria-disabled={page >= totalPages}
         className={linkClasses(page >= totalPages)}
         href={pageHref(basePath, params, Math.min(totalPages, page + 1))}
       >
-        <ChevronRightIcon className="size-4" />
+        <ChevronRightIcon className="size-4" aria-hidden />
       </Link>
     </nav>
   )

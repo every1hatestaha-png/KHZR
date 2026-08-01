@@ -67,7 +67,7 @@ export default function CheckoutPage() {
 
       {lines.length === 0 ? (
         <div className="flex flex-col items-center gap-6 py-28 text-center">
-          <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" />
+          <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
           <p className="font-display text-2xl font-light text-noir">
             Your selection is empty
           </p>
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={line.imageUrl}
-                        alt=""
+                        alt={`${line.name} - ${line.color} / ${line.size}`}
                         className="size-full object-cover"
                       />
                     ) : null}

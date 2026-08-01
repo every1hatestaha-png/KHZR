@@ -33,7 +33,7 @@ export default async function CheckoutCancelPage({
         description="No amount has been taken and your selection is still waiting in your bag. You may retry whenever you are ready."
         align="center"
       >
-        <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" />
+        <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
       </PageIntro>
 
       <section className="flex items-center justify-center gap-4 border-t border-hairline px-5 py-16">

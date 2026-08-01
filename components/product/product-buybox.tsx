@@ -133,12 +133,12 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
               <span className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
                 Colour
               </span>
-              <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
+              <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe" aria-live="polite">
                 {selectedVariant?.color ?? "Select a colour"}
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div role="radiogroup" aria-label="Colour" className="flex flex-wrap gap-2">
               {colors.map((color) => {
                 const available =
                   product.variants.filter(
@@ -155,8 +155,9 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
                   <button
                     key={color}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     disabled={!available}
-                    aria-pressed={isSelected}
                     onClick={() => selectColor(color)}
                     className={cn(
                       "flex h-11 items-center gap-2 border px-4 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
@@ -169,7 +170,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
                   >
                     {swatch ? (
                       <span
-                        aria-hidden
+                        aria-label={`${color} swatch`}
                         className="size-3 rounded-full border border-black/10"
                         style={{ backgroundColor: swatch }}
                       />
@@ -187,12 +188,12 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
             <span className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
               Size
             </span>
-            <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
+            <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe" aria-live="polite">
               {selectedVariant?.size ?? "Select a size"}
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div role="radiogroup" aria-label="Size" className="flex flex-wrap gap-2">
             {sizes.map((size) => {
               const available =
                 product.variants.filter(
@@ -206,8 +207,9 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
                 <button
                   key={size}
                   type="button"
+                  role="radio"
+                  aria-checked={isSelected}
                   disabled={!available}
-                  aria-pressed={isSelected}
                   onClick={() => selectSize(size)}
                   className={cn(
                     "h-11 min-w-11 border px-3 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",

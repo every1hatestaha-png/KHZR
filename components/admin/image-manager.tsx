@@ -160,7 +160,7 @@ export function ImageManager({ value, onChange, disabled }: ImageManagerProps) {
 
         {value.length === 0 ? (
           <div className="flex aspect-[4/5] flex-col items-center justify-center gap-3 border border-dashed border-input bg-card px-6 text-center sm:col-span-2 lg:col-span-3">
-            <ImageIcon className="size-6 text-taupe" />
+            <ImageIcon className="size-6 text-taupe" aria-hidden />
             <p className="text-sm text-stone">
               No images yet. Upload a file, or paste an image URL below.
             </p>

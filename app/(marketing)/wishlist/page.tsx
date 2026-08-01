@@ -41,7 +41,7 @@ export default function WishlistPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center gap-6 py-28 text-center">
-          <Heart className="size-8 stroke-[1.25] text-taupe/60" />
+          <Heart className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
           <div className="flex flex-col gap-1">
             <p className="font-display text-2xl font-light text-noir">
               Nothing saved yet

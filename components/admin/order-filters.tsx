@@ -53,11 +53,12 @@ export function OrderFilters({
         className="flex w-full items-center gap-2"
       >
         <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-taupe" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-taupe" aria-hidden />
           <Input
             name="q"
             defaultValue={query}
             placeholder="Search by order number, email or note…"
+            aria-label="Search orders"
             className="h-10 rounded-none border-hairline bg-card pl-9"
           />
         </div>
@@ -67,12 +68,12 @@ export function OrderFilters({
       </form>
 
       <div className="flex flex-wrap items-center gap-2">
-        <SlidersHorizontalIcon className="size-4 text-taupe" />
+        <SlidersHorizontalIcon className="size-4 text-taupe" aria-hidden />
         <Select
           value={status || "all"}
           onValueChange={(v) => push({ status: v === "all" ? undefined : v })}
         >
-          <SelectTrigger className="h-9 rounded-none border-hairline bg-card">
+          <SelectTrigger aria-label="Filter by status" className="h-9 rounded-none border-hairline bg-card">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -93,7 +94,7 @@ export function OrderFilters({
             push({ paymentStatus: v === "all" ? undefined : v })
           }
         >
-          <SelectTrigger className="h-9 rounded-none border-hairline bg-card">
+          <SelectTrigger aria-label="Filter by payment" className="h-9 rounded-none border-hairline bg-card">
             <SelectValue placeholder="Payment" />
           </SelectTrigger>
           <SelectContent>

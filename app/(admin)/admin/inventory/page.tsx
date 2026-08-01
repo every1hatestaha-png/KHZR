@@ -20,7 +20,7 @@ export default async function AdminInventoryPage() {
 
       {!inventory ? (
         <section className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
-          <TriangleAlertIcon className="size-6 text-taupe" />
+          <TriangleAlertIcon className="size-6 text-taupe" aria-hidden />
           <p className="font-display text-2xl font-light text-noir">
             The stockroom is not reachable.
           </p>

@@ -104,9 +104,9 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
           onClick={() => void resendEmail()}
         >
           {emailBusy ? (
-            <Loader2Icon className="size-4 animate-spin" />
+            <Loader2Icon className="size-4 animate-spin" aria-hidden />
           ) : (
-            <MailIcon className="size-4" />
+            <MailIcon className="size-4" aria-hidden />
           )}
           Resend confirmation
         </Button>
@@ -122,9 +122,9 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
             onValueChange={(v) => void changeStatus(v)}
             disabled={statusBusy}
           >
-            <SelectTrigger className="h-10 rounded-none border-hairline bg-card">
+            <SelectTrigger aria-label="Order status" className="h-10 rounded-none border-hairline bg-card">
               {statusBusy ? (
-                <Loader2Icon className="size-4 animate-spin text-taupe" />
+                <Loader2Icon className="size-4 animate-spin text-taupe" aria-hidden />
               ) : (
                 <SelectValue />
               )}
@@ -148,9 +148,9 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
             onValueChange={(v) => void changeFulfillment(v)}
             disabled={fulfillmentBusy || terminal}
           >
-            <SelectTrigger className="h-10 rounded-none border-hairline bg-card">
+            <SelectTrigger aria-label="Fulfillment" className="h-10 rounded-none border-hairline bg-card">
               {fulfillmentBusy ? (
-                <Loader2Icon className="size-4 animate-spin text-taupe" />
+                <Loader2Icon className="size-4 animate-spin text-taupe" aria-hidden />
               ) : (
                 <SelectValue />
               )}

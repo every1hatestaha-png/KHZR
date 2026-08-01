@@ -14,7 +14,7 @@ export function OrderTable({ orders }: OrderTableProps) {
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
-        <SearchXIcon className="size-6 text-taupe" />
+        <SearchXIcon className="size-6 text-taupe" aria-hidden />
         <p className="font-display text-2xl font-light text-noir">
           No orders match.
         </p>
@@ -27,15 +27,16 @@ export function OrderTable({ orders }: OrderTableProps) {
 
   return (
     <div className="overflow-x-auto border border-hairline">
-      <table className="w-full min-w-[880px] text-left text-sm">
+      <table className="w-full min-w-[880px] text-left text-sm" role="table">
+        <caption className="sr-only">Orders</caption>
         <thead>
           <tr className="border-b border-hairline bg-ivory/60 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
-            <th className="px-4 py-3 font-medium">Order</th>
-            <th className="px-4 py-3 font-medium">Email</th>
-            <th className="px-4 py-3 font-medium">Items</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Payment</th>
-            <th className="px-4 py-3 text-right font-medium">Total</th>
+            <th scope="col" className="px-4 py-3 font-medium">Order</th>
+            <th scope="col" className="px-4 py-3 font-medium">Email</th>
+            <th scope="col" className="px-4 py-3 font-medium">Items</th>
+            <th scope="col" className="px-4 py-3 font-medium">Status</th>
+            <th scope="col" className="px-4 py-3 font-medium">Payment</th>
+            <th scope="col" className="px-4 py-3 text-right font-medium">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -50,7 +51,7 @@ export function OrderTable({ orders }: OrderTableProps) {
                   className="group flex flex-col gap-0.5"
                 >
                   <span className="inline-flex items-center gap-2 font-medium text-noir transition-colors group-hover:text-stone">
-                    <FileTextIcon className="size-3.5 text-taupe" />
+                    <FileTextIcon className="size-3.5 text-taupe" aria-hidden />
                     {order.orderNumber}
                   </span>
                   <span className="text-xs text-taupe">

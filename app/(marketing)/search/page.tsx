@@ -21,6 +21,11 @@ export default function SearchPage() {
           The index is being compiled.
         </p>
       </section>
+      <section className="mx-auto max-w-[1400px] px-5 py-20 lg:px-10" aria-live="polite" aria-atomic="true">
+        <p className="text-sm text-taupe text-center">
+          Please check back soon for full-text search functionality.
+        </p>
+      </section>
     </>
   )
 }

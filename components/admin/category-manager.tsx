@@ -151,7 +151,7 @@ export function CategoryManager({
 
       {categories.length === 0 ? (
         <div className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
-          <FolderIcon className="size-6 text-taupe" />
+          <FolderIcon className="size-6 text-taupe" aria-hidden />
           <p className="font-display text-2xl font-light text-noir">
             No categories yet.
           </p>
@@ -180,7 +180,7 @@ export function CategoryManager({
                         height={48}
                       />
                     ) : (
-                      <FolderIcon className="size-5 text-taupe" />
+                      <FolderIcon className="size-5 text-taupe" aria-hidden />
                     )}
                   </span>
                   <div>
@@ -193,7 +193,7 @@ export function CategoryManager({
                   </div>
                 </div>
                 {c.isFeatured ? (
-                  <StarIcon className="size-4 shrink-0 fill-champagne text-champagne" />
+                  <StarIcon className="size-4 shrink-0 fill-champagne text-champagne" aria-hidden />
                 ) : null}
               </div>
 

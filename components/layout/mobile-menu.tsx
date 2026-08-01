@@ -22,11 +22,10 @@ export function MobileMenu({
 }) {
   return (
     <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
-      <SheetContent
-        side="left"
-        className="w-full max-w-sm gap-0 border-r-hairline bg-background p-0"
-        aria-describedby={undefined}
-      >
+<SheetContent
+          side="left"
+          className="w-full max-w-sm gap-0 border-r-hairline bg-background p-0"
+        >
         <SheetTitle className="sr-only">Menu</SheetTitle>
         <div className="flex h-16 items-center border-b border-hairline px-7">
           <span className="font-display text-xl tracking-[0.4em] text-noir">

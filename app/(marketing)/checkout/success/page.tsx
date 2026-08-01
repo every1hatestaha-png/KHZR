@@ -59,7 +59,10 @@ export default async function CheckoutSuccessPage({
         align="center"
       >
         {paid ? (
-          <span className="flex size-14 items-center justify-center rounded-full bg-champagne/20 text-champagne">
+          <span
+            aria-hidden
+            className="flex size-14 items-center justify-center rounded-full bg-champagne/20 text-champagne"
+          >
             <Check className="size-6" />
           </span>
         ) : null}
@@ -72,7 +75,7 @@ export default async function CheckoutSuccessPage({
             href="/collections"
             className="inline-flex items-center gap-2 text-[0.6875rem] uppercase tracking-[0.24em] text-taupe transition-colors hover:text-noir"
           >
-            <PackageSearch className="size-4" />
+            <PackageSearch className="size-4" aria-hidden />
             Continue exploring
           </Link>
         </div>
