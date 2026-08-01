@@ -14,6 +14,11 @@ const STATIC_ROUTES = [
   "/journal",
   "/about",
   "/contact",
+  "/privacy",
+  "/terms",
+  "/shipping-returns",
+  "/size-fit",
+  "/fabric-care",
 ]
 
 const FALLBACK_PRODUCT_SLUGS = FALLBACK_PRODUCTS.map((p) => p.slug)
@@ -29,19 +34,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (isDatabaseConfigured()) {
     try {
       const { prisma } = await import("@/lib/prisma")
-      const [products, collections, journal, lookbooks] = await Promise.all([
+      const [products, collections] = await Promise.all([
         prisma.product.findMany({
           where: { status: "ACTIVE" },
           select: { slug: true, updatedAt: true },
         }),
         prisma.collection.findMany({
-          select: { slug: true, updatedAt: true },
-        }),
-        prisma.journalPost.findMany({
-          where: { publishedAt: { not: null } },
-          select: { slug: true, updatedAt: true },
-        }),
-        prisma.lookbook.findMany({
           select: { slug: true, updatedAt: true },
         }),
       ])
@@ -58,18 +56,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: c.updatedAt,
           changeFrequency: "weekly" as const,
           priority: 0.8,
-        })),
-        ...journal.map((j) => ({
-          url: `${SITE.url}/journal/${j.slug}`,
-          lastModified: j.updatedAt,
-          changeFrequency: "monthly" as const,
-          priority: 0.5,
-        })),
-        ...lookbooks.map((l) => ({
-          url: `${SITE.url}/lookbook/${l.slug}`,
-          lastModified: l.updatedAt,
-          changeFrequency: "monthly" as const,
-          priority: 0.5,
         }))
       )
     } catch {

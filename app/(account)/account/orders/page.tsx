@@ -61,8 +61,7 @@ export default async function AccountOrdersPage() {
               No orders yet
             </p>
             <p className="max-w-md text-sm leading-relaxed text-stone">
-              Your purchases will appear here — begin with a single, considered
-              piece.
+              Your purchases will appear here — begin with a single piece.
             </p>
             <Button asChild variant="luxury-link">
               <Link href="/collections">Explore the Collections</Link>

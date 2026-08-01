@@ -4,7 +4,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
 export default function GlobalError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string }
@@ -20,7 +19,7 @@ export default function GlobalError({
         Something went wrong.
       </h1>
       <p className="max-w-md text-sm leading-relaxed text-stone">
-        {error.message || "Refresh the page or try again in a moment."}
+        Refresh the page or try again in a moment.
       </p>
       <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
         <Button onClick={reset}>Try Again</Button>

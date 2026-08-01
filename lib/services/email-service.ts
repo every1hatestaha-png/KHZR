@@ -168,7 +168,7 @@ export async function sendOrderConfirmationEmail(
   data: OrderEmailData
 ): Promise<boolean> {
   const body = [
-    `<div style="font-size:14px;line-height:1.7;color:#5C5248">Thank you for your order. Your pieces are being prepared by the atelier — you will receive a confirmation once they ship.</div>`,
+    `<div style="font-size:14px;line-height:1.7;color:#5C5248">Thank you for your order. We are preparing your pieces and will email you again once they ship.</div>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr><td style="padding-bottom:4px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">Order ${esc(data.orderNumber)}</td><td style="padding-bottom:4px;text-align:right;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">${esc(formatDate(data.createdAt))}</td></tr></table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines)}</table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">${totalsHtml(data)}</table>`,
@@ -190,7 +190,7 @@ export async function sendShippingConfirmationEmail(
   data: OrderEmailData
 ): Promise<boolean> {
   const body = [
-    `<div style="font-size:14px;line-height:1.7;color:#5C5248">Your order has been dispatched and is on its way. A considered journey, made to be kept.</div>`,
+    `<div style="font-size:14px;line-height:1.7;color:#5C5248">Your order has shipped and is on its way.</div>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr><td style="padding-bottom:4px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">Order ${esc(data.orderNumber)}</td></tr></table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines)}</table>`,
     data.shippingAddress

@@ -15,7 +15,7 @@ export default function SignUpPage() {
     <main className="mx-auto flex min-h-[70vh] max-w-[1400px] flex-col items-center justify-center gap-8 px-5 py-24 lg:px-10">
       <p className="flex items-center gap-3 text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
         <span className="h-px w-8 bg-champagne" aria-hidden />
-        Join the Maison
+        KHZR Account
       </p>
       <h1 className="font-display text-4xl font-light tracking-tight text-noir lg:text-5xl">
         Create an account.

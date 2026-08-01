@@ -39,9 +39,9 @@ export const FOOTER_LINKS = {
     { label: "Contact", href: "/contact" },
   ],
   client: [
-    { label: "Shipping & Returns", href: "/contact#shipping" },
-    { label: "Size & Fit", href: "/contact#size-guide" },
-    { label: "Care", href: "/contact#care" },
+    { label: "Shipping & Returns", href: "/shipping-returns" },
+    { label: "Size & Fit", href: "/size-fit" },
+    { label: "Care", href: "/fabric-care" },
   ],
 } as const
 

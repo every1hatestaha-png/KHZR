@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next"
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Cormorant_Garamond, Inter } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers/providers"
@@ -72,6 +74,8 @@ export default function RootLayout({
           Skip to content
         </a>
         <Providers>{children}</Providers>
+        <Analytics />
+        <SpeedInsights />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLdOrganization()) }}

@@ -25,7 +25,7 @@ export default async function AccountPage() {
       <>
         <PageIntro
           kicker="Your Account"
-          title="The maison, at your hand."
+          title="Your KHZR account."
           description="Orders, address book and saved pieces — secured by Clerk."
         />
         <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline px-5 py-20 text-center lg:px-10 lg:py-28">

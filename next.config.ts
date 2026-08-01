@@ -6,11 +6,11 @@ import type { NextConfig } from "next"
 // on inline scripts because Next.js inlines the app bootstrap.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://accounts.clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
+  "script-src 'self' 'unsafe-inline' https://accounts.clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://img.clerk.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://accounts.clerk.com https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com",
+  "connect-src 'self' https://accounts.clerk.com https://*.clerk.accounts.dev https://*.clerk.com https://challenges.cloudflare.com https://vitals.vercel-insights.com",
   "frame-src https://accounts.clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com",
   "frame-ancestors 'self'",
   "base-uri 'self'",
