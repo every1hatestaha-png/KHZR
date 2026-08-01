@@ -31,6 +31,16 @@ export const PAKISTAN_PAYMENT_METHODS = [
   "stripe",
 ] as const
 
+export const FULFILLMENT_STAGES = [
+  "pending",
+  "confirmed",
+  "packed",
+  "shipped",
+  "delivered",
+  "completed",
+  "cancelled",
+] as const
+
 export const createCheckoutSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name.").max(80),
   lastName: z.string().trim().min(1, "Enter your last name.").max(80),
@@ -71,8 +81,13 @@ export const orderFulfillmentUpdateSchema = z.object({
 
 export const adminOrderListParamsSchema = z.object({
   q: z.string().trim().max(120).optional(),
+  orderNumber: z.string().trim().max(40).optional(),
+  phone: z.string().trim().max(30).optional(),
   status: z.enum(ORDER_STATUSES).optional(),
   paymentStatus: z.enum(PAYMENT_STATUSES).optional(),
+  paymentMethod: z.enum(PAKISTAN_PAYMENT_METHODS).optional(),
+  from: z.string().trim().max(20).optional(),
+  to: z.string().trim().max(20).optional(),
   page: z.coerce.number().int().min(1).default(1),
   perPage: z.coerce.number().int().min(5).max(100).default(15),
 })
@@ -83,6 +98,28 @@ export const checkoutSessionIdSchema = z.object({
 
 export const checkoutOrderLookupSchema = z.object({
   order: z.string().min(1).max(40),
+})
+
+export const adminFulfillmentUpdateSchema = z.object({
+  orderNumber: z.string().min(1).max(40),
+  fulfillmentStage: z.enum(FULFILLMENT_STAGES),
+})
+
+export const adminPaymentWorkflowSchema = z.object({
+  orderNumber: z.string().min(1).max(40),
+})
+
+export const adminShippingUpdateSchema = z.object({
+  orderNumber: z.string().min(1).max(40),
+  courier: z.string().trim().max(120).optional().default(""),
+  trackingNumber: z.string().trim().max(120).optional().default(""),
+  shippingDate: z.string().trim().max(20).optional().default(""),
+  expectedDelivery: z.string().trim().max(20).optional().default(""),
+})
+
+export const adminInternalNotesSchema = z.object({
+  orderNumber: z.string().min(1).max(40),
+  internalNotes: z.string().trim().max(4000).optional().default(""),
 })
 
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>

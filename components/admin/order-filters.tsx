@@ -14,14 +14,24 @@ import {
 
 type OrderFiltersProps = {
   query: string
+  orderNumber: string
+  phone: string
   status: string
   paymentStatus: string
+  paymentMethod: string
+  from: string
+  to: string
 }
 
 export function OrderFilters({
   query,
+  orderNumber,
+  phone,
   status,
   paymentStatus,
+  paymentMethod,
+  from,
+  to,
 }: OrderFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -46,11 +56,13 @@ export function OrderFilters({
           const fd = new FormData(e.currentTarget)
           push({
             q: String(fd.get("q") ?? "").trim() || undefined,
-            status: undefined,
-            paymentStatus: undefined,
+            orderNumber: String(fd.get("orderNumber") ?? "").trim() || undefined,
+            phone: String(fd.get("phone") ?? "").trim() || undefined,
+            from: String(fd.get("from") ?? "").trim() || undefined,
+            to: String(fd.get("to") ?? "").trim() || undefined,
           })
         }}
-        className="flex w-full items-center gap-2"
+        className="grid w-full gap-2 lg:grid-cols-[1fr_160px_160px_150px_150px_auto]"
       >
         <div className="relative flex-1">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-taupe" aria-hidden />
@@ -62,6 +74,34 @@ export function OrderFilters({
             className="h-10 rounded-none border-hairline bg-card pl-9"
           />
         </div>
+        <Input
+          name="orderNumber"
+          defaultValue={orderNumber}
+          placeholder="Order number"
+          aria-label="Filter by order number"
+          className="h-10 rounded-none border-hairline bg-card"
+        />
+        <Input
+          name="phone"
+          defaultValue={phone}
+          placeholder="Customer phone"
+          aria-label="Filter by customer phone"
+          className="h-10 rounded-none border-hairline bg-card"
+        />
+        <Input
+          name="from"
+          type="date"
+          defaultValue={from}
+          aria-label="Filter from date"
+          className="h-10 rounded-none border-hairline bg-card"
+        />
+        <Input
+          name="to"
+          type="date"
+          defaultValue={to}
+          aria-label="Filter to date"
+          className="h-10 rounded-none border-hairline bg-card"
+        />
         <Button type="submit" variant="outline" className="h-10 rounded-none">
           Search
         </Button>
@@ -89,6 +129,24 @@ export function OrderFilters({
         </Select>
 
         <Select
+          value={paymentMethod || "all"}
+          onValueChange={(v) =>
+            push({ paymentMethod: v === "all" ? undefined : v })
+          }
+        >
+          <SelectTrigger aria-label="Filter by payment method" className="h-9 rounded-none border-hairline bg-card">
+            <SelectValue placeholder="Payment method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All methods</SelectItem>
+            <SelectItem value="cash_on_delivery">Cash on Delivery</SelectItem>
+            <SelectItem value="easypaisa">Easypaisa</SelectItem>
+            <SelectItem value="jazzcash">JazzCash</SelectItem>
+            <SelectItem value="stripe">Stripe</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
           value={paymentStatus || "all"}
           onValueChange={(v) =>
             push({ paymentStatus: v === "all" ? undefined : v })
@@ -106,12 +164,21 @@ export function OrderFilters({
           </SelectContent>
         </Select>
 
-        {query || status || paymentStatus ? (
+        {query || orderNumber || phone || status || paymentStatus || paymentMethod || from || to ? (
           <Button
             variant="ghost"
             className="h-9 rounded-none px-3"
             onClick={() =>
-              push({ q: undefined, status: undefined, paymentStatus: undefined })
+              push({
+                q: undefined,
+                orderNumber: undefined,
+                phone: undefined,
+                status: undefined,
+                paymentStatus: undefined,
+                paymentMethod: undefined,
+                from: undefined,
+                to: undefined,
+              })
             }
           >
             Clear

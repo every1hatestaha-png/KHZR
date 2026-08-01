@@ -261,6 +261,13 @@ model Order {
   shippingMethod   String?
   cartToken        String?
   customerNotes    String?
+  internalNotes    String?
+  fulfillmentStage String      @default("pending")
+  courier          String?
+  trackingNumber   String?
+  shippingDate     DateTime?
+  expectedDelivery DateTime?
+  paymentVerifiedAt DateTime?
   shippingAddressId String?
   billingAddressId String?
   paymentProvider  String      @default("stripe")
@@ -278,6 +285,8 @@ model Order {
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
+  @@index([paymentProvider, createdAt])
+  @@index([phone])
   @@index([cartToken])
   @@map("orders")
 }

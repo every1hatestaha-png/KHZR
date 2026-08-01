@@ -36,6 +36,7 @@ export type OrderSummaryDTO = {
   email: string | null
   phone: string | null
   paymentProvider: string
+  fulfillmentStage: string
   currency: string
   status: OrderStatus
   paymentStatus: PaymentStatus
@@ -52,6 +53,12 @@ export type OrderDetailDTO = OrderSummaryDTO & {
   discountTotal: number
   shippingMethod: string | null
   customerNotes: string | null
+  internalNotes: string | null
+  courier: string | null
+  trackingNumber: string | null
+  shippingDate: string | null
+  expectedDelivery: string | null
+  paymentVerifiedAt: string | null
   items: OrderItemDTO[]
   shippingAddress: OrderAddressDTO | null
   billingAddress: OrderAddressDTO | null
@@ -105,6 +112,7 @@ export function toOrderSummaryDTO(order: Order & { items: OrderItem[] }): OrderS
     email: order.email,
     phone: order.phone,
     paymentProvider: order.paymentProvider,
+    fulfillmentStage: order.fulfillmentStage,
     currency: order.currency,
     status: order.status,
     paymentStatus: order.paymentStatus,
@@ -130,6 +138,12 @@ export function toOrderDetailDTO(
     discountTotal: toMoney(order.discountTotal),
     shippingMethod: order.shippingMethod,
     customerNotes: order.customerNotes,
+    internalNotes: order.internalNotes,
+    courier: order.courier,
+    trackingNumber: order.trackingNumber,
+    shippingDate: order.shippingDate?.toISOString() ?? null,
+    expectedDelivery: order.expectedDelivery?.toISOString() ?? null,
+    paymentVerifiedAt: order.paymentVerifiedAt?.toISOString() ?? null,
     items: order.items.map(toOrderItemDTO),
     shippingAddress: toOrderAddressDTO(order.shippingAddress ?? null),
     billingAddress: toOrderAddressDTO(order.billingAddress ?? null),
@@ -152,8 +166,13 @@ export async function listAccountOrders(userId: string): Promise<OrderDetailDTO[
 
 export type AdminOrderFilters = {
   q?: string
+  orderNumber?: string
+  phone?: string
   status?: OrderStatus
   paymentStatus?: PaymentStatus
+  paymentMethod?: string
+  from?: string
+  to?: string
   page: number
   perPage: number
 }
@@ -169,15 +188,29 @@ export type AdminOrderListResult = {
 export async function listAdminOrders(
   filters: AdminOrderFilters
 ): Promise<AdminOrderListResult> {
+  const createdAt = {
+    ...(filters.from ? { gte: new Date(`${filters.from}T00:00:00.000Z`) } : {}),
+    ...(filters.to ? { lte: new Date(`${filters.to}T23:59:59.999Z`) } : {}),
+  }
   const where = {
     ...(filters.status ? { status: filters.status } : {}),
     ...(filters.paymentStatus ? { paymentStatus: filters.paymentStatus } : {}),
+    ...(filters.paymentMethod ? { paymentProvider: filters.paymentMethod } : {}),
+    ...(filters.orderNumber
+      ? { orderNumber: { contains: filters.orderNumber, mode: "insensitive" as const } }
+      : {}),
+    ...(filters.phone
+      ? { phone: { contains: filters.phone, mode: "insensitive" as const } }
+      : {}),
+    ...(Object.keys(createdAt).length ? { createdAt } : {}),
     ...(filters.q
       ? {
           OR: [
             { orderNumber: { contains: filters.q, mode: "insensitive" as const } },
             { email: { contains: filters.q, mode: "insensitive" as const } },
+            { phone: { contains: filters.q, mode: "insensitive" as const } },
             { customerNotes: { contains: filters.q, mode: "insensitive" as const } },
+            { internalNotes: { contains: filters.q, mode: "insensitive" as const } },
           ],
         }
       : {}),

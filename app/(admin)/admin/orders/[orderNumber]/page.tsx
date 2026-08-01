@@ -7,6 +7,17 @@ import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
 import { getAdminOrderDetail } from "@/lib/data-access/orders"
 
+function paymentMethodLabel(value: string): string {
+  if (value === "cash_on_delivery") return "Cash on Delivery"
+  if (value === "easypaisa") return "Easypaisa"
+  if (value === "jazzcash") return "JazzCash"
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function stageLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 export const metadata = {
   title: "Order",
 }
@@ -58,8 +69,32 @@ export default async function AdminOrderDetailPage({
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-        <OrderSummary order={order} />
+      <div className="grid gap-6 xl:grid-cols-[1fr_400px]">
+        <div className="flex flex-col gap-6">
+          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="border border-hairline bg-card p-5">
+              <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Customer</p>
+              <p className="mt-2 text-sm text-stone">{order.email || "No email"}</p>
+              <p className="mt-1 font-display text-xl text-noir">{order.phone || "No phone"}</p>
+            </div>
+            <div className="border border-hairline bg-card p-5">
+              <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Payment</p>
+              <p className="mt-2 font-display text-xl text-noir">{paymentMethodLabel(order.paymentProvider)}</p>
+              <p className="mt-1 text-sm text-stone">{order.paymentStatus}</p>
+            </div>
+            <div className="border border-hairline bg-card p-5">
+              <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Fulfillment</p>
+              <p className="mt-2 font-display text-xl text-noir">{stageLabel(order.fulfillmentStage)}</p>
+              <p className="mt-1 text-sm text-stone">{order.fulfillmentStatus}</p>
+            </div>
+            <div className="border border-hairline bg-card p-5">
+              <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Delivery</p>
+              <p className="mt-2 font-display text-xl text-noir">{order.courier || "Courier pending"}</p>
+              <p className="mt-1 text-sm text-stone">{order.trackingNumber || "No tracking number"}</p>
+            </div>
+          </section>
+          <OrderSummary order={order} />
+        </div>
         <div className="flex flex-col gap-6">
           <OrderStatusControl order={order} />
           <Button asChild variant="outline">

@@ -22,16 +22,26 @@ export default async function AdminOrdersPage({
     ? params.data
     : {
         q: undefined,
+        orderNumber: undefined,
+        phone: undefined,
         status: undefined,
         paymentStatus: undefined,
+        paymentMethod: undefined,
+        from: undefined,
+        to: undefined,
         page: 1,
         perPage: 15,
       }
 
   const list = await listAdminOrders({
     q: parsed.q,
+    orderNumber: parsed.orderNumber,
+    phone: parsed.phone,
     status: parsed.status,
     paymentStatus: parsed.paymentStatus,
+    paymentMethod: parsed.paymentMethod,
+    from: parsed.from,
+    to: parsed.to,
     page: parsed.page,
     perPage: parsed.perPage,
   })
@@ -46,8 +56,13 @@ export default async function AdminOrdersPage({
 
       <OrderFilters
         query={parsed.q ?? ""}
+        orderNumber={parsed.orderNumber ?? ""}
+        phone={parsed.phone ?? ""}
         status={parsed.status ?? ""}
         paymentStatus={parsed.paymentStatus ?? ""}
+        paymentMethod={parsed.paymentMethod ?? ""}
+        from={parsed.from ?? ""}
+        to={parsed.to ?? ""}
       />
 
       <OrderTable orders={list.orders} />
@@ -60,8 +75,13 @@ export default async function AdminOrdersPage({
         basePath="/admin/orders"
         params={{
           q: parsed.q,
+          orderNumber: parsed.orderNumber,
+          phone: parsed.phone,
           status: parsed.status,
           paymentStatus: parsed.paymentStatus,
+          paymentMethod: parsed.paymentMethod,
+          from: parsed.from,
+          to: parsed.to,
         }}
       />
     </>

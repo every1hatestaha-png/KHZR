@@ -10,6 +10,17 @@ type OrderTableProps = {
   orders: OrderSummaryDTO[]
 }
 
+function paymentMethodLabel(value: string): string {
+  if (value === "cash_on_delivery") return "COD"
+  if (value === "easypaisa") return "Easypaisa"
+  if (value === "jazzcash") return "JazzCash"
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function stageLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 export function OrderTable({ orders }: OrderTableProps) {
   if (orders.length === 0) {
     return (
@@ -35,7 +46,9 @@ export function OrderTable({ orders }: OrderTableProps) {
             <th scope="col" className="px-4 py-3 font-medium">Customer</th>
             <th scope="col" className="px-4 py-3 font-medium">Items</th>
             <th scope="col" className="px-4 py-3 font-medium">Status</th>
+            <th scope="col" className="px-4 py-3 font-medium">Method</th>
             <th scope="col" className="px-4 py-3 font-medium">Payment</th>
+            <th scope="col" className="px-4 py-3 font-medium">Fulfillment</th>
             <th scope="col" className="px-4 py-3 text-right font-medium">Total</th>
           </tr>
         </thead>
@@ -69,7 +82,15 @@ export function OrderTable({ orders }: OrderTableProps) {
                 <StatusBadge value={order.status} />
               </td>
               <td className="px-4 py-3">
+                <span className="text-xs uppercase tracking-[0.18em] text-taupe">
+                  {paymentMethodLabel(order.paymentProvider)}
+                </span>
+              </td>
+              <td className="px-4 py-3">
                 <StatusBadge value={order.paymentStatus} />
+              </td>
+              <td className="px-4 py-3 whitespace-nowrap text-taupe">
+                {stageLabel(order.fulfillmentStage)}
               </td>
               <td className="px-4 py-3 text-right font-display text-lg text-noir">
                 {formatMoney(order.total)}

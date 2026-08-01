@@ -17,6 +17,10 @@ import {
   sendShippingConfirmationEmail,
 } from "@/lib/services/email-service"
 import {
+  adminFulfillmentUpdateSchema,
+  adminInternalNotesSchema,
+  adminPaymentWorkflowSchema,
+  adminShippingUpdateSchema,
   orderFulfillmentUpdateSchema,
   orderStatusUpdateSchema,
 } from "@/lib/validations/checkout"
@@ -33,6 +37,27 @@ const STATUS_LABELS: Record<string, string> = {
   DELIVERED: "Delivered",
   CANCELLED: "Cancelled",
   REFUNDED: "Refunded",
+}
+
+const FULFILLMENT_STAGE_LABELS: Record<string, string> = {
+  pending: "Pending",
+  confirmed: "Confirmed",
+  packed: "Packed",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  completed: "Completed",
+  cancelled: "Cancelled",
+}
+
+function revalidateOrder(orderNumber: string) {
+  revalidatePath("/admin/orders")
+  revalidatePath(`/admin/orders/${orderNumber}`)
+}
+
+function parseDate(value: string): Date | null {
+  if (!value) return null
+  const date = new Date(`${value}T00:00:00.000Z`)
+  return Number.isNaN(date.getTime()) ? null : date
 }
 
 async function loadOrderForEmail(orderNumber: string) {
@@ -61,8 +86,7 @@ export async function updateOrderStatusAction(
       if (order.providerPaymentId && order.paymentStatus === "PAID") {
         await refundPayment(order.providerPaymentId)
       }
-      revalidatePath("/admin/orders")
-      revalidatePath(`/admin/orders/${orderNumber}`)
+      revalidateOrder(orderNumber)
       return { ok: true, orderNumber, message: "Order cancelled." }
     }
 
@@ -75,8 +99,7 @@ export async function updateOrderStatusAction(
       if (full) {
         await sendOrderStatusEmail(toOrderEmailData(full), "Refunded")
       }
-      revalidatePath("/admin/orders")
-      revalidatePath(`/admin/orders/${orderNumber}`)
+      revalidateOrder(orderNumber)
       return { ok: true, orderNumber, message: "Order refunded." }
     }
 
@@ -96,8 +119,7 @@ export async function updateOrderStatusAction(
       }
     }
 
-    revalidatePath("/admin/orders")
-    revalidatePath(`/admin/orders/${orderNumber}`)
+    revalidateOrder(orderNumber)
     return {
       ok: true,
       orderNumber,
@@ -135,11 +157,133 @@ export async function updateOrderFulfillmentAction(
       }
     }
     await setFulfillmentStatus(order, fulfillmentStatus)
-    revalidatePath("/admin/orders")
-    revalidatePath(`/admin/orders/${orderNumber}`)
+    revalidateOrder(orderNumber)
     return { ok: true, orderNumber, message: "Fulfillment updated." }
   } catch {
     return { ok: false, error: "Fulfillment could not be updated." }
+  }
+}
+
+export async function updateFulfillmentStageAction(
+  input: unknown
+): Promise<OrderActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+
+  const parsed = adminFulfillmentUpdateSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "The fulfillment update could not be read." }
+  const { orderNumber, fulfillmentStage } = parsed.data
+
+  try {
+    const order = await prisma.order.findUnique({ where: { orderNumber } })
+    if (!order) return { ok: false, error: "Order not found." }
+
+    if (fulfillmentStage === "cancelled") {
+      await cancelOrder(orderNumber)
+      await prisma.order.update({
+        where: { orderNumber },
+        data: { fulfillmentStage: "cancelled" },
+      })
+    } else {
+      await prisma.order.update({
+        where: { orderNumber },
+        data: {
+          fulfillmentStage,
+          ...(fulfillmentStage === "confirmed" ? { status: "CONFIRMED" as const } : {}),
+          ...(fulfillmentStage === "packed"
+            ? { fulfillmentStatus: "PARTIALLY_FULFILLED" as const }
+            : {}),
+          ...(fulfillmentStage === "shipped"
+            ? { status: "SHIPPED" as const, fulfillmentStatus: "FULFILLED" as const }
+            : {}),
+          ...(fulfillmentStage === "delivered" ? { status: "DELIVERED" as const } : {}),
+          ...(fulfillmentStage === "completed"
+            ? { status: "FULFILLED" as const, fulfillmentStatus: "FULFILLED" as const }
+            : {}),
+        },
+      })
+    }
+
+    revalidateOrder(orderNumber)
+    return {
+      ok: true,
+      orderNumber,
+      message: `Fulfillment moved to ${FULFILLMENT_STAGE_LABELS[fulfillmentStage]}.`,
+    }
+  } catch (err) {
+    console.error("[admin] fulfillment stage failed:", err)
+    return { ok: false, error: "Fulfillment could not be updated." }
+  }
+}
+
+export async function markPaymentVerifiedAction(
+  input: unknown
+): Promise<OrderActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+
+  const parsed = adminPaymentWorkflowSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "The payment update could not be read." }
+  const { orderNumber } = parsed.data
+
+  try {
+    await prisma.order.update({
+      where: { orderNumber },
+      data: { paymentStatus: "PAID", paymentVerifiedAt: new Date() },
+    })
+    revalidateOrder(orderNumber)
+    return { ok: true, orderNumber, message: "Payment marked paid." }
+  } catch {
+    return { ok: false, error: "Payment could not be updated." }
+  }
+}
+
+export async function updateShippingDetailsAction(
+  input: unknown
+): Promise<OrderActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+
+  const parsed = adminShippingUpdateSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "The shipping details could not be read." }
+  const { orderNumber, courier, trackingNumber, shippingDate, expectedDelivery } = parsed.data
+
+  try {
+    await prisma.order.update({
+      where: { orderNumber },
+      data: {
+        courier: courier || null,
+        trackingNumber: trackingNumber || null,
+        shippingDate: parseDate(shippingDate),
+        expectedDelivery: parseDate(expectedDelivery),
+      },
+    })
+    revalidateOrder(orderNumber)
+    return { ok: true, orderNumber, message: "Shipping details saved." }
+  } catch {
+    return { ok: false, error: "Shipping details could not be saved." }
+  }
+}
+
+export async function updateInternalNotesAction(
+  input: unknown
+): Promise<OrderActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+
+  const parsed = adminInternalNotesSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "The internal note could not be read." }
+  const { orderNumber, internalNotes } = parsed.data
+
+  try {
+    await prisma.order.update({
+      where: { orderNumber },
+      data: { internalNotes: internalNotes || null },
+    })
+    revalidateOrder(orderNumber)
+    return { ok: true, orderNumber, message: "Internal notes saved." }
+  } catch {
+    return { ok: false, error: "Internal notes could not be saved." }
   }
 }
 
