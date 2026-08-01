@@ -21,7 +21,12 @@ function clerkConfigured() {
 
 /** Returns an error string when the caller is not an admin, else null. */
 export async function requireAdmin(): Promise<string | null> {
-  if (!clerkConfigured()) return null
+  if (!clerkConfigured()) {
+    // Fail closed in production: never allow admin actions without auth.
+    return process.env.NODE_ENV === "production"
+      ? "Authentication is not configured."
+      : null
+  }
   try {
     const { auth } = await import("@clerk/nextjs/server")
     const session = await auth()
@@ -442,6 +447,19 @@ export async function uploadImageAction(
   }
   if (file.size > 8 * 1024 * 1024) {
     return { ok: false, error: "Image must be smaller than 8 MB." }
+  }
+  const allowedTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/avif",
+  ]
+  if (!allowedTypes.includes(file.type)) {
+    return {
+      ok: false,
+      error: "Only JPEG, PNG, WebP, GIF, and AVIF images can be uploaded.",
+    }
   }
 
   const uploaded = await uploadProductImage(file)

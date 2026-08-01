@@ -12,6 +12,7 @@ import {
 import { applyDiscountCode } from "@/lib/discounts"
 import { createCheckoutSchema } from "@/lib/validations/checkout"
 import { CHECKOUT_COUNTRIES } from "@/lib/constants"
+import { rateLimit } from "@/lib/services/rate-limit"
 
 export type CheckoutActionResult = {
   ok: boolean
@@ -29,6 +30,11 @@ export async function createCheckoutSessionAction(
     return { ok: false, error: "Enter a valid email address to continue." }
   }
   const { email, notes, discountCode } = parsed.data
+
+  const allowed = await rateLimit("checkout", 20, 60 * 60 * 1000)
+  if (!allowed) {
+    return { ok: false, error: "Too many checkout attempts. Please try again shortly." }
+  }
 
   if (!isDatabaseConfigured()) {
     return { ok: false, error: "Checkout is unavailable right now." }

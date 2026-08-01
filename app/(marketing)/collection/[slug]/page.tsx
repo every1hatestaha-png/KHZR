@@ -6,6 +6,7 @@ import {
   buildMetadata,
   jsonLdBreadcrumbs,
   jsonLdCollection,
+  jsonLdScript,
 } from "@/lib/seo"
 
 const COLLECTIONS: Record<
@@ -90,11 +91,11 @@ export default async function CollectionPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(collectionLd) }}
       />
       <PageIntro
         kicker={collection.note}

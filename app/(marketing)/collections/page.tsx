@@ -1,6 +1,6 @@
 import { PageIntro } from "@/components/shared/page-intro"
 import { CollectionCard } from "@/components/collections/collection-card"
-import { buildMetadata, jsonLdItemList } from "@/lib/seo"
+import { buildMetadata, jsonLdItemList, jsonLdScript } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
 const COLLECTIONS = [
@@ -62,7 +62,7 @@ export default function CollectionsPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: jsonLdScript(
             jsonLdItemList(
               COLLECTIONS.map((c) => ({
                 name: c.name,

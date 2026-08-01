@@ -15,6 +15,7 @@ export async function persistToken(token: string) {
     path: "/",
     httpOnly: true,
     sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
     maxAge: CART_TTL_DAYS * 86_400,
   })
 }

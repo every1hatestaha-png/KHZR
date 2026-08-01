@@ -1,5 +1,7 @@
 import "server-only"
 
+import { randomInt } from "node:crypto"
+
 import { prisma } from "@/lib/prisma"
 import { ORDER_NUMBER_PREFIX } from "@/lib/constants"
 import type {
@@ -58,7 +60,7 @@ const ORDER_NUMBER_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 export function generateOrderNumber(): string {
   let suffix = ""
   for (let i = 0; i < 8; i += 1) {
-    suffix += ORDER_NUMBER_ALPHABET[Math.floor(Math.random() * ORDER_NUMBER_ALPHABET.length)]
+    suffix += ORDER_NUMBER_ALPHABET[randomInt(ORDER_NUMBER_ALPHABET.length)]
   }
   return `${ORDER_NUMBER_PREFIX}-${suffix}`
 }

@@ -3,7 +3,7 @@ import { Cormorant_Garamond, Inter } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers/providers"
 import { SITE } from "@/lib/constants"
-import { jsonLdOrganization, jsonLdWebsite } from "@/lib/seo"
+import { jsonLdOrganization, jsonLdScript, jsonLdWebsite } from "@/lib/seo"
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -74,11 +74,11 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization()) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLdOrganization()) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite()) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLdWebsite()) }}
         />
       </body>
     </html>

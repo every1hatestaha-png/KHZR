@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server"
-import { NextResponse } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
 
 const clerkConfigured = Boolean(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
@@ -28,7 +28,13 @@ const withAuth = clerkMiddleware(async (auth, req) => {
 
 export default clerkConfigured
   ? withAuth
-  : () => NextResponse.next()
+  : (req: NextRequest) => {
+      // Fail closed in production: never expose the admin area without auth.
+      if (process.env.NODE_ENV === "production" && isAdminRoute(req)) {
+        return NextResponse.redirect(new URL("/", req.url))
+      }
+      return NextResponse.next()
+    }
 
 export const config = {
   matcher: [

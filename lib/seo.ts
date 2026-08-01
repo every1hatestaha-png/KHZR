@@ -59,6 +59,19 @@ export function buildMetadata({
   }
 }
 
+/**
+ * Serializes structured data for an inline JSON-LD script tag, escaping the
+ * characters that could otherwise terminate the script element prematurely.
+ */
+export function jsonLdScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029")
+}
+
 export function jsonLdOrganization() {
   return {
     "@context": "https://schema.org",

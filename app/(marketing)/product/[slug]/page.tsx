@@ -10,6 +10,7 @@ import {
   buildMetadata,
   jsonLdBreadcrumbs,
   jsonLdProduct,
+  jsonLdScript,
 } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 import { getProductBySlug, getRelatedProducts } from "@/lib/data-access/site"
@@ -121,11 +122,11 @@ export default async function ProductPage({
 
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLd) }}
       />
     </>
   )

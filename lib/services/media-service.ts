@@ -26,8 +26,36 @@ function cloud() {
 }
 
 /**
+ * Rejects content whose signature is not a known raster image format.
+ * SVG is intentionally excluded because it can carry scripts that would
+ * otherwise be served to storefront visitors.
+ */
+function looksLikeImage(buffer: Uint8Array): boolean {
+  if (buffer.length < 12) return false
+  const matches = (sig: number[], offset = 0) =>
+    sig.every((byte, i) => buffer[offset + i] === byte)
+
+  if (matches([0xff, 0xd8, 0xff])) return true // JPEG
+  if (matches([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return true // PNG
+  if (matches([0x52, 0x49, 0x46, 0x46]) && buffer[8] === 0x57) return true // RIFF…WEBP
+  if (matches([0x47, 0x49, 0x46, 0x38])) return true // GIF87a / GIF89a
+  if (matches([0x42, 0x4d])) return true // BMP
+  if (matches([0x49, 0x49, 0x2a, 0x00])) return true // TIFF (little-endian)
+  if (matches([0x4d, 0x4d, 0x00, 0x2a])) return true // TIFF (big-endian)
+  if (
+    matches([0x66, 0x74, 0x79, 0x70], 4) &&
+    (matches([0x61, 0x76, 0x69, 0x66], 8) ||
+      matches([0x61, 0x76, 0x69, 0x73], 8))
+  ) {
+    return true // AVIF / AVIS
+  }
+  return false
+}
+
+/**
  * Uploads an image to Cloudinary, returning the secure URL + public id.
- * Returns null when Cloudinary is not configured.
+ * Returns null when Cloudinary is not configured or the file is not a
+ * supported raster image.
  */
 export async function uploadProductImage(
   file: File
@@ -37,6 +65,7 @@ export async function uploadProductImage(
 
   const folder = process.env.CLOUDINARY_FOLDER ?? "khzr"
   const buffer = Buffer.from(await file.arrayBuffer())
+  if (!looksLikeImage(buffer)) return null
 
   const result = await new Promise<{ secure_url: string; public_id: string }>(
     (resolve, reject) => {

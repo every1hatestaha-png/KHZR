@@ -9,8 +9,14 @@ export const STOCK_STATUSES = [
 ] as const
 export const CURRENCIES = ["USD", "EUR", "GBP"] as const
 
+const httpImageUrl = z
+  .string()
+  .url("Enter a valid image URL.")
+  .refine((value) => /^https?:\/\//i.test(value), "Enter an http(s) image URL.")
+  .min(1)
+
 export const productImageSchema = z.object({
-  url: z.string().url("Enter a valid image URL.").min(1),
+  url: httpImageUrl,
   alt: z.string().max(300).optional().default(""),
 })
 
@@ -95,7 +101,10 @@ export const collectionSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use a lower-case URL slug."),
   description: z.string().trim().max(800).optional().default(""),
   editorial: z.string().trim().max(8000).optional().default(""),
-  imageUrl: z.union([z.literal(""), z.string().url("Enter a valid image URL.")]).optional().default(""),
+  imageUrl: z
+    .union([z.literal(""), httpImageUrl])
+    .optional()
+    .default(""),
   isFeatured: z.boolean().optional().default(false),
   sortOrder: z
     .union([z.string(), z.number()])

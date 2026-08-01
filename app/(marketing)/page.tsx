@@ -4,7 +4,7 @@ import { EditorialSplit } from "@/components/marketing/editorial-split"
 import { ProductRail } from "@/components/marketing/product-rail"
 import { BrandValues } from "@/components/marketing/brand-values"
 import { getFeaturedProducts, getHomeCampaigns } from "@/lib/data-access/site"
-import { buildMetadata, jsonLdItemList } from "@/lib/seo"
+import { buildMetadata, jsonLdItemList, jsonLdScript } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
 export const metadata = buildMetadata({
@@ -48,7 +48,7 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(
+          __html: jsonLdScript(
             jsonLdItemList(
               products.map((p) => ({
                 name: p.name,
