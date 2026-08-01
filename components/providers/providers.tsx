@@ -1,11 +1,17 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "@/components/ui/sonner"
 import { CartProvider } from "@/components/cart/cart-provider"
-import { CartDrawer } from "@/components/cart/cart-drawer"
 import { WishlistProvider } from "@/components/wishlist/wishlist-provider"
+
+const CartDrawer = dynamic(
+  () =>
+    import("@/components/cart/cart-drawer").then((m) => m.CartDrawer),
+  { ssr: false }
+)
 
 const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 

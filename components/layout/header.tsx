@@ -1,13 +1,18 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import { Menu } from "lucide-react"
 import { Nav } from "@/components/layout/nav"
 import { HeaderActions } from "@/components/layout/header-actions"
-import { MobileMenu } from "@/components/layout/mobile-menu"
 import { useScrollPosition } from "@/hooks/use-scroll-position"
 import { cn } from "@/lib/utils"
+
+const MobileMenu = dynamic(
+  () => import("@/components/layout/mobile-menu").then((m) => m.MobileMenu),
+  { ssr: false }
+)
 
 export function Header() {
   const scrolled = useScrollPosition(12)
