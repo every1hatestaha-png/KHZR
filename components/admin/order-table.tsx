@@ -32,7 +32,7 @@ export function OrderTable({ orders }: OrderTableProps) {
         <thead>
           <tr className="border-b border-hairline bg-ivory/60 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
             <th scope="col" className="px-4 py-3 font-medium">Order</th>
-            <th scope="col" className="px-4 py-3 font-medium">Email</th>
+            <th scope="col" className="px-4 py-3 font-medium">Customer</th>
             <th scope="col" className="px-4 py-3 font-medium">Items</th>
             <th scope="col" className="px-4 py-3 font-medium">Status</th>
             <th scope="col" className="px-4 py-3 font-medium">Payment</th>
@@ -60,7 +60,7 @@ export function OrderTable({ orders }: OrderTableProps) {
                 </Link>
               </td>
               <td className="max-w-[220px] truncate px-4 py-3 text-taupe">
-                {order.email}
+                {order.email || order.phone || "No contact"}
               </td>
               <td className="px-4 py-3 whitespace-nowrap text-taupe">
                 {order.itemCount}

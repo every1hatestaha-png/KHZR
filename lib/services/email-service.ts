@@ -143,6 +143,7 @@ function shell({
 }
 
 async function sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+  if (!to) return false
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return false
   const resend = new Resend(apiKey)

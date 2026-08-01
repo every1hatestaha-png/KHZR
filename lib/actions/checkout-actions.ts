@@ -1,11 +1,12 @@
 "use server"
 
-import { getCartState, isDatabaseConfigured } from "@/lib/services/cart-service"
+import { clearCart, getCartState, isDatabaseConfigured } from "@/lib/services/cart-service"
 import { priceBreakdown } from "@/lib/services/pricing-service"
 import { createCheckoutSession, expireCheckoutSession } from "@/lib/services/stripe-service"
 import { sessionToken } from "@/lib/services/session-service"
 import { resolveDbUser } from "@/lib/services/user-service"
 import {
+  createLocalOrderRecord,
   createOrderRecord,
   nextOrderNumber,
 } from "@/lib/services/order-service"
@@ -21,6 +22,12 @@ export type CheckoutActionResult = {
   url?: string
 }
 
+const LOCAL_PAYMENT_METHODS = new Set([
+  "cash_on_delivery",
+  "easypaisa",
+  "jazzcash",
+])
+
 const toCents = (value: number) => Math.round(value * 100)
 
 export async function createCheckoutSessionAction(
@@ -30,7 +37,21 @@ export async function createCheckoutSessionAction(
   if (!parsed.success) {
     return { ok: false, error: "Enter a valid email address to continue." }
   }
-  const { email, notes, discountCode } = parsed.data
+  const {
+    firstName,
+    lastName,
+    phone,
+    email,
+    province,
+    city,
+    area,
+    streetAddress,
+    houseApartment,
+    postalCode,
+    paymentMethod,
+    notes,
+    discountCode,
+  } = parsed.data
 
   try {
     assertProductionEnvironment()
@@ -76,9 +97,11 @@ export async function createCheckoutSessionAction(
   const metadata: Record<string, string> = {
     orderNumber,
     cartToken: token,
-    email,
+    email: email || "",
+    phone,
     discountCode: discount?.code ?? "",
     userId: user?.id ?? "",
+    paymentMethod,
   }
 
   const lineItems = cart.lines.map((line) => ({
@@ -90,6 +113,59 @@ export async function createCheckoutSessionAction(
 
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+
+  const orderItems = cart.lines.map((line) => ({
+    variantId: line.variantId,
+    productId: line.productId,
+    sku: line.sku,
+    name: line.name,
+    size: line.size,
+    color: line.color,
+    unitPrice: line.unitPrice,
+    quantity: line.quantity,
+    imageUrl: line.imageUrl,
+  }))
+
+  if (LOCAL_PAYMENT_METHODS.has(paymentMethod)) {
+    try {
+      await createLocalOrderRecord({
+        orderNumber,
+        userId: user?.id,
+        email: email || null,
+        phone,
+        cartToken: token,
+        subtotal: pricing.subtotal,
+        shippingTotal: pricing.shipping,
+        taxTotal: pricing.tax,
+        discountTotal: pricing.discount,
+        total: pricing.total,
+        shippingMethod:
+          pricing.shipping > 0 ? "Pakistan Standard Delivery" : "Complimentary Pakistan Delivery",
+        customerNotes: notes,
+        paymentProvider: paymentMethod,
+        shippingAddress: {
+          firstName,
+          lastName,
+          line1: streetAddress,
+          line2: `${houseApartment}, ${area}`,
+          city,
+          region: province,
+          postalCode: postalCode || "",
+          country: "PK",
+        },
+        items: orderItems,
+      })
+      await clearCart(token)
+      return { ok: true, url: `/checkout/success?order=${orderNumber}` }
+    } catch (err) {
+      console.error("[checkout] failed to place Pakistan order:", err)
+      return { ok: false, error: "Checkout could not be completed." }
+    }
+  }
+
+  if (!email) {
+    return { ok: false, error: "Enter an email address to continue with Stripe." }
+  }
 
   let session: Awaited<ReturnType<typeof createCheckoutSession>>
   try {
@@ -119,6 +195,7 @@ export async function createCheckoutSessionAction(
       orderNumber,
       userId: user?.id,
       email,
+      phone,
       cartToken: token,
       subtotal: pricing.subtotal,
       shippingTotal: pricing.shipping,
@@ -128,17 +205,8 @@ export async function createCheckoutSessionAction(
       shippingMethod: pricing.shipping > 0 ? "Standard Shipping" : "Complimentary Shipping",
       customerNotes: notes,
       providerSessionId: session.id,
-      items: cart.lines.map((line) => ({
-        variantId: line.variantId,
-        productId: line.productId,
-        sku: line.sku,
-        name: line.name,
-        size: line.size,
-        color: line.color,
-        unitPrice: line.unitPrice,
-        quantity: line.quantity,
-        imageUrl: line.imageUrl,
-      })),
+      paymentProvider: "stripe",
+      items: orderItems,
     })
   } catch (err) {
     console.error("[checkout] failed to record pending order:", err)

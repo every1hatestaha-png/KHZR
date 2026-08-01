@@ -9,19 +9,81 @@ import { priceBreakdown } from "@/lib/services/pricing-service"
 import { SITE } from "@/lib/constants"
 import { formatMoney } from "@/lib/utils"
 
+const PAKISTAN_PROVINCES = [
+  "Punjab",
+  "Sindh",
+  "Khyber Pakhtunkhwa",
+  "Balochistan",
+  "Islamabad Capital Territory",
+  "Gilgit-Baltistan",
+  "Azad Jammu and Kashmir",
+] as const
+
+const PAYMENT_METHODS = [
+  {
+    value: "cash_on_delivery",
+    label: "Cash on Delivery",
+    description: "Pay in cash when your order arrives.",
+  },
+  {
+    value: "easypaisa",
+    label: "Easypaisa",
+    description: "Place the order now. Payment instructions will follow.",
+  },
+  {
+    value: "jazzcash",
+    label: "JazzCash",
+    description: "Place the order now. Payment instructions will follow.",
+  },
+] as const
+
+type CheckoutFields = {
+  firstName: string
+  lastName: string
+  phone: string
+  email: string
+  province: string
+  city: string
+  area: string
+  streetAddress: string
+  houseApartment: string
+  postalCode: string
+  notes: string
+  paymentMethod: (typeof PAYMENT_METHODS)[number]["value"]
+}
+
 export default function CheckoutPage() {
   const { cart, discount, applyDiscount, clearDiscount } = useCart()
   const { lines, subtotal, currency } = cart
 
-  const [email, setEmail] = React.useState("")
-  const [notes, setNotes] = React.useState("")
+  const [fields, setFields] = React.useState<CheckoutFields>({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    province: "",
+    city: "",
+    area: "",
+    streetAddress: "",
+    houseApartment: "",
+    postalCode: "",
+    notes: "",
+    paymentMethod: "cash_on_delivery",
+  })
   const [code, setCode] = React.useState("")
   const [pending, setPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
 
   const pricing = priceBreakdown(subtotal, discount)
 
-  function handleApply(e: React.FormEvent) {
+  function updateField<K extends keyof CheckoutFields>(
+    key: K,
+    value: CheckoutFields[K]
+  ) {
+    setFields((current) => ({ ...current, [key]: value }))
+  }
+
+  function handleApply(e: React.FormEvent | React.MouseEvent) {
     e.preventDefault()
     if (!code.trim()) return
     if (applyDiscount(code.trim())) setCode("")
@@ -33,8 +95,7 @@ export default function CheckoutPage() {
     setPending(true)
     setError(null)
     const res = await createCheckoutSessionAction({
-      email,
-      notes,
+      ...fields,
       discountCode: discount?.code ?? "",
     })
     if (res.ok && res.url) {
@@ -47,18 +108,29 @@ export default function CheckoutPage() {
 
   const inputClass =
     "h-12 w-full border border-hairline bg-background px-4 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
+  const requiredComplete = Boolean(
+    fields.firstName &&
+      fields.lastName &&
+      fields.phone &&
+      fields.province &&
+      fields.city &&
+      fields.area &&
+      fields.streetAddress &&
+      fields.houseApartment &&
+      fields.paymentMethod
+  )
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 pb-24 pt-12 sm:px-5 sm:pt-14 lg:px-10 lg:pt-24">
       <header className="border-b border-hairline pb-9">
         <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
-          Secure Checkout
+          Pakistan Checkout
         </p>
         <h1 className="mt-4 font-display text-5xl font-light tracking-tight text-noir [overflow-wrap:anywhere] lg:text-6xl">
-          Check your details.
+          Delivery across Pakistan.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
-          Enter your email here. Shipping address and payment follow securely with Stripe.
+          Enter your delivery details and choose Cash on Delivery, Easypaisa, or JazzCash.
         </p>
       </header>
 
@@ -86,37 +158,88 @@ export default function CheckoutPage() {
         >
           <div className="flex flex-col gap-10 lg:gap-12">
             <section className="flex flex-col gap-5">
-              <h2 className="font-display text-3xl font-light text-noir">
-                Contact
-              </h2>
-              <label htmlFor="checkout-email" className="flex flex-col gap-2">
-                <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
-                  Email address
-                </span>
-                <input
-                  id="checkout-email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className={inputClass}
-                />
+              <h2 className="font-display text-3xl font-light text-noir">Contact</h2>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <label htmlFor="checkout-first-name" className="flex flex-col gap-2">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">First Name</span>
+                  <input id="checkout-first-name" type="text" required autoComplete="given-name" value={fields.firstName} onChange={(e) => updateField("firstName", e.target.value)} className={inputClass} />
+                </label>
+                <label htmlFor="checkout-last-name" className="flex flex-col gap-2">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Last Name</span>
+                  <input id="checkout-last-name" type="text" required autoComplete="family-name" value={fields.lastName} onChange={(e) => updateField("lastName", e.target.value)} className={inputClass} />
+                </label>
+              </div>
+              <label htmlFor="checkout-phone" className="flex flex-col gap-2">
+                <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Phone Number</span>
+                <input id="checkout-phone" type="tel" required autoComplete="tel" inputMode="tel" value={fields.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="03XX XXXXXXX" className={inputClass} />
               </label>
+              <label htmlFor="checkout-email" className="flex flex-col gap-2">
+                <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Email <span className="normal-case tracking-normal">(optional)</span></span>
+                <input id="checkout-email" type="email" autoComplete="email" value={fields.email} onChange={(e) => updateField("email", e.target.value)} placeholder="you@example.com" className={inputClass} />
+              </label>
+            </section>
+
+            <section className="flex flex-col gap-5">
+              <h2 className="font-display text-3xl font-light text-noir">Delivery address</h2>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <label htmlFor="checkout-province" className="flex flex-col gap-2">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Province</span>
+                  <select id="checkout-province" required autoComplete="address-level1" value={fields.province} onChange={(e) => updateField("province", e.target.value)} className={inputClass}>
+                    <option value="">Select province</option>
+                    {PAKISTAN_PROVINCES.map((province) => <option key={province} value={province}>{province}</option>)}
+                  </select>
+                </label>
+                <label htmlFor="checkout-city" className="flex flex-col gap-2">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">City</span>
+                  <input id="checkout-city" type="text" required autoComplete="address-level2" value={fields.city} onChange={(e) => updateField("city", e.target.value)} className={inputClass} />
+                </label>
+              </div>
+              <label htmlFor="checkout-area" className="flex flex-col gap-2">
+                <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Area</span>
+                <input id="checkout-area" type="text" required value={fields.area} onChange={(e) => updateField("area", e.target.value)} placeholder="DHA, Gulberg, Clifton..." className={inputClass} />
+              </label>
+              <label htmlFor="checkout-street" className="flex flex-col gap-2">
+                <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Street Address</span>
+                <input id="checkout-street" type="text" required autoComplete="street-address" value={fields.streetAddress} onChange={(e) => updateField("streetAddress", e.target.value)} className={inputClass} />
+              </label>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <label htmlFor="checkout-house" className="flex flex-col gap-2">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">House/Apartment</span>
+                  <input id="checkout-house" type="text" required value={fields.houseApartment} onChange={(e) => updateField("houseApartment", e.target.value)} className={inputClass} />
+                </label>
+                <label htmlFor="checkout-postal" className="flex flex-col gap-2">
+                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Postal Code <span className="normal-case tracking-normal">(optional)</span></span>
+                  <input id="checkout-postal" type="text" autoComplete="postal-code" inputMode="numeric" value={fields.postalCode} onChange={(e) => updateField("postalCode", e.target.value)} className={inputClass} />
+                </label>
+              </div>
               <label htmlFor="checkout-notes" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
-                  Note <span className="normal-case tracking-normal">(optional)</span>
+                  Delivery Notes <span className="normal-case tracking-normal">(optional)</span>
                 </span>
                 <textarea
                   id="checkout-notes"
                   rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Gift note or delivery detail..."
+                  value={fields.notes}
+                  onChange={(e) => updateField("notes", e.target.value)}
+                  placeholder="Gate, landmark, preferred delivery time..."
                   className="w-full border border-hairline bg-background px-4 py-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
                 />
               </label>
+            </section>
+
+            <section className="flex flex-col gap-5">
+              <h2 className="font-display text-3xl font-light text-noir">Payment method</h2>
+              <fieldset className="grid gap-3" aria-label="Payment method">
+                {PAYMENT_METHODS.map((method) => (
+                  <label key={method.value} className="flex cursor-pointer items-start gap-3 border border-hairline bg-background p-4 transition-colors hover:border-stone">
+                    <input type="radio" name="paymentMethod" value={method.value} checked={fields.paymentMethod === method.value} onChange={() => updateField("paymentMethod", method.value)} className="mt-1 accent-noir" />
+                    <span>
+                      <span className="block font-display text-lg text-noir">{method.label}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-stone">{method.description}</span>
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
             </section>
 
             <section className="grid gap-5 border-y border-hairline py-6 text-sm leading-relaxed text-stone sm:grid-cols-3">
@@ -124,7 +247,7 @@ export default function CheckoutPage() {
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
                   Payment
                 </p>
-                <p className="mt-2">Completed with Stripe on the next step.</p>
+                <p className="mt-2">Cash on Delivery, Easypaisa, or JazzCash.</p>
               </div>
               <div>
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
@@ -194,7 +317,7 @@ export default function CheckoutPage() {
               ))}
             </ul>
 
-            <form onSubmit={handleApply} className="mt-5 flex items-stretch gap-2" aria-label="Apply discount code">
+            <div className="mt-5 flex items-stretch gap-2" aria-label="Apply discount code">
               <label htmlFor="checkout-discount" className="sr-only">
                 Discount code
               </label>
@@ -207,15 +330,16 @@ export default function CheckoutPage() {
                 className="h-11 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
               />
               <Button
-                type="submit"
+                type="button"
                 variant="outline"
                 size="sm"
                 className="h-11"
                 disabled={!code.trim()}
+                onClick={handleApply}
               >
                 Apply
               </Button>
-            </form>
+            </div>
 
             {discount ? (
               <div className="mt-3 flex items-center justify-between text-xs">
@@ -275,9 +399,9 @@ export default function CheckoutPage() {
               type="submit"
               size="lg"
               className="mt-8 min-h-12 w-full"
-              disabled={pending || !email}
+              disabled={pending || !requiredComplete}
             >
-              {pending ? "Preparing..." : "Continue to Payment"}
+              {pending ? "Placing order..." : "Place Order"}
             </Button>
 
             <Button

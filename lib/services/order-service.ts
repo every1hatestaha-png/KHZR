@@ -40,7 +40,8 @@ export type OrderLineInput = {
 export type CreateOrderInput = {
   orderNumber: string
   userId?: string | null
-  email: string
+  email?: string | null
+  phone?: string | null
   cartToken: string
   subtotal: number
   shippingTotal: number
@@ -52,7 +53,16 @@ export type CreateOrderInput = {
   shippingAddress?: OrderAddressInput
   billingAddress?: OrderAddressInput
   providerSessionId: string
+  paymentProvider?: string
   items: OrderLineInput[]
+}
+
+export type CreateLocalOrderInput = Omit<
+  CreateOrderInput,
+  "providerSessionId"
+> & {
+  shippingAddress: OrderAddressInput
+  billingAddress?: OrderAddressInput
 }
 
 const ORDER_NUMBER_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -123,7 +133,8 @@ export async function createOrderRecord(
         data: {
           orderNumber,
           ...(input.userId ? { userId: input.userId } : {}),
-          email: input.email,
+          email: input.email || null,
+          phone: input.phone || null,
           currency: "USD",
           subtotal: input.subtotal,
           shippingTotal: input.shippingTotal,
@@ -136,7 +147,7 @@ export async function createOrderRecord(
           ...(shippingAddress ? { shippingAddressId: shippingAddress.id } : {}),
           ...(billingAddress ? { billingAddressId: billingAddress.id } : {}),
           providerSessionId: input.providerSessionId,
-          paymentProvider: "stripe",
+          paymentProvider: input.paymentProvider ?? "stripe",
           items: {
             create: input.items.map((item) => ({
               ...(item.variantId ? { variantId: item.variantId } : {}),
@@ -171,6 +182,79 @@ export async function findOrderByProviderSession(
   return prisma.order.findUnique({
     where: { providerSessionId: sessionId },
     include: { items: true },
+  })
+}
+
+export async function createLocalOrderRecord(
+  input: CreateLocalOrderInput
+): Promise<OrderWithItems> {
+  const orderNumber = input.orderNumber || (await nextOrderNumber())
+
+  return prisma.$transaction(async (tx) => {
+    const shippingAddress = await tx.address.create({
+      data: {
+        type: "SHIPPING",
+        ...input.shippingAddress,
+        ...(input.userId ? { userId: input.userId } : {}),
+      },
+    })
+    const billingAddress = input.billingAddress
+      ? await tx.address.create({
+          data: {
+            type: "BILLING",
+            ...input.billingAddress,
+            ...(input.userId ? { userId: input.userId } : {}),
+          },
+        })
+      : shippingAddress
+
+    const stockEntries = mergeStockEntries(await orderItemsToStock(input.items))
+    for (const { variantId, quantity } of stockEntries) {
+      const decremented = await tx.productVariant.updateMany({
+        where: { id: variantId, stock: { gte: quantity } },
+        data: { stock: { decrement: quantity } },
+      })
+      if (decremented.count !== 1) {
+        throw new Error(`Insufficient stock for variant ${variantId}.`)
+      }
+    }
+
+    return tx.order.create({
+      data: {
+        orderNumber,
+        ...(input.userId ? { userId: input.userId } : {}),
+        email: input.email || null,
+        phone: input.phone || null,
+        status: "CONFIRMED",
+        paymentStatus: "PENDING",
+        currency: "USD",
+        subtotal: input.subtotal,
+        shippingTotal: input.shippingTotal,
+        taxTotal: input.taxTotal,
+        discountTotal: input.discountTotal,
+        total: input.total,
+        shippingMethod: input.shippingMethod,
+        cartToken: input.cartToken,
+        customerNotes: input.customerNotes || null,
+        shippingAddressId: shippingAddress.id,
+        billingAddressId: billingAddress.id,
+        paymentProvider: input.paymentProvider ?? "cash_on_delivery",
+        items: {
+          create: input.items.map((item) => ({
+            ...(item.variantId ? { variantId: item.variantId } : {}),
+            productId: item.productId,
+            sku: item.sku,
+            name: item.name,
+            size: item.size,
+            color: item.color,
+            unitPrice: item.unitPrice,
+            quantity: item.quantity,
+            imageUrl: item.imageUrl,
+          })),
+        },
+      },
+      include: { items: true },
+    })
   })
 }
 

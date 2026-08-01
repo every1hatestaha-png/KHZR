@@ -24,8 +24,33 @@ export const FULFILLMENT_STATUSES = [
   "CANCELLED",
 ] as const
 
+export const PAKISTAN_PAYMENT_METHODS = [
+  "cash_on_delivery",
+  "easypaisa",
+  "jazzcash",
+  "stripe",
+] as const
+
 export const createCheckoutSchema = z.object({
-  email: z.string().email("Enter a valid email address.").max(200),
+  firstName: z.string().trim().min(1, "Enter your first name.").max(80),
+  lastName: z.string().trim().min(1, "Enter your last name.").max(80),
+  phone: z.string().trim().min(7, "Enter a valid phone number.").max(30),
+  email: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .default("")
+    .refine((value) => !value || z.string().email().safeParse(value).success, {
+      message: "Enter a valid email address.",
+    }),
+  province: z.string().trim().min(1, "Select your province.").max(80),
+  city: z.string().trim().min(1, "Enter your city.").max(100),
+  area: z.string().trim().min(1, "Enter your area.").max(120),
+  streetAddress: z.string().trim().min(1, "Enter your street address.").max(200),
+  houseApartment: z.string().trim().min(1, "Enter your house or apartment.").max(120),
+  postalCode: z.string().trim().max(20).optional().default(""),
+  paymentMethod: z.enum(PAKISTAN_PAYMENT_METHODS),
   notes: z.string().trim().max(2000).optional().default(""),
   discountCode: z.string().trim().max(40).optional().default(""),
 })
@@ -54,6 +79,10 @@ export const adminOrderListParamsSchema = z.object({
 
 export const checkoutSessionIdSchema = z.object({
   sessionId: z.string().min(1).max(300),
+})
+
+export const checkoutOrderLookupSchema = z.object({
+  order: z.string().min(1).max(40),
 })
 
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>

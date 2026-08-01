@@ -46,7 +46,7 @@ export default async function AdminOrderDetailPage({
       <AdminHeading
         kicker="Commerce"
         title={order.orderNumber}
-        description={`Placed by ${order.email} · ${order.itemCount} item${
+        description={`Placed by ${order.email || order.phone || "customer"} · ${order.itemCount} item${
           order.itemCount === 1 ? "" : "s"
         }`}
         actions={

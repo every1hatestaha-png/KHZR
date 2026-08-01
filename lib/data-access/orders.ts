@@ -33,7 +33,9 @@ export type OrderItemDTO = {
 
 export type OrderSummaryDTO = {
   orderNumber: string
-  email: string
+  email: string | null
+  phone: string | null
+  paymentProvider: string
   currency: string
   status: OrderStatus
   paymentStatus: PaymentStatus
@@ -44,7 +46,6 @@ export type OrderSummaryDTO = {
 }
 
 export type OrderDetailDTO = OrderSummaryDTO & {
-  email: string
   subtotal: number
   shippingTotal: number
   taxTotal: number
@@ -102,6 +103,8 @@ export function toOrderSummaryDTO(order: Order & { items: OrderItem[] }): OrderS
   return {
     orderNumber: order.orderNumber,
     email: order.email,
+    phone: order.phone,
+    paymentProvider: order.paymentProvider,
     currency: order.currency,
     status: order.status,
     paymentStatus: order.paymentStatus,
@@ -121,7 +124,6 @@ export function toOrderDetailDTO(
 ): OrderDetailDTO {
   return {
     ...toOrderSummaryDTO(order),
-    email: order.email,
     subtotal: toMoney(order.subtotal),
     shippingTotal: toMoney(order.shippingTotal),
     taxTotal: toMoney(order.taxTotal),
@@ -217,6 +219,14 @@ export async function getOrderByProviderSessionId(sessionId: string) {
   return order ? toOrderDetailDTO(order) : null
 }
 
+export async function getOrderByOrderNumber(orderNumber: string) {
+  const order = await prisma.order.findUnique({
+    where: { orderNumber },
+    include: { items: true, shippingAddress: true, billingAddress: true },
+  })
+  return order ? toOrderDetailDTO(order) : null
+}
+
 export async function getAccountOrderDetail(
   userId: string,
   orderNumber: string
@@ -246,7 +256,7 @@ export function toOrderEmailData(
   const shipping = order.shippingAddress ?? null
   return {
     orderNumber: order.orderNumber,
-    email: order.email,
+    email: order.email ?? "",
     createdAt: order.createdAt,
     subtotal: toMoney(order.subtotal),
     discount: toMoney(order.discountTotal),

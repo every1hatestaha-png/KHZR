@@ -247,7 +247,8 @@ model Order {
   id               String      @id @default(cuid())
   orderNumber      String      @unique
   userId           String?
-  email            String
+  email            String?
+  phone            String?
   status           OrderStatus @default(PENDING)
   paymentStatus    PaymentStatus    @default(PENDING)
   fulfillmentStatus FulfillmentStatus @default(UNFULFILLED)

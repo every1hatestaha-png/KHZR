@@ -1,0 +1,2 @@
+ALTER TABLE "orders" ADD COLUMN "phone" TEXT;
+ALTER TABLE "orders" ALTER COLUMN "email" DROP NOT NULL;

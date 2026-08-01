@@ -4,8 +4,14 @@ import { OrderSummary } from "@/components/orders/order-summary"
 import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
 import { buildMetadata } from "@/lib/seo"
-import { getOrderByProviderSessionId } from "@/lib/data-access/orders"
-import { checkoutSessionIdSchema } from "@/lib/validations/checkout"
+import {
+  getOrderByOrderNumber,
+  getOrderByProviderSessionId,
+} from "@/lib/data-access/orders"
+import {
+  checkoutOrderLookupSchema,
+  checkoutSessionIdSchema,
+} from "@/lib/validations/checkout"
 
 export const metadata = buildMetadata({
   title: "Order Confirmed",
@@ -22,9 +28,13 @@ export default async function CheckoutSuccessPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const raw = await searchParams
-  const parsed = checkoutSessionIdSchema.safeParse(raw)
-  const sessionId = parsed.success ? parsed.data.sessionId : null
-  const order = sessionId ? await getOrderByProviderSessionId(sessionId) : null
+  const parsedOrder = checkoutOrderLookupSchema.safeParse(raw)
+  const parsedSession = checkoutSessionIdSchema.safeParse(raw)
+  const order = parsedOrder.success
+    ? await getOrderByOrderNumber(parsedOrder.data.order)
+    : parsedSession.success
+      ? await getOrderByProviderSessionId(parsedSession.data.sessionId)
+      : null
 
   if (!order) {
     return (
@@ -45,20 +55,22 @@ export default async function CheckoutSuccessPage({
   }
 
   const paid = order.paymentStatus === "PAID"
+  const localPayment = order.paymentProvider !== "stripe"
+  const contact = order.email || order.phone || "your contact details"
 
   return (
     <>
       <PageIntro
-        kicker={paid ? "Order confirmed" : "Order received"}
-        title={paid ? "Thank you." : "Confirming your payment."}
+        kicker={paid || localPayment ? "Order confirmed" : "Order received"}
+        title={paid || localPayment ? "Thank you." : "Confirming your payment."}
         description={
-          paid
-            ? `Order ${order.orderNumber} is confirmed. We sent the details to ${order.email}.`
+          paid || localPayment
+            ? `Order ${order.orderNumber} is confirmed. We will contact you at ${contact}.`
             : "Your payment is being confirmed. The order details below will update shortly."
         }
         align="center"
       >
-        {paid ? (
+        {paid || localPayment ? (
           <span aria-hidden className="h-px w-16 bg-champagne" />
         ) : null}
       </PageIntro>
@@ -82,7 +94,7 @@ export default async function CheckoutSuccessPage({
             <Link href="/account">Go to Account</Link>
           </Button>
         </div>
-        {!paid ? (
+        {!paid && !localPayment ? (
           <p className="text-center text-xs uppercase tracking-[0.2em] text-taupe">
             We will email you once payment is confirmed.
           </p>

@@ -35,6 +35,13 @@ function AddressBlock({
   )
 }
 
+function paymentMethodLabel(value: string): string {
+  if (value === "cash_on_delivery") return "Cash on Delivery"
+  if (value === "easypaisa") return "Easypaisa"
+  if (value === "jazzcash") return "JazzCash"
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 export function OrderSummary({
   order,
 }: {
@@ -48,6 +55,9 @@ export function OrderSummary({
             <p className="font-display text-2xl font-light text-noir">{order.orderNumber}</p>
             <p className="text-xs uppercase tracking-[0.2em] text-taupe">
               {formatDate(order.createdAt)}
+            </p>
+            <p className="text-xs uppercase tracking-[0.2em] text-taupe">
+              {paymentMethodLabel(order.paymentProvider)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -130,6 +140,18 @@ export function OrderSummary({
         <section className="grid gap-8 border border-hairline bg-background p-6 sm:grid-cols-2">
           <AddressBlock title="Ship to" address={order.shippingAddress} />
           <AddressBlock title="Bill to" address={order.billingAddress} />
+        </section>
+      ) : null}
+
+      {order.phone || order.email ? (
+        <section className="border border-hairline bg-background p-6">
+          <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
+            Contact
+          </p>
+          <div className="mt-2 text-sm leading-relaxed text-stone">
+            {order.phone ? <p>{order.phone}</p> : null}
+            {order.email ? <p>{order.email}</p> : null}
+          </div>
         </section>
       ) : null}
 
