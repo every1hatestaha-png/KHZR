@@ -8,7 +8,7 @@ import type { CampaignDTO } from "@/lib/data-access/site"
 export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
   return (
     <section
-      className="relative flex min-h-[88svh] items-end overflow-hidden bg-noir"
+      className="relative flex min-h-[82svh] items-end overflow-hidden bg-noir lg:min-h-[88svh]"
       aria-label={campaign.title}
     >
       <Parallax offset={80} className="absolute inset-0">
@@ -24,11 +24,11 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
       </Parallax>
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-noir/70 via-noir/25 to-noir/10"
+        className="absolute inset-0 bg-gradient-to-t from-noir/68 via-noir/24 to-noir/8"
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pb-16 lg:px-10 lg:pb-24">
-        <div className="max-w-2xl">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pb-14 lg:px-10 lg:pb-24">
+        <div className="max-w-[40rem]">
           {campaign.kicker ? (
             <p className="animate-fade-up flex items-center gap-3 text-[0.6875rem] font-medium uppercase tracking-[0.34em] text-warm-white/85 [animation-delay:150ms]">
               <span className="h-px w-10 bg-champagne" aria-hidden />
@@ -43,17 +43,17 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
               {campaign.subtitle}
             </p>
           ) : null}
-          <div className="mt-10 flex animate-fade-up flex-wrap items-center gap-6 [animation-delay:600ms]">
-            {campaign.ctaLabel && campaign.ctaHref ? (
-              <Button asChild variant="outline" size="lg" className="border-warm-white/40 text-warm-white hover:border-warm-white hover:bg-warm-white hover:text-noir">
-                <Link href={campaign.ctaHref}>
-                  {campaign.ctaLabel}
-                  <ArrowRight className="ml-3 size-3.5" />
-                </Link>
-              </Button>
-            ) : null}
-            <Button asChild variant="luxury-link" className="text-warm-white/90 hover:text-warm-white">
-              <Link href="/lookbook">The Lookbook</Link>
+          <div className="mt-10 flex animate-fade-up [animation-delay:600ms]">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="min-h-11 border-warm-white/45 text-warm-white hover:border-warm-white hover:bg-warm-white hover:text-noir"
+            >
+              <Link href="/collections?sort=newest">
+                Shop New In
+                <ArrowRight className="ml-3 size-3.5" aria-hidden />
+              </Link>
             </Button>
           </div>
         </div>
