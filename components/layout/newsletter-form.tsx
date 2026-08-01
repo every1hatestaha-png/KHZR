@@ -31,7 +31,7 @@ export function NewsletterForm({ className }: { className?: string }) {
         role="status"
         aria-live="polite"
       >
-        Thank you. You are on the list.
+        Thank you. The next note will arrive by email.
       </p>
     )
   }

@@ -50,20 +50,20 @@ export type FallbackProduct = {
 
 export const FALLBACK_CAMPAIGNS: FallbackCampaign[] = [
   {
-    kicker: "Summer — Lawn Collection",
-    title: "Elegance in Bloom",
+    kicker: "New Season",
+    title: "Light, cut sharp.",
     subtitle:
-      "A celebration of intricate embroidery, delicate lace borders, and fine lawn prints for the modern wardrobe.",
-    ctaLabel: "Explore the Collection",
+      "Printed lawn, clean tailoring, and pieces that hold their line in the heat.",
+    ctaLabel: "Shop New In",
     ctaHref: "/collections",
     imageUrl: img("1515886657613-9f3515b0c78f", 2400),
   },
   {
-    kicker: "The Atelier",
-    title: "Chiffon & Organza",
+    kicker: "Evening",
+    title: "Soft shine after dark.",
     subtitle:
-      "Hand-finished lace details, printed silk dupattas, and timeless luxury silhouettes.",
-    ctaLabel: "View Atelier",
+      "Fluid fabric, longer lines, and a quiet flash of champagne.",
+    ctaLabel: "Shop Evening",
     ctaHref: "/collection/evening",
     imageUrl: img("1469334031218-e382a71b716b", 2000),
   },
@@ -130,7 +130,7 @@ const PRODUCTS: Array<{
     name: "The Slate Wool Overcoat",
     subtitle: "Fulling-needle wool, cut long and clean",
     description:
-      "A single-button overcoat cut from fulling-needle wool with a canvas chest floated by hand. The sleeve head is softly rounded; the silhouette falls from the shoulder without a single interrupting seam across the back. Finished with horn buttons and a deep throat latch.",
+      "A single-button overcoat in fulling-needle wool. The sleeve head is softly rounded; the silhouette falls from the shoulder without a seam across the back. Finished with horn buttons and a deep throat latch.",
     composition: "100% virgin wool · horn buttons · cupro lining",
     care: "Dry clean only. Hang on a broad-shouldered hanger.",
     price: "1850.00",
@@ -145,9 +145,9 @@ const PRODUCTS: Array<{
   {
     slug: "ivory-butterfly-embroidered-suit",
     name: "Ivory Butterfly Embroidered Lawn",
-    subtitle: "Monochrome floral print with butterfly lace embroidery and printed chiffon dupatta",
+    subtitle: "Monochrome floral print with lace detail and chiffon dupatta",
     description:
-      "A three-piece ensemble in fine lawn — a monochrome floral print traced by hand with butterfly lace embroidery, finished with a printed chiffon dupatta. Cut for ease and lined in cotton; made to be kept.",
+      "A three-piece lawn set with a monochrome floral print, lace detail, and printed chiffon dupatta. Cut for ease and lined in cotton.",
     composition: "100% lawn cotton · printed chiffon dupatta",
     care: "Dry clean only. Cool iron.",
     price: "8950.00",
@@ -164,7 +164,7 @@ const PRODUCTS: Array<{
     name: "Structured Oversized Blazer",
     subtitle: "Soft construction, decisive shoulder",
     description:
-      "An oversized blazer with a softly padded shoulder and a straight, un-pinched waist. Cut from wool twill with a half-canvas front — tailored enough to hold, loose enough to live in.",
+      "An oversized blazer with a softly padded shoulder and a straight, un-pinched waist. Cut from wool twill with a half-canvas front for shape without stiffness.",
     composition: "98% wool · 2% elastane · viscose lining",
     care: "Dry clean only.",
     price: "1240.00",
@@ -180,7 +180,7 @@ const PRODUCTS: Array<{
     name: "Double-Faced Tailored Trousers",
     subtitle: "Flat front, clean break",
     description:
-      "Double-faced wool trousers cut with a flat front and a single pressed crease. The waistband is finished with a grosgrain facing; hems are left unsewn for personal adjustment at our ateliers.",
+      "Double-faced wool trousers cut with a flat front and a single pressed crease. The waistband is finished with a grosgrain facing; hems are left unsewn for personal adjustment.",
     composition: "100% double-faced wool",
     care: "Dry clean only. Steam rather than press.",
     price: "620.00",
@@ -193,7 +193,7 @@ const PRODUCTS: Array<{
   },
   {
     slug: "hand-finished-trench-coat",
-    name: "Hand-Finished Trench Coat",
+    name: "Cotton Gabardine Trench Coat",
     subtitle: "Balmacaan lines, English cotton gabardine",
     description:
       "A trench cut on Balmacaan lines from dense cotton gabardine. Raglan shoulder, horn storm flap, and a fly front that closes on concealed buttons. The belt is cut on the bias and lies flat against the waist.",
@@ -213,7 +213,7 @@ const PRODUCTS: Array<{
     name: "Pinstriped Peak-Lapel Suit",
     subtitle: "Two pieces, one drawing",
     description:
-      "A two-piece suit in fine pinstriped wool with a peak lapel and a gently extended shoulder. Trousers cut with a double pleat and a fuller leg. Made in our atelier to be worn as a single drawing.",
+      "A two-piece suit in fine pinstriped wool with a peak lapel and a gently extended shoulder. Trousers cut with a double pleat and a fuller leg. Wear together or split across the week.",
     composition: "100% wool · cupro lining",
     care: "Dry clean only.",
     price: "2100.00",
@@ -266,7 +266,7 @@ const PRODUCTS: Array<{
     name: "Knitted Silk Shell",
     subtitle: "A second skin in silk",
     description:
-      "A knitted shell in silk that follows the body without announcing it. Ribbed throughout, with a narrow neckline that stays in place. Worn under tailoring or alone.",
+      "A knitted silk shell that follows the body without clinging. Ribbed throughout, with a narrow neckline that stays in place. Worn under tailoring or alone.",
     composition: "100% silk",
     care: "Hand wash cold. Dry flat.",
     price: "340.00",
@@ -280,9 +280,9 @@ const PRODUCTS: Array<{
   {
     slug: "leather-slide-sandal",
     name: "Leather Slide Sandal",
-    subtitle: "Vegetable-tanned leather, hand-stitched",
+    subtitle: "Vegetable-tanned leather, sculpted sole",
     description:
-      "A slide in vegetable-tanned leather with a sculpted cork-and-leather sole. The strap is cut from a single hide and stitched by hand. Worn in, the leather deepens to a personal patina.",
+      "A slide in vegetable-tanned leather with a sculpted cork-and-leather sole. The wide strap holds the foot cleanly and softens with wear.",
     composition: "Vegetable-tanned calf leather · cork sole",
     care: "Wipe clean. Avoid prolonged water exposure.",
     price: "450.00",
@@ -313,9 +313,9 @@ const PRODUCTS: Array<{
   {
     slug: "silk-charmeuse-gown",
     name: "Silk Charmeuse Gown",
-    subtitle: "Draped in the evening atelier",
+    subtitle: "One strap, low hip seam",
     description:
-      "A floor-length gown draped on a live mannequin and finished with invisible seams. The bodice is held by a single silk strap; the skirt pools from a low hip seam.",
+      "A floor-length gown in silk charmeuse with a single strap and a low hip seam. The skirt falls in a soft line from the body.",
     composition: "100% silk charmeuse",
     care: "Dry clean only.",
     price: "2950.00",
@@ -330,10 +330,10 @@ const PRODUCTS: Array<{
   },
   {
     slug: "archival-long-line-vest",
-    name: "Archival Long-Line Vest",
-    subtitle: "Reissued, numbered, limited",
+    name: "Long-Line Wool Vest",
+    subtitle: "High neck, extended line",
     description:
-      "A reissue from the 1996 atelier — a long-line vest cut from double-faced wool with a high, notched neck. Each piece is numbered by hand and produced in a limited run of one hundred.",
+      "A long-line vest cut from double-faced wool with a high, notched neck. Wear over shirting or directly against the body.",
     composition: "100% double-faced wool · cupro lining",
     care: "Dry clean only.",
     price: "890.00",
@@ -348,10 +348,10 @@ const PRODUCTS: Array<{
 ]
 
 const COLLECTION_NAMES: Record<string, string> = {
-  tailoring: "The Tailoring Room",
-  essentials: "Crafted Essentials",
-  evening: "The Evening Atelier",
-  archive: "Atelier Archive",
+  tailoring: "Tailoring",
+  essentials: "Essentials",
+  evening: "Evening",
+  archive: "Archive",
 }
 
 export const FALLBACK_PRODUCTS: FallbackProduct[] = PRODUCTS.map((p) => ({
@@ -378,7 +378,7 @@ export function getFallbackProduct(slug: string): FallbackProduct | null {
   return FALLBACK_PRODUCTS.find((p) => p.slug === slug) ?? null
 }
 
-/* ── Homepage rail — curated, derived from the catalogue ────────── */
+/* ── Homepage rail — derived from the catalogue ─────────────────── */
 const FEATURED_SLUGS = [
   "slate-wool-overcoat",
   "hand-finished-trench-coat",

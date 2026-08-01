@@ -31,7 +31,7 @@ const COLLECTIONS = [
   {
     slug: "archive",
     name: "Archive",
-    note: "Numbered Reissues",
+    note: "Past Shapes",
     imageUrl:
       "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1600&q=80",
     featured: false,
@@ -41,7 +41,7 @@ const COLLECTIONS = [
 export const metadata = buildMetadata({
   title: "Collections",
   description:
-    "Tailoring, essentials, evening pieces and selected archive forms from KHZR.",
+    "Shop KHZR collections: tailoring, essentials, evening pieces and selected archive shapes.",
   path: "/collections",
   image: COLLECTIONS[0].imageUrl,
 })
@@ -52,7 +52,7 @@ export default function CollectionsPage() {
       <PageIntro
         kicker="Shop"
         title="The Collections"
-        description="Move by mood, fabric, or occasion. Each section keeps the focus on silhouette, proportion, and how the piece lives on the body."
+        description="Move by mood, fabric, or occasion. Each section is built around silhouette, proportion, and wear."
       />
       <ul className="mx-auto grid max-w-[1400px] gap-12 px-5 pb-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-20 lg:px-10">
         {COLLECTIONS.map((c, i) => (

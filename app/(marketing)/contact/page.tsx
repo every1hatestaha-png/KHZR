@@ -6,14 +6,14 @@ import { SITE } from "@/lib/constants"
 export const metadata = buildMetadata({
   title: "Contact",
   description:
-    "Write to the maison. Letters are answered by people, within a day.",
+    "Contact KHZR for sizing, orders, care, press and client support.",
   path: "/contact",
 })
 
 const TOPICS = [
   { label: "Client Care", value: "care@khzr.example.com" },
   { label: "Press", value: "press@khzr.example.com" },
-  { label: "The Atelier", value: "atelier@khzr.example.com" },
+  { label: "Studio", value: "studio@khzr.example.com" },
 ]
 
 export default function ContactPage() {
@@ -22,7 +22,7 @@ export default function ContactPage() {
       <PageIntro
         kicker="Correspondence"
         title="Write to us."
-        description="Letters are answered by people, within a day. For sizing, repairs and everything in between."
+        description="For sizing, orders, care, press, and anything that needs a human reply."
       />
 
       <section className="mx-auto max-w-[1400px] px-5 pb-24 lg:px-10">
@@ -54,11 +54,10 @@ export default function ContactPage() {
           <div className="flex flex-col gap-6 border-t border-hairline pt-12 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
             <div className="flex flex-col gap-2">
               <h2 className="font-display text-3xl font-light text-noir lg:text-4xl">
-                The Newsletter
+                Notes from KHZR
               </h2>
               <p className="text-sm leading-relaxed text-stone">
-                One letter a month — collections, atelier notes and the
-                occasional reissue.
+                New arrivals, styling notes, and the occasional return from the archive.
               </p>
             </div>
             <NewsletterForm />

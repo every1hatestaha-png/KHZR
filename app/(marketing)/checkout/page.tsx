@@ -42,7 +42,7 @@ export default function CheckoutPage() {
       return
     }
     setPending(false)
-    setError(res.error ?? "Checkout could not be started.")
+    setError(res.error ?? "We could not start checkout. Please try again.")
   }
 
   const inputClass =
@@ -55,10 +55,10 @@ export default function CheckoutPage() {
           Secure Checkout
         </p>
         <h1 className="mt-4 font-display text-5xl font-light tracking-tight text-noir lg:text-6xl">
-          Confirm your details.
+          Check your details.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
-          We collect only your contact note here. Address and payment are completed securely with Stripe.
+          Enter your email here. Shipping address and payment follow securely with Stripe.
         </p>
       </header>
 
@@ -67,10 +67,10 @@ export default function CheckoutPage() {
           <div className="h-px w-16 bg-champagne" aria-hidden />
           <div className="flex flex-col gap-2">
             <p className="font-display text-3xl font-light text-noir lg:text-4xl">
-              Your selection is empty
+              Your bag is empty
             </p>
             <p className="text-sm leading-relaxed text-stone">
-              Return to the collections and choose the pieces you would like to checkout with.
+              Add a piece to your bag before checkout.
             </p>
           </div>
           <Button asChild variant="luxury-link">
@@ -106,14 +106,14 @@ export default function CheckoutPage() {
               </label>
               <label htmlFor="checkout-notes" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
-                  Order note <span className="normal-case tracking-normal">(optional)</span>
+                  Note <span className="normal-case tracking-normal">(optional)</span>
                 </span>
                 <textarea
                   id="checkout-notes"
                   rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Gifting instructions, tailoring notes..."
+                  placeholder="Gift note or delivery detail..."
                   className="w-full border border-hairline bg-background px-4 py-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
                 />
               </label>
@@ -124,7 +124,7 @@ export default function CheckoutPage() {
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
                   Payment
                 </p>
-                <p className="mt-2">Handled by Stripe on the next step.</p>
+                <p className="mt-2">Completed with Stripe on the next step.</p>
               </div>
               <div>
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
@@ -136,7 +136,7 @@ export default function CheckoutPage() {
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
                   Returns
                 </p>
-                <p className="mt-2">Thirty days, unworn and with tags intact.</p>
+                <p className="mt-2">Accepted within thirty days, unworn and tagged.</p>
               </div>
             </section>
 
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
                 Summary
               </p>
               <h2 className="mt-2 font-display text-3xl font-light text-noir">
-                Your selection
+                Your bag
               </h2>
             </div>
 
@@ -276,7 +276,7 @@ export default function CheckoutPage() {
               className="mt-8 min-h-12 w-full"
               disabled={pending || !email}
             >
-              {pending ? "Preparing…" : "Continue to Payment"}
+              {pending ? "Preparing..." : "Continue to Payment"}
             </Button>
 
             <Button
@@ -284,7 +284,7 @@ export default function CheckoutPage() {
               variant="ghost"
               className="mt-3 w-full text-xs tracking-[0.24em]"
             >
-              <Link href="/cart">Return to Your Selection</Link>
+              <Link href="/cart">Return to Bag</Link>
             </Button>
           </aside>
         </form>

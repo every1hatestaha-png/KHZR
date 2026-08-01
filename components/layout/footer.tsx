@@ -39,9 +39,9 @@ export function Footer() {
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col gap-6">
             <p className="font-display text-3xl font-light leading-snug text-noir lg:text-4xl">
-              Clothes are the least important
+              A clear line,
               <br />
-              thing we make.
+              softly worn.
             </p>
             <p className="max-w-sm text-sm leading-relaxed text-stone">
               {SITE.description}
@@ -67,7 +67,7 @@ export function Footer() {
           </p>
           <p className="text-xs text-taupe">
             © {year} {SITE.legalName} · {SITE.address.city},{" "}
-            {SITE.address.country} · Made to be kept
+            {SITE.address.country} · KHZR
           </p>
           <div className="flex items-center gap-6">
             <Link

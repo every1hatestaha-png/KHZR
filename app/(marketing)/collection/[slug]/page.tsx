@@ -17,7 +17,7 @@ const COLLECTIONS: Record<
     name: "Tailoring",
     note: "Coats · Suits · Trousers",
     description:
-      "Sharp cuts and structured cloth. Pieces built around the line of the body.",
+      "Sharp jackets, clean trousers, and outer layers with a defined line.",
     imageUrl:
       "https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&w=1600&q=80",
   },
@@ -25,7 +25,7 @@ const COLLECTIONS: Record<
     name: "Essentials",
     note: "Cashmere · Silk · Leather",
     description:
-      "The permanent wardrobe: shirting, knits, and pieces made for repeat wear.",
+      "Shirting, knits, and simple layers for repeat wear.",
     imageUrl:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80",
   },
@@ -33,15 +33,15 @@ const COLLECTIONS: Record<
     name: "Evening",
     note: "Gowns in Silk",
     description:
-      "Longer lines, fluid fabric, and pieces cut for late rooms.",
+      "Longer lines, fluid fabric, and pieces made for late rooms.",
     imageUrl:
       "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80",
   },
   archive: {
     name: "Archive",
-    note: "Numbered Reissues",
+    note: "Past Shapes",
     description:
-      "Limited pieces from past releases, returned in small numbers.",
+      "Selected shapes from past releases, returned in small runs.",
     imageUrl:
       "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1600&q=80",
   },
@@ -109,14 +109,14 @@ export default async function CollectionPage({
 
       <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
         <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
-          Catalogue coming soon
+          Coming soon
         </p>
         <p className="font-display text-3xl font-light leading-tight text-noir lg:text-5xl">
-          This edit is being prepared.
+          This edit is not open yet.
         </p>
         <p className="max-w-md text-sm leading-relaxed text-stone">
           {collection.name} will open here with product imagery, available
-          sizes, and the filters needed to move through the edit quickly.
+          sizes, and simple filters when the pieces are ready.
         </p>
       </section>
     </>

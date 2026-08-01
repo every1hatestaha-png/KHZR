@@ -24,10 +24,10 @@ export default function WishlistPage() {
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
           {count === 0
-            ? "The pieces you return to, held for a considered decision."
-            : `${count} piece${count === 1 ? "" : "s"} held for you.`}
+            ? "Save pieces while you compare size, colour, and styling."
+            : `${count} saved piece${count === 1 ? "" : "s"}.`}
           {!isSignedIn
-            ? " Signed out pieces live on this device — sign in to keep them everywhere."
+            ? " Sign in to keep them across devices."
             : null}
         </p>
       </header>
@@ -47,10 +47,10 @@ export default function WishlistPage() {
           <div className="h-px w-16 bg-champagne" aria-hidden />
           <div className="flex flex-col gap-2">
             <p className="font-display text-3xl font-light text-noir lg:text-4xl">
-              Nothing saved yet
+              No saved pieces yet
             </p>
             <p className="text-sm leading-relaxed text-stone">
-              Mark a piece with the heart to find it here.
+              Use the heart on any product to add it here.
             </p>
           </div>
           <Button asChild variant="luxury-link">

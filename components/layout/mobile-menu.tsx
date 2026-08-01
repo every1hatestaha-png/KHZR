@@ -65,7 +65,7 @@ export function MobileMenu({
 
         <div className="border-t border-hairline px-7 py-6">
           <p className="max-w-xs text-sm leading-relaxed text-stone">
-            Quiet womenswear, cut with restraint and made for daily permanence.
+            Womenswear in warm neutrals, precise cuts, and easy movement.
           </p>
         </div>
       </SheetContent>

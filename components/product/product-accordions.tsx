@@ -44,14 +44,13 @@ export function ProductAccordions({ product }: { product: ProductDetailDTO }) {
         <AccordionContent>
           <div className="flex flex-col gap-4 pb-5 text-sm leading-relaxed text-stone">
             <p>
-              Orders leave within two working days in FSC-certified packaging,
-              and arrive within five. Complimentary shipping on all orders.
+              Orders are prepared within two working days. Delivery timing is
+              confirmed at checkout.
             </p>
             <p>
-              Returns are accepted within thirty days of delivery — unworn,
-              with tags intact — and the return postage is on us. Pieces that
-              need adjustment are altered in-house, free of charge, for the
-              first year of ownership.
+              Returns are accepted within thirty days of delivery, unworn and
+              with tags intact. Contact client care for size questions before
+              placing an order.
             </p>
           </div>
         </AccordionContent>

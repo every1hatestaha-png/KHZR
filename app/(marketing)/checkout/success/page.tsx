@@ -53,8 +53,8 @@ export default async function CheckoutSuccessPage({
         title={paid ? "Thank you." : "Confirming your payment."}
         description={
           paid
-            ? `Order ${order.orderNumber} is confirmed. A confirmation email is on its way to ${order.email}.`
-            : "Your payment is being confirmed. The order details below will be finalised momentarily."
+            ? `Order ${order.orderNumber} is confirmed. We sent the details to ${order.email}.`
+            : "Your payment is being confirmed. The order details below will update shortly."
         }
         align="center"
       >
@@ -76,7 +76,7 @@ export default async function CheckoutSuccessPage({
         <OrderSummary order={order} />
         <div className="border-t border-hairline pt-6 text-center text-sm leading-relaxed text-stone">
           <p>
-            Create or sign in to your account to follow order updates and keep your saved pieces close.
+            Sign in or create an account to follow order updates and keep saved pieces in one place.
           </p>
           <Button asChild variant="luxury-link" className="mt-4">
             <Link href="/account">Go to Account</Link>
@@ -84,7 +84,7 @@ export default async function CheckoutSuccessPage({
         </div>
         {!paid ? (
           <p className="text-center text-xs uppercase tracking-[0.2em] text-taupe">
-            You will receive a confirmation email once payment clears.
+            We will email you once payment is confirmed.
           </p>
         ) : null}
       </section>

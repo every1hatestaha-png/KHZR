@@ -4,24 +4,24 @@ import { buildMetadata } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
 export const metadata = buildMetadata({
-  title: "The Maison",
+  title: "About KHZR",
   description:
-    "KHZR is an international fashion house. Garments, collections and campaigns composed with restraint.",
+    "About KHZR: womenswear shaped by precise cuts, warm neutrals and a Lahore-rooted sense of light.",
   path: "/about",
 })
 
 const PRINCIPLES = [
   {
-    title: "The Atelier",
-    body: "Garments are cut and pressed in a single atelier, from a pattern archive that is never digitised.",
+    title: "The Line",
+    body: "We start with proportion: shoulder, waist, hem, and how the piece moves when worn.",
   },
   {
-    title: "The Materials",
-    body: "Wool from a single mill, silk from a single farm, leather from a single tannery — chosen once, never changed.",
+    title: "The Palette",
+    body: "Warm white, sand, stone, noir. Colours chosen to sit together without effort.",
   },
   {
-    title: "The Promise",
-    body: "Every piece is made to be kept. Repairs, recutting and re-buttoning are offered for the life of the garment.",
+    title: "The Pace",
+    body: "Fewer drops, sharper edits, and pieces that move easily from morning to evening.",
   },
 ]
 
@@ -29,9 +29,9 @@ export default function AboutPage() {
   return (
     <>
       <PageIntro
-        kicker="The Maison"
-        title="Quiet, by design."
-        description={`${SITE.legalName} was founded on a single conviction: that clothes are the least important thing we make. What matters is the discipline around them.`}
+        kicker="About KHZR"
+        title="Clothes with a clear read."
+        description={`${SITE.legalName} works in warm neutrals, precise cuts, and clothes that hold their shape without taking over the room.`}
       />
 
       <section className="border-y border-hairline bg-ivory/50">
@@ -58,7 +58,7 @@ export default function AboutPage() {
       <div className="overflow-hidden py-12" aria-hidden>
         <Marquee slow>
           <span className="flex items-center gap-16 pr-16 font-display text-4xl font-light text-noir/25 lg:text-5xl">
-            <span>Made to be kept</span>
+            <span>Warm light. Clean lines.</span>
             <span className="h-px w-16 bg-champagne/60" />
           </span>
         </Marquee>
@@ -71,7 +71,7 @@ export default function AboutPage() {
               Correspondence
             </h2>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone">
-              Letters from the maison are answered by people, within a day.
+              Write to us for sizing, orders, or care. We reply within one working day.
             </p>
           </div>
           <div className="flex flex-col gap-3 text-sm leading-relaxed">

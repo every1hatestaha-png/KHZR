@@ -9,12 +9,11 @@ export function BrandStatement() {
             KHZR, Lahore
           </p>
           <h2 className="mt-6 font-display text-4xl font-light leading-[1.08] tracking-tight text-noir lg:text-6xl">
-            Clothes shaped by warm stone, low sun, and the discipline of a
-            clean line.
+            Cut for heat, movement, and rooms that change after sunset.
           </h2>
           <p className="mx-auto mt-7 max-w-2xl text-sm leading-relaxed text-stone lg:text-base">
-            A women&apos;s wardrobe in softened neutrals, spare cuts, and fabric
-            that moves easily between morning heat and evening rooms.
+            KHZR begins with the atmosphere of Lahore: pale walls, low sun,
+            sharp shade. The clothes keep that clarity close to the body.
           </p>
         </Reveal>
       </div>

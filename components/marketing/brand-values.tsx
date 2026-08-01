@@ -3,8 +3,8 @@ import { Reveal } from "@/components/shared/reveal"
 const VALUES = [
   {
     no: "01",
-    title: "Considered Cuts",
-    body: "Every silhouette is drafted from a couture pattern archive and cut by hand — never graded by default.",
+    title: "Clear Cuts",
+    body: "Every silhouette starts with proportion: shoulder, waist, hem, and movement.",
   },
   {
     no: "02",

@@ -17,10 +17,10 @@ export default function NotFound() {
         Error 404
       </p>
       <h1 className="font-display text-5xl font-light leading-tight tracking-tight text-noir lg:text-7xl">
-        This page has been retired.
+        This page is no longer here.
       </h1>
       <p className="max-w-md text-sm leading-relaxed text-stone">
-        The address you followed no longer exists in the maison.
+        The address may have changed, or the piece may no longer be available.
       </p>
       <Button asChild className="mt-4">
         <Link href="/">Return Home</Link>

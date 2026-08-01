@@ -22,9 +22,9 @@ export default async function HomePage() {
   const [hero, second] = campaigns
   const heroCampaign = {
     kicker: "New In",
-    title: "A softer way to stand apart.",
+    title: "Shape, softened.",
     subtitle:
-      "Modern womenswear in warm neutrals, cut close to the body and the day.",
+      "Womenswear in warm neutrals, cut for long days and late plans.",
     ctaLabel: null,
     ctaHref: null,
     imageUrl:
@@ -32,11 +32,11 @@ export default async function HomePage() {
       "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=2000&q=80",
   }
   const signatureStory = {
-    kicker: "Signature Proportion",
-    title: "A clean shoulder, a narrow waist, a longer line.",
+    kicker: "Fit Notes",
+    title: "Shoulder, waist, line.",
     subtitle:
-      "The first read is shape: fabric held close enough to frame, loose enough to move.",
-    ctaLabel: "Shop The Edit",
+      "The read is immediate: close enough to frame, loose enough to move.",
+    ctaLabel: "Shop the Edit",
     ctaHref: "/collections",
     imageUrl: second?.imageUrl ?? products[0]?.imageUrl ?? heroCampaign.imageUrl,
   }

@@ -7,7 +7,7 @@ import { checkoutSessionIdSchema } from "@/lib/validations/checkout"
 
 export const metadata = buildMetadata({
   title: "Checkout Paused",
-  description: "Your KHZR checkout was not completed.",
+  description: "Your KHZR checkout is paused and no payment was taken.",
   path: "/checkout/cancel",
   noindex: true,
 })
@@ -29,7 +29,7 @@ export default async function CheckoutCancelPage({
       <PageIntro
         kicker="Checkout"
         title="Checkout is paused."
-        description="No amount has been taken. Your selection remains available, and you can return to payment whenever you are ready."
+        description="No payment was taken. Your bag is still available when you want to return."
         align="center"
       >
         <span aria-hidden className="h-px w-16 bg-champagne" />
@@ -48,7 +48,7 @@ export default async function CheckoutCancelPage({
 
       {order ? (
         <p className="pb-16 text-center text-xs uppercase tracking-[0.2em] text-taupe">
-          Order {order.orderNumber} was not completed.
+          Order {order.orderNumber} is still unpaid.
         </p>
       ) : null}
     </>

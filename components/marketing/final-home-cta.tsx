@@ -12,7 +12,7 @@ export function FinalHomeCta() {
             New Arrivals
           </p>
           <h2 className="mt-4 font-display text-4xl font-light leading-[1.08] tracking-tight text-noir lg:text-5xl">
-            Begin with the pieces closest to now.
+            See what just arrived.
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-stone">
             {SITE.shippingNote}. Secure payment through Stripe.
@@ -20,7 +20,7 @@ export function FinalHomeCta() {
         </div>
         <Button asChild size="lg" className="min-h-11 shrink-0">
           <Link href="/collections?sort=newest">
-            Explore New Arrivals
+            Shop New Arrivals
             <ArrowRight className="ml-3 size-3.5" aria-hidden />
           </Link>
         </Button>

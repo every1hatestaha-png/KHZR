@@ -40,7 +40,7 @@ export default function CartPage() {
           Your Selection
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
-          Review each piece before payment. {SITE.shippingNote}, with returns handled calmly within thirty days.
+          Review sizes, colours, and quantities before checkout. {SITE.shippingNote}.
         </p>
       </header>
 
@@ -49,10 +49,10 @@ export default function CartPage() {
           <div className="h-px w-16 bg-champagne" aria-hidden />
           <div className="flex flex-col gap-2">
             <p className="font-display text-3xl font-light text-noir lg:text-4xl">
-              Your selection is empty
+              Your bag is empty
             </p>
             <p className="text-sm leading-relaxed text-stone">
-              Begin with one piece that sets the line, then build the rest around it.
+              Start with New In or browse by collection.
             </p>
           </div>
           <Button asChild variant="luxury-link">
@@ -93,7 +93,7 @@ export default function CartPage() {
                 Order Summary
               </p>
               <h2 className="mt-2 font-display text-3xl font-light text-noir">
-                Ready when you are.
+                Ready for checkout.
               </h2>
             </div>
 
@@ -176,7 +176,7 @@ export default function CartPage() {
               </div>
             </dl>
             <p className="mt-5 border-t border-hairline pt-5 text-xs leading-relaxed text-taupe">
-              Shipping, returns, duties, and taxes are confirmed before payment.
+              Shipping, duties, and taxes are confirmed before payment.
             </p>
 
             <Button asChild size="lg" className="mt-7 min-h-12 w-full">

@@ -1,9 +1,9 @@
 export const SITE = {
   name: "KHZR",
-  legalName: "KHZR Maison",
-  tagline: "Quiet luxury, tailored for the considered.",
+  legalName: "KHZR Studio",
+  tagline: "Womenswear with a clear line.",
   description:
-    "KHZR is an international fashion house. Garments, collections and campaigns composed with restraint — cut to last, finished by hand.",
+    "KHZR is a womenswear label for sharp silhouettes, warm neutrals, and clothes that move from day to evening.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://khzr.example.com",
   locale: "en_US",
   email: "care@khzr.example.com",
@@ -21,7 +21,7 @@ export const SITE = {
     pinterest: "https://pinterest.com",
   },
   freeShippingThreshold: 350,
-  shippingNote: "Complimentary shipping worldwide on orders over $350",
+  shippingNote: "Complimentary shipping on orders over $350",
   currency: "USD",
 } as const
 
@@ -41,12 +41,12 @@ export const FOOTER_LINKS = {
   client: [
     { label: "Shipping & Returns", href: "/contact#shipping" },
     { label: "Size & Fit", href: "/contact#size-guide" },
-    { label: "Fabric Care", href: "/contact#care" },
+    { label: "Care", href: "/contact#care" },
   ],
 } as const
 
 export const SORT_OPTIONS = [
-  { value: "featured", label: "Curated" },
+  { value: "featured", label: "Featured" },
   { value: "newest", label: "New Arrivals" },
   { value: "price-asc", label: "Price, Low to High" },
   { value: "price-desc", label: "Price, High to Low" },

@@ -263,11 +263,11 @@ function FitFabricCareSummary({ product }: { product: ProductDetailDTO }) {
   const items = [
     {
       label: "Fit",
-      value: product.subtitle ?? "A clean line with room to move.",
+      value: product.subtitle ?? "A clean fit with room to move.",
     },
     {
       label: "Fabric",
-      value: product.composition || "Selected for drape and structure.",
+      value: product.composition || "Fabric details will appear here.",
     },
     {
       label: "Care",

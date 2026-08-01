@@ -65,10 +65,10 @@ export function CartDrawer() {
             <div className="h-px w-14 bg-champagne" aria-hidden />
             <div className="flex flex-col gap-2">
               <p className="font-display text-2xl font-light text-noir">
-                Your selection is empty
+                Your bag is empty
               </p>
               <p className="text-sm leading-relaxed text-taupe">
-                Begin with a single, considered piece.
+                Start with New In or browse by collection.
               </p>
             </div>
             <Button asChild variant="luxury-link">
@@ -83,7 +83,7 @@ export function CartDrawer() {
               <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.22em] text-taupe">
                 <span>
                   {subtotal >= SITE.freeShippingThreshold
-                    ? "Complimentary shipping unlocked"
+                    ? "Shipping is complimentary"
                     : `Add ${formatMoney(remaining)} for free shipping`}
                 </span>
                 <span>{Math.round(progress)}%</span>
@@ -183,7 +183,7 @@ export function CartDrawer() {
                 </div>
               </div>
               <p className="mt-3 text-xs leading-relaxed text-taupe">
-                Duties and taxes are confirmed securely at payment.
+                Duties and taxes are shown before payment.
               </p>
               <div className="mt-6 flex flex-col gap-4">
                 <Button asChild size="lg" className="min-h-12 w-full">

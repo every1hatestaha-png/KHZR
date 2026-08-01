@@ -35,10 +35,10 @@ export function CategoryGrid({ images = [] }: { images?: string[] }) {
       <div className="mx-auto max-w-[1400px] px-5 py-16 lg:px-10 lg:py-24">
         <div className="flex flex-col gap-3 lg:max-w-xl">
           <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
-            Shop By Form
+            Shop by Shape
           </p>
           <h2 className="font-display text-4xl font-light leading-[1.06] tracking-tight text-noir lg:text-5xl">
-            Four ways into KHZR.
+            Start with the silhouette.
           </h2>
         </div>
 

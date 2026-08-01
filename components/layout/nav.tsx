@@ -25,7 +25,7 @@ const SHOP_MENU = [
   {
     href: "/collection/essentials",
     label: "Essentials",
-    note: "Quiet everyday pieces",
+    note: "Daily pieces, clean lines",
   },
 ]
 

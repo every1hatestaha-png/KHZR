@@ -5,7 +5,7 @@ const WORDS = [
   "Made to Be Kept",
   "Double-Faced Wool",
   "Bias-Cut Silk",
-  "The Evening Atelier",
+  "Evening Lines",
   "Couture Patterning",
 ]
 

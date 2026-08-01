@@ -4,7 +4,7 @@ import { buildMetadata } from "@/lib/seo"
 export const metadata: Metadata = buildMetadata({
   title: "Saved Pieces",
   description:
-    "Your KHZR saved pieces — the pieces you return to, held for a considered decision.",
+    "Your KHZR saved pieces for size, colour and styling decisions.",
   path: "/wishlist",
   noindex: true,
 })
