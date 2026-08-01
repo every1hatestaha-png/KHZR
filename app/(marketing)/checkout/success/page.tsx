@@ -63,7 +63,7 @@ export default async function CheckoutSuccessPage({
         ) : null}
       </PageIntro>
 
-      <section className="mx-auto flex max-w-[860px] flex-col gap-7 border-t border-hairline px-5 pb-24 pt-12 lg:px-10">
+      <section className="mx-auto flex max-w-[860px] flex-col gap-7 border-t border-hairline px-4 pb-24 pt-10 sm:px-5 sm:pt-12 lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <StatusBadge value={order.status} />
           <Link

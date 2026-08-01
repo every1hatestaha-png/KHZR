@@ -35,7 +35,7 @@ export default async function CheckoutCancelPage({
         <span aria-hidden className="h-px w-16 bg-champagne" />
       </PageIntro>
 
-      <section className="flex flex-col items-center justify-center gap-4 border-t border-hairline px-5 py-16 sm:flex-row">
+      <section className="flex flex-col items-center justify-center gap-4 border-t border-hairline px-4 py-14 sm:flex-row sm:px-5 sm:py-16">
         <Button asChild size="lg">
           <Link href="/checkout">
             Return to Checkout

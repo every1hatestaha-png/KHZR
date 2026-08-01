@@ -49,12 +49,12 @@ export default function CheckoutPage() {
     "h-12 w-full border border-hairline bg-background px-4 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
 
   return (
-    <div className="mx-auto max-w-[1280px] px-5 pb-24 pt-14 lg:px-10 lg:pt-24">
+    <div className="mx-auto max-w-[1280px] px-4 pb-24 pt-12 sm:px-5 sm:pt-14 lg:px-10 lg:pt-24">
       <header className="border-b border-hairline pb-9">
         <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
           Secure Checkout
         </p>
-        <h1 className="mt-4 font-display text-5xl font-light tracking-tight text-noir lg:text-6xl">
+        <h1 className="mt-4 font-display text-5xl font-light tracking-tight text-noir [overflow-wrap:anywhere] lg:text-6xl">
           Check your details.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
@@ -82,9 +82,9 @@ export default function CheckoutPage() {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mt-12 grid gap-16 lg:grid-cols-[1fr_400px]"
+          className="mt-10 grid gap-12 lg:mt-12 lg:grid-cols-[1fr_400px] lg:gap-16"
         >
-          <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-10 lg:gap-12">
             <section className="flex flex-col gap-5">
               <h2 className="font-display text-3xl font-light text-noir">
                 Contact
@@ -150,7 +150,7 @@ export default function CheckoutPage() {
             ) : null}
           </div>
 
-          <aside className="flex h-fit flex-col border border-hairline bg-ivory/35 p-7 lg:sticky lg:top-28 lg:p-8">
+          <aside className="flex h-fit flex-col border border-hairline bg-ivory/35 p-5 sm:p-7 lg:sticky lg:top-28 lg:p-8">
             <div className="border-b border-hairline pb-5">
               <p className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
                 Summary
@@ -210,6 +210,7 @@ export default function CheckoutPage() {
                 type="submit"
                 variant="outline"
                 size="sm"
+                className="h-11"
                 disabled={!code.trim()}
               >
                 Apply

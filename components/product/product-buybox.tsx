@@ -85,11 +85,17 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
     void addItem(detailToSummary(product, selectedVariant), quantity)
   }
 
+  const addLabel = soldOut
+    ? "Sold Out"
+    : selectedVariant
+      ? "Add to Bag"
+      : "Select a Size"
+
   return (
     <div className="lg:sticky lg:top-28">
       <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-4">
-          <h1 className="font-display text-4xl font-light leading-[1.05] tracking-tight text-noir lg:text-5xl">
+          <h1 className="font-display text-4xl font-light leading-[1.05] tracking-tight text-noir [overflow-wrap:anywhere] lg:text-5xl">
             {product.name}
           </h1>
 
@@ -227,11 +233,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
               onClick={handleAdd}
               disabled={soldOut || !selectedVariant}
             >
-              {soldOut
-                ? "Sold Out"
-                : selectedVariant
-                  ? "Add to Bag"
-                  : "Select a Size"}
+              {addLabel}
             </Button>
             <div className="flex items-center justify-center gap-3 border border-hairline bg-background px-4 py-3">
               <WishlistToggle
@@ -254,6 +256,25 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
 
       <div className="mt-10">
         <ProductAccordions product={product} />
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/95 px-4 py-3 backdrop-blur-md lg:hidden">
+        <div className="mx-auto flex max-w-md items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-base font-light text-noir">
+              {product.name}
+            </p>
+            <Price value={product.price} compareAt={product.compareAtPrice} className="text-xs" />
+          </div>
+          <Button
+            size="sm"
+            className="min-h-11 shrink-0 px-5"
+            onClick={handleAdd}
+            disabled={soldOut || !selectedVariant}
+          >
+            {addLabel}
+          </Button>
+        </div>
       </div>
     </div>
   )

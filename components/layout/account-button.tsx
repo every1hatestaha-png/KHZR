@@ -16,7 +16,7 @@ export function AccountButton({ className }: { className?: string }) {
     />
   )
   const base = cn(
-    "group inline-flex size-9 items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
+    "group inline-flex size-11 items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
     className
   )
 

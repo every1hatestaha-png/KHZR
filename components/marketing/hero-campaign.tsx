@@ -8,7 +8,7 @@ import type { CampaignDTO } from "@/lib/data-access/site"
 export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
   return (
     <section
-      className="relative flex min-h-[82svh] items-end overflow-hidden bg-noir lg:min-h-[88svh]"
+      className="relative flex min-h-[76svh] items-end overflow-hidden bg-noir sm:min-h-[82svh] lg:min-h-[88svh]"
       aria-label={campaign.title}
     >
       <Parallax offset={80} className="absolute inset-0">
@@ -27,7 +27,7 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
         className="absolute inset-0 bg-gradient-to-t from-noir/68 via-noir/24 to-noir/8"
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 pb-14 lg:px-10 lg:pb-24">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 pb-10 sm:px-5 sm:pb-14 lg:px-10 lg:pb-24">
         <div className="max-w-[40rem]">
           {campaign.kicker ? (
             <p className="animate-fade-up flex items-center gap-3 text-[0.6875rem] font-medium uppercase tracking-[0.34em] text-warm-white/85 [animation-delay:150ms]">
@@ -35,7 +35,7 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
               {campaign.kicker}
             </p>
           ) : null}
-          <h1 className="mt-6 animate-fade-up font-display text-5xl font-light leading-[1.02] tracking-tight text-warm-white [animation-delay:300ms] sm:text-6xl lg:text-8xl">
+          <h1 className="mt-5 animate-fade-up font-display text-5xl font-light leading-[1.02] tracking-tight text-warm-white [overflow-wrap:anywhere] [animation-delay:300ms] sm:mt-6 sm:text-6xl lg:text-8xl">
             {campaign.title}
           </h1>
           {campaign.subtitle ? (
@@ -48,7 +48,7 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
               asChild
               variant="outline"
               size="lg"
-              className="min-h-11 border-warm-white/45 text-warm-white hover:border-warm-white hover:bg-warm-white hover:text-noir"
+              className="min-h-12 border-warm-white/45 px-8 text-warm-white hover:border-warm-white hover:bg-warm-white hover:text-noir"
             >
               <Link href="/collections?sort=newest">
                 Shop New In

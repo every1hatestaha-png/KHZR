@@ -31,12 +31,12 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1280px] px-5 pb-24 pt-16 lg:px-10 lg:pt-24">
+    <div className="mx-auto max-w-[1280px] px-4 pb-24 pt-12 sm:px-5 sm:pt-16 lg:px-10 lg:pt-24">
       <header className="border-b border-hairline pb-10">
         <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
           Cart
         </p>
-        <h1 className="font-display text-5xl font-light tracking-tight text-noir lg:text-6xl">
+        <h1 className="font-display text-5xl font-light tracking-tight text-noir [overflow-wrap:anywhere] lg:text-6xl">
           Your Selection
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
@@ -62,7 +62,7 @@ export default function CartPage() {
           </Button>
         </div>
       ) : (
-        <div className="mt-12 grid gap-16 lg:grid-cols-[1fr_400px]">
+        <div className="mt-10 grid gap-12 lg:mt-12 lg:grid-cols-[1fr_400px] lg:gap-16">
           <div className="flex flex-col">
             <ul className="divide-y divide-hairline">
               {lines.map((line) => (
@@ -118,6 +118,7 @@ export default function CartPage() {
                 type="submit"
                 variant="outline"
                 size="sm"
+                className="h-11"
                 disabled={!code.trim()}
               >
                 Apply

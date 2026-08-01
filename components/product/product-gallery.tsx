@@ -44,7 +44,7 @@ export function ProductGallery({
       </div>
 
       {images.length > 1 ? (
-        <div className="grid grid-flow-col auto-cols-[4.75rem] gap-3 overflow-x-auto pb-1 lg:auto-cols-[5.5rem]" role="group" aria-label="Product images">
+        <div className="grid grid-flow-col auto-cols-[5.25rem] gap-3 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] lg:auto-cols-[5.5rem]" role="group" aria-label="Product images">
           {images.map((src, i) => (
             <button
               key={src}

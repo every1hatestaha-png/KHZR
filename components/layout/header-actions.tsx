@@ -16,7 +16,7 @@ export function HeaderActions({ className }: { className?: string }) {
     >
       <SearchLink />
       <WishlistActions />
-      <AccountButton />
+      <AccountButton className="hidden sm:inline-flex" />
       <CartActions />
     </div>
   )
@@ -27,7 +27,7 @@ function SearchLink() {
     <Link
       href="/search"
       aria-label="Search"
-      className="group inline-flex size-9 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+        className="group inline-flex size-11 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
     >
       <Search
         aria-hidden
@@ -44,7 +44,7 @@ function WishlistActions() {
     <Link
       href="/wishlist"
       aria-label={`Saved pieces, ${count} item${count === 1 ? "" : "s"}`}
-      className="group relative inline-flex size-9 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+      className="group relative inline-flex size-11 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
     >
       <Heart
         aria-hidden
@@ -70,7 +70,7 @@ function CartActions() {
       type="button"
       onClick={openCart}
       aria-label={`Open bag, ${cart.count} item${cart.count === 1 ? "" : "s"}`}
-      className="group relative inline-flex size-9 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+      className="group relative inline-flex size-11 items-center justify-center rounded-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
     >
       <ShoppingBag
         aria-hidden

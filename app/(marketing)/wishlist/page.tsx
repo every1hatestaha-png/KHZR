@@ -85,7 +85,7 @@ export default function WishlistPage() {
                     onClick={() => void toggle(item)}
                     aria-label={`Remove ${item.name} from your saved pieces`}
                     aria-pressed={saved}
-                    className="absolute right-3 top-3 inline-flex size-11 items-center justify-center rounded-none bg-warm-white/78 backdrop-blur-sm transition-colors duration-300 ease-lux hover:bg-warm-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+                    className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-none bg-warm-white/78 backdrop-blur-sm transition-colors duration-300 ease-lux hover:bg-warm-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne sm:right-3 sm:top-3"
                   >
                     <Heart
                       aria-hidden
@@ -97,28 +97,28 @@ export default function WishlistPage() {
                       type="button"
                       onClick={() => void addItem(item)}
                       aria-label={`Add ${item.name} to your selection`}
-                      className="absolute inset-x-3 bottom-3 flex h-11 translate-y-2 items-center justify-center border border-warm-white/55 bg-warm-white/82 text-[0.5625rem] font-medium uppercase tracking-[0.28em] text-noir opacity-0 backdrop-blur-sm transition-[background-color,border-color,opacity,transform] duration-[240ms] ease-lux hover:bg-warm-white active:translate-y-px focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 motion-reduce:transition-none motion-reduce:active:translate-y-0"
+                      className="absolute inset-x-2 bottom-2 flex h-11 items-center justify-center border border-warm-white/55 bg-warm-white/88 text-[0.5625rem] font-medium uppercase tracking-[0.22em] text-noir opacity-100 backdrop-blur-sm transition-[background-color,border-color,opacity,transform] duration-[240ms] ease-lux hover:bg-warm-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne sm:inset-x-3 sm:bottom-3 sm:translate-y-2 sm:tracking-[0.28em] sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 motion-reduce:transition-none motion-reduce:active:translate-y-0"
                     >
                       Add to Bag
                     </button>
                   ) : (
-                    <span className="absolute inset-x-3 bottom-3 flex h-11 items-center justify-center border border-warm-white/55 bg-warm-white/82 text-[0.5625rem] font-medium uppercase tracking-[0.28em] text-stone backdrop-blur-sm">
+                    <span className="absolute inset-x-2 bottom-2 flex h-11 items-center justify-center border border-warm-white/55 bg-warm-white/88 text-[0.5625rem] font-medium uppercase tracking-[0.22em] text-stone backdrop-blur-sm sm:inset-x-3 sm:bottom-3 sm:tracking-[0.28em]">
                       Sold Out
                     </span>
                   )}
                 </div>
 
                 <div className="mt-4 flex flex-col gap-2 px-0.5 lg:mt-5">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     <Link
                       href={`/product/${item.productSlug}`}
-                      className="font-display text-[1.0625rem] font-light leading-tight text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne lg:text-xl"
+                      className="break-words font-display text-[1.0625rem] font-light leading-tight text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne lg:text-xl"
                     >
                       {item.name}
                     </Link>
                     <Price
                       value={item.unitPrice}
-                      className="text-sm lg:text-base"
+                      className="text-sm sm:text-right lg:text-base"
                     />
                   </div>
                   {item.subtitle ? (

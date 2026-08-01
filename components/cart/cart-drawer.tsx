@@ -49,8 +49,8 @@ export function CartDrawer() {
           side="right"
           className="w-full max-w-[32rem] gap-0 border-l border-hairline bg-background p-0"
         >
-        <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-7 py-7 lg:px-9">
-          <SheetTitle className="font-display text-3xl font-light text-noir">
+        <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-5 py-5 pr-14 sm:px-7 sm:py-7 lg:px-9">
+          <SheetTitle className="font-display text-2xl font-light text-noir sm:text-3xl">
             Your Selection
             {count > 0 ? (
               <span className="ml-2 align-super text-xs font-medium tracking-[0.2em] text-taupe">
@@ -79,7 +79,7 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
-            <div className="border-b border-hairline bg-ivory/35 px-7 py-5 lg:px-9">
+            <div className="border-b border-hairline bg-ivory/35 px-5 py-4 sm:px-7 sm:py-5 lg:px-9">
               <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.22em] text-taupe">
                 <span>
                   {subtotal >= SITE.freeShippingThreshold
@@ -99,13 +99,13 @@ export function CartDrawer() {
               </div>
             </div>
 
-            <ul className="flex-1 divide-y divide-hairline overflow-y-auto px-7 lg:px-9">
+            <ul className="flex-1 divide-y divide-hairline overflow-y-auto px-5 sm:px-7 lg:px-9">
               {lines.map((line) => (
                 <CartItem key={line.id} line={line} />
               ))}
             </ul>
 
-            <div className="border-t border-hairline bg-warm-white px-7 py-7 lg:px-9">
+            <div className="border-t border-hairline bg-warm-white px-5 py-5 sm:px-7 sm:py-7 lg:px-9">
               <form onSubmit={handleApply} className="flex items-stretch gap-2" aria-label="Apply discount code">
                 <label htmlFor="drawer-discount-code" className="sr-only">
                   Discount code
@@ -116,13 +116,14 @@ export function CartDrawer() {
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="Discount code"
-                  className="h-10 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
+                  className="h-11 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
                   aria-label="Discount code"
                 />
                 <Button
                   type="submit"
                   variant="outline"
                   size="sm"
+                  className="h-11"
                   disabled={!code.trim()}
                 >
                   Apply
