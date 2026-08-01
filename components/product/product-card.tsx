@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Plus } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { LazyImage } from "@/components/shared/lazy-image"
 import { Price } from "@/components/shared/price"
@@ -28,7 +27,7 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
 
   return (
     <article className="group flex flex-col">
-      <div className="relative overflow-hidden bg-ivory">
+      <div className="relative overflow-hidden bg-ivory/80">
         <Link
           href={`/product/${product.slug}`}
           className="block aspect-[3/4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
@@ -38,12 +37,12 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
             src={product.imageUrl}
             alt={product.name}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="h-full w-full object-cover transition-transform duration-[1200ms] ease-lux group-hover:scale-[1.03]"
+            className="h-full w-full object-cover transition-transform duration-[1200ms] ease-lux group-hover:scale-[1.018]"
           />
         </Link>
 
         {product.badge || product.isNew ? (
-          <span className="absolute left-4 top-4 bg-background/85 px-2.5 py-1 text-[0.5625rem] font-medium uppercase tracking-[0.24em] text-noir backdrop-blur-sm">
+          <span className="absolute left-3 top-3 bg-warm-white/78 px-2 py-1 text-[0.5rem] font-medium uppercase tracking-[0.22em] text-stone backdrop-blur-sm">
             {product.badge
               ? BADGE_LABEL[product.badge]
               : "New"}
@@ -52,7 +51,7 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
 
         <WishlistToggle
           item={summary}
-          className="absolute right-3.5 top-3.5 size-9 bg-background/85 backdrop-blur-sm"
+          className="absolute right-3 top-3 size-11 bg-warm-white/78 text-noir backdrop-blur-sm hover:bg-warm-white"
         />
 
         {inStock ? (
@@ -60,30 +59,29 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
             type="button"
             onClick={quickAdd}
             aria-label={`Add ${product.name} to your selection`}
-            className="absolute inset-x-0 bottom-0 flex h-11 translate-y-full items-center justify-center gap-2 bg-noir/90 text-[0.625rem] font-medium uppercase tracking-[0.3em] text-warm-white backdrop-blur-sm transition-all duration-500 ease-lux focus-visible:translate-y-0 group-hover:translate-y-0 group-focus-within:translate-y-0 hover:bg-noir"
+            className="absolute inset-x-3 bottom-3 flex h-11 translate-y-2 items-center justify-center border border-warm-white/55 bg-warm-white/82 text-[0.5625rem] font-medium uppercase tracking-[0.28em] text-noir opacity-0 backdrop-blur-sm transition-all duration-500 ease-lux hover:bg-warm-white focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
           >
-            <Plus className="size-3.5" aria-hidden />
             Quick Add
           </button>
         ) : (
-          <span className="absolute inset-x-0 bottom-0 flex h-11 items-center justify-center bg-sand/90 text-[0.625rem] font-medium uppercase tracking-[0.3em] text-taupe backdrop-blur-sm" role="status" aria-live="polite">
+          <span className="absolute inset-x-3 bottom-3 flex h-11 items-center justify-center border border-warm-white/55 bg-warm-white/82 text-[0.5625rem] font-medium uppercase tracking-[0.28em] text-stone backdrop-blur-sm" role="status" aria-live="polite">
             Sold Out
           </span>
         )}
       </div>
 
-      <div className="mt-5 flex flex-col gap-1.5 px-0.5">
-        <div className="flex items-start justify-between gap-3">
+      <div className="mt-4 flex flex-col gap-2 px-0.5 lg:mt-5">
+        <div className="flex items-start justify-between gap-4">
           <Link
             href={`/product/${product.slug}`}
-            className="font-display text-lg font-normal leading-tight text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+            className="font-display text-[1.0625rem] font-light leading-tight text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne lg:text-xl"
           >
             {product.name}
           </Link>
-          <Price value={product.price} compareAt={product.compareAtPrice} className="text-lg" />
+          <Price value={product.price} compareAt={product.compareAtPrice} className="text-sm lg:text-base" />
         </div>
         {product.subtitle ? (
-          <p className="text-xs text-taupe">{product.subtitle}</p>
+          <p className="max-w-[18rem] text-xs leading-relaxed text-taupe">{product.subtitle}</p>
         ) : null}
       </div>
     </article>

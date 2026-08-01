@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { AnimatePresence, motion } from "framer-motion"
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { LazyImage } from "@/components/shared/lazy-image"
 import { cn } from "@/lib/utils"
 
@@ -15,22 +15,23 @@ export function ProductGallery({
   alt: string
 }) {
   const [index, setIndex] = React.useState(0)
+  const reduceMotion = useReducedMotion()
 
   if (images.length === 0) return null
   const current = images[Math.min(index, images.length - 1)]
   const currentAlt = `${alt} — view ${index + 1} of ${images.length}`
 
   return (
-    <div className="flex flex-col gap-4" role="region" aria-label="Product gallery">
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-ivory">
+    <div className="flex flex-col gap-5" role="region" aria-label="Product gallery">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-ivory lg:aspect-[5/6]">
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div
             key={current}
             className="absolute inset-0"
-            initial={{ opacity: 0, scale: 1.03 }}
+            initial={reduceMotion ? false : { opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.01 }}
-            transition={{ duration: 0.55, ease: EASE }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 1.005 }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.55, ease: EASE }}
           >
             <LazyImage
               src={current}
@@ -43,7 +44,7 @@ export function ProductGallery({
       </div>
 
       {images.length > 1 ? (
-        <div className="flex gap-3 overflow-x-auto pb-1" role="group" aria-label="Product images">
+        <div className="grid grid-flow-col auto-cols-[4.75rem] gap-3 overflow-x-auto pb-1 lg:auto-cols-[5.5rem]" role="group" aria-label="Product images">
           {images.map((src, i) => (
             <button
               key={src}
@@ -52,10 +53,10 @@ export function ProductGallery({
               aria-label={`View image ${i + 1} of ${images.length}`}
               aria-pressed={i === index}
               className={cn(
-                "relative aspect-[3/4] w-20 shrink-0 overflow-hidden bg-ivory transition-all duration-300 ease-lux",
+                "relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-ivory transition-all duration-300 ease-lux",
                 i === index
                   ? "outline outline-1 outline-offset-2 outline-champagne"
-                  : "opacity-60 hover:opacity-100 focus-visible:opacity-100"
+                  : "opacity-55 hover:opacity-100 focus-visible:opacity-100"
               )}
             >
               <LazyImage

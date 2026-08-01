@@ -27,8 +27,6 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   )
   const [quantity, setQuantity] = React.useState(1)
 
-  const hasColor = colors.length > 1
-
   const selectedVariant =
     product.variants.find(
       (v) =>
@@ -36,14 +34,6 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
         v.color === selectedColor &&
         v.stock > 0
     ) ?? null
-
-  const label = soldOut
-    ? "Sold Out"
-    : product.badge === "LOW_STOCK"
-      ? "Low Stock"
-      : product.isNew
-        ? "New"
-        : product.collectionName
 
   const lowStock =
     selectedVariant && selectedVariant.stock > 0 && selectedVariant.stock <= 5
@@ -99,20 +89,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
     <div className="lg:sticky lg:top-28">
       <div className="flex flex-col gap-7">
         <div className="flex flex-col gap-4">
-          <p className="flex items-center gap-3 text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
-            <span
-              className={cn(
-                "h-px w-8",
-                product.isNew || product.badge === "LOW_STOCK"
-                  ? "bg-champagne"
-                  : "bg-champagne/50"
-              )}
-              aria-hidden
-            />
-            {label}
-          </p>
-
-          <h1 className="font-display text-4xl font-light leading-[1.05] tracking-tight text-noir lg:text-[2.75rem]">
+          <h1 className="font-display text-4xl font-light leading-[1.05] tracking-tight text-noir lg:text-5xl">
             {product.name}
           </h1>
 
@@ -127,61 +104,59 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
 
         <div className="h-px bg-hairline" aria-hidden />
 
-        {hasColor ? (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
-                Colour
-              </span>
-              <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe" aria-live="polite">
-                {selectedVariant?.color ?? "Select a colour"}
-              </span>
-            </div>
-
-            <div role="radiogroup" aria-label="Colour" className="flex flex-wrap gap-2">
-              {colors.map((color) => {
-                const available =
-                  product.variants.filter(
-                    (v) =>
-                      v.color === color &&
-                      v.stock > 0 &&
-                      (!selectedSize || v.size === selectedSize)
-                  ).length > 0
-                const isSelected = selectedColor === color
-                const swatch = product.variants.find(
-                  (v) => v.color === color && v.colorHex
-                )?.colorHex
-                return (
-                  <button
-                    key={color}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    disabled={!available}
-                    onClick={() => selectColor(color)}
-                    className={cn(
-                      "flex h-11 items-center gap-2 border px-4 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
-                      isSelected
-                        ? "border-noir bg-noir text-warm-white"
-                        : "border-hairline text-noir hover:border-stone",
-                      !available &&
-                        "pointer-events-none border-transparent opacity-30 line-through"
-                    )}
-                  >
-                    {swatch ? (
-                      <span
-                        aria-label={`${color} swatch`}
-                        className="size-3 rounded-full border border-black/10"
-                        style={{ backgroundColor: swatch }}
-                      />
-                    ) : null}
-                    {color}
-                  </button>
-                )
-              })}
-            </div>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
+              Color
+            </span>
+            <span className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe" aria-live="polite">
+              {selectedVariant?.color ?? "Select a color"}
+            </span>
           </div>
-        ) : null}
+
+          <div role="radiogroup" aria-label="Color" className="flex flex-wrap gap-2">
+            {colors.map((color) => {
+              const available =
+                product.variants.filter(
+                  (v) =>
+                    v.color === color &&
+                    v.stock > 0 &&
+                    (!selectedSize || v.size === selectedSize)
+                ).length > 0
+              const isSelected = selectedColor === color
+              const swatch = product.variants.find(
+                (v) => v.color === color && v.colorHex
+              )?.colorHex
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  disabled={!available}
+                  onClick={() => selectColor(color)}
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 border px-4 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
+                    isSelected
+                      ? "border-noir bg-noir text-warm-white"
+                      : "border-hairline bg-background text-noir hover:border-stone",
+                    !available &&
+                      "pointer-events-none border-transparent opacity-30 line-through"
+                  )}
+                >
+                  {swatch ? (
+                    <span
+                      aria-label={`${color} swatch`}
+                      className="size-3 rounded-full border border-black/10"
+                      style={{ backgroundColor: swatch }}
+                    />
+                  ) : null}
+                  {color}
+                </button>
+              )
+            })}
+          </div>
+        </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -215,7 +190,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
                     "h-11 min-w-11 border px-3 text-[0.6875rem] font-medium uppercase tracking-[0.2em] transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
                     isSelected
                       ? "border-noir bg-noir text-warm-white"
-                      : "border-hairline text-noir hover:border-stone",
+                      : "border-hairline bg-background text-noir hover:border-stone",
                     !available &&
                       "pointer-events-none border-transparent opacity-30 line-through"
                   )}
@@ -245,10 +220,10 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
             />
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3">
             <Button
               size="lg"
-              className="flex-1"
+              className="min-h-12 w-full"
               onClick={handleAdd}
               disabled={soldOut || !selectedVariant}
             >
@@ -258,21 +233,58 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
                   ? "Add to Bag"
                   : "Select a Size"}
             </Button>
-            <WishlistToggle
-              item={wishlistItem}
-              className="size-14 shrink-0 border border-hairline hover:border-stone"
-            />
+            <div className="flex items-center justify-center gap-3 border border-hairline bg-background px-4 py-3">
+              <WishlistToggle
+                item={wishlistItem}
+                className="size-11 shrink-0 border border-hairline hover:border-stone"
+              />
+              <span className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-noir">
+                Save to Wishlist
+              </span>
+            </div>
           </div>
 
           <p className="text-center text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
-            Complimentary shipping · Made to be kept
+            Complimentary shipping. Secure payment through Stripe.
           </p>
         </div>
+
+        <FitFabricCareSummary product={product} />
       </div>
 
       <div className="mt-10">
         <ProductAccordions product={product} />
       </div>
     </div>
+  )
+}
+
+function FitFabricCareSummary({ product }: { product: ProductDetailDTO }) {
+  const items = [
+    {
+      label: "Fit",
+      value: product.subtitle ?? "A clean line with room to move.",
+    },
+    {
+      label: "Fabric",
+      value: product.composition || "Selected for drape and structure.",
+    },
+    {
+      label: "Care",
+      value: product.care || "Handle gently between wears.",
+    },
+  ]
+
+  return (
+    <dl className="grid gap-0 border-y border-hairline text-sm leading-relaxed text-stone">
+      {items.map((item) => (
+        <div key={item.label} className="grid grid-cols-[5rem_1fr] gap-4 border-b border-hairline py-4 last:border-b-0">
+          <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
+            {item.label}
+          </dt>
+          <dd>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }

@@ -14,34 +14,34 @@ const COLLECTIONS: Record<
   { name: string; note: string; description: string; imageUrl: string }
 > = {
   tailoring: {
-    name: "The Tailoring Room",
+    name: "Tailoring",
     note: "Coats · Suits · Trousers",
     description:
-      "Architectural cuts and double-faced cloth. Garments built around the body with a couture pattern archive.",
+      "Sharp cuts and structured cloth. Pieces built around the line of the body.",
     imageUrl:
       "https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&w=1600&q=80",
   },
   essentials: {
-    name: "Crafted Essentials",
+    name: "Essentials",
     note: "Cashmere · Silk · Leather",
     description:
-      "The permanent wardrobe: silk-twill shirting, cashmere roll-necks and leather goods worn daily.",
+      "The permanent wardrobe: shirting, knits, and pieces made for repeat wear.",
     imageUrl:
       "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80",
   },
   evening: {
-    name: "The Evening Atelier",
+    name: "Evening",
     note: "Gowns in Silk",
     description:
-      "Gowns in silk charmeuse and duchesse satin, cut for the hour between dusk and midnight.",
+      "Longer lines, fluid fabric, and pieces cut for late rooms.",
     imageUrl:
       "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80",
   },
   archive: {
-    name: "Atelier Archive",
+    name: "Archive",
     note: "Numbered Reissues",
     description:
-      "Limited pieces from past ateliers, reissued in small numbers. Numbered, never repeated.",
+      "Limited pieces from past releases, returned in small numbers.",
     imageUrl:
       "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1600&q=80",
   },
@@ -107,13 +107,16 @@ export default async function CollectionPage({
         </Button>
       </PageIntro>
 
-      <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline px-5 py-20 text-center lg:px-10 lg:py-28">
-        <p className="font-display text-3xl font-light text-noir lg:text-4xl">
-          The collection is being dressed.
+      <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
+        <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
+          Catalogue coming soon
         </p>
-        <p className="max-w-md text-sm leading-relaxed text-taupe">
-          {collection.name} opens with the full catalogue — pieces, sizes and
-          the campaign imagery that defines the room.
+        <p className="font-display text-3xl font-light leading-tight text-noir lg:text-5xl">
+          This edit is being prepared.
+        </p>
+        <p className="max-w-md text-sm leading-relaxed text-stone">
+          {collection.name} will open here with product imagery, available
+          sizes, and the filters needed to move through the edit quickly.
         </p>
       </section>
     </>

@@ -17,20 +17,20 @@ export function ProductAccordions({ product }: { product: ProductDetailDTO }) {
           Details & Care
         </AccordionTrigger>
         <AccordionContent>
-          <div className="flex flex-col gap-4 pb-5 text-sm leading-relaxed text-stone">
+          <div className="flex flex-col gap-5 pb-5 text-sm leading-relaxed text-stone">
             <p>{product.description}</p>
-            <dl className="flex flex-col gap-2 border-t border-hairline pt-4">
-              <div className="flex justify-between gap-6">
+            <dl className="flex flex-col gap-3 border-t border-hairline pt-5">
+              <div className="grid grid-cols-[7.5rem_1fr] gap-6">
                 <dt className="shrink-0 text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
                   Composition
                 </dt>
-                <dd className="text-right">{product.composition}</dd>
+                <dd>{product.composition}</dd>
               </div>
-              <div className="flex justify-between gap-6">
+              <div className="grid grid-cols-[7.5rem_1fr] gap-6">
                 <dt className="shrink-0 text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
                   Care
                 </dt>
-                <dd className="text-right">{product.care}</dd>
+                <dd>{product.care}</dd>
               </div>
             </dl>
           </div>
@@ -44,9 +44,8 @@ export function ProductAccordions({ product }: { product: ProductDetailDTO }) {
         <AccordionContent>
           <div className="flex flex-col gap-4 pb-5 text-sm leading-relaxed text-stone">
             <p>
-              Every KHZR piece is made to be kept. Orders leave the atelier
-              within two working days in FSC-certified packaging, and arrive
-              within five. Complimentary shipping on all orders.
+              Orders leave within two working days in FSC-certified packaging,
+              and arrive within five. Complimentary shipping on all orders.
             </p>
             <p>
               Returns are accepted within thirty days of delivery — unworn,

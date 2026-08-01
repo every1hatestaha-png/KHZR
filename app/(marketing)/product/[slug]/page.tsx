@@ -64,8 +64,8 @@ export default async function ProductPage({
 
   return (
     <>
-      <section className="mx-auto max-w-[1400px] px-5 pb-20 pt-10 lg:px-10 lg:pb-28 lg:pt-14">
-        <nav aria-label="Breadcrumb" className="mb-8">
+      <section className="mx-auto max-w-[1500px] px-5 pb-20 pt-8 lg:px-10 lg:pb-28 lg:pt-12">
+        <nav aria-label="Breadcrumb" className="mb-8 lg:mb-10">
           <ol className="flex flex-wrap items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
             <li>
               <Link
@@ -91,23 +91,23 @@ export default async function ProductPage({
           </ol>
         </nav>
 
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
-          <Reveal className="lg:col-span-7">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-20">
+          <Reveal className="lg:col-span-7 xl:col-span-8">
             <ProductGallery images={product.images} alt={product.name} />
           </Reveal>
-          <Reveal delay={0.1} className="lg:col-span-5">
+          <Reveal delay={0.1} className="lg:col-span-5 xl:col-span-4">
             <ProductBuybox product={product} />
           </Reveal>
         </div>
       </section>
 
       {related.length > 0 ? (
-        <section className="border-t border-hairline">
+        <section className="border-t border-hairline bg-ivory/30">
           <div className="mx-auto max-w-[1400px] px-5 py-20 lg:px-10 lg:py-28">
             <SectionHeading
               kicker="Continue"
-              title="You May Also Like"
-              description="Pieces from the same atelier, cut from the same cloth and the same conviction."
+              title="Complete the Edit"
+              description="Related pieces with the same attention to line, fabric, and proportion."
             />
             <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
               {related.map((p, i) => (
