@@ -5,6 +5,7 @@ export const metadata = buildMetadata({
   title: "Search",
   description: "Search the KHZR catalogue.",
   path: "/search",
+  noindex: true,
 })
 
 export default function SearchPage() {

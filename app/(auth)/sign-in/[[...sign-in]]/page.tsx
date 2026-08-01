@@ -7,6 +7,7 @@ export const metadata = buildMetadata({
   title: "Sign in",
   description: "Sign in to your KHZR account.",
   path: "/sign-in",
+  noindex: true,
 })
 
 export default function SignInPage() {

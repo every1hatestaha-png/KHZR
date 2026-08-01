@@ -7,6 +7,7 @@ export const metadata = buildMetadata({
   title: "Create account",
   description: "Create a KHZR account.",
   path: "/sign-up",
+  noindex: true,
 })
 
 export default function SignUpPage() {

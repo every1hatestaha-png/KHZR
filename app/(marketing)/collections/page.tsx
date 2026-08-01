@@ -3,13 +3,6 @@ import { CollectionCard } from "@/components/collections/collection-card"
 import { buildMetadata, jsonLdItemList } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
-export const metadata = buildMetadata({
-  title: "Collections",
-  description:
-    "The tailoring room, crafted essentials, the evening atelier and the archive — the full KHZR maison offering.",
-  path: "/collections",
-})
-
 const COLLECTIONS = [
   {
     slug: "tailoring",
@@ -44,6 +37,14 @@ const COLLECTIONS = [
     featured: false,
   },
 ]
+
+export const metadata = buildMetadata({
+  title: "Collections",
+  description:
+    "The tailoring room, crafted essentials, the evening atelier and the archive — the full KHZR maison offering.",
+  path: "/collections",
+  image: COLLECTIONS[0].imageUrl,
+})
 
 export default function CollectionsPage() {
   return (

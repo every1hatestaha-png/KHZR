@@ -6,6 +6,7 @@ export const metadata = buildMetadata({
   title: "Page not found",
   description: "The page you are looking for does not exist.",
   path: "/404",
+  noindex: true,
 })
 
 export default function NotFound() {

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next"
 import { SITE } from "@/lib/constants"
 import { isDatabaseConfigured } from "@/lib/services/cart-service"
+import { FALLBACK_PRODUCTS } from "@/lib/fallback-content"
 
 const STATIC_ROUTES = [
   "",
@@ -13,9 +14,9 @@ const STATIC_ROUTES = [
   "/journal",
   "/about",
   "/contact",
-  "/search",
-  "/cart",
 ]
+
+const FALLBACK_PRODUCT_SLUGS = FALLBACK_PRODUCTS.map((p) => p.slug)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = STATIC_ROUTES.map((route) => ({
@@ -72,9 +73,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }))
       )
     } catch {
-      // Database unreachable — serve the static routes only.
+      // Database unreachable — fall through to the editorial catalogue.
     }
+  } else {
+    routes.push(
+      ...FALLBACK_PRODUCT_SLUGS.map((slug) => ({
+        url: `${SITE.url}/product/${slug}`,
+        lastModified: new Date(),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      }))
+    )
   }
 
-  return routes
+  const byUrl = new Map<string, MetadataRoute.Sitemap[number]>()
+  for (const route of routes) byUrl.set(route.url, route)
+
+  return [...byUrl.values()]
 }

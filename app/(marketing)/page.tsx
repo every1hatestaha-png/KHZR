@@ -8,7 +8,6 @@ import { buildMetadata, jsonLdItemList } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
 export const metadata = buildMetadata({
-  title: SITE.tagline,
   description: SITE.description,
   path: "/",
 })

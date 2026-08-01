@@ -2,32 +2,47 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { PageIntro } from "@/components/shared/page-intro"
 import { Button } from "@/components/ui/button"
-import { buildMetadata } from "@/lib/seo"
+import {
+  buildMetadata,
+  jsonLdBreadcrumbs,
+  jsonLdCollection,
+} from "@/lib/seo"
 
-const COLLECTIONS: Record<string, { name: string; note: string; description: string }> = {
+const COLLECTIONS: Record<
+  string,
+  { name: string; note: string; description: string; imageUrl: string }
+> = {
   tailoring: {
     name: "The Tailoring Room",
     note: "Coats · Suits · Trousers",
     description:
       "Architectural cuts and double-faced cloth. Garments built around the body with a couture pattern archive.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&w=1600&q=80",
   },
   essentials: {
     name: "Crafted Essentials",
     note: "Cashmere · Silk · Leather",
     description:
       "The permanent wardrobe: silk-twill shirting, cashmere roll-necks and leather goods worn daily.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80",
   },
   evening: {
     name: "The Evening Atelier",
     note: "Gowns in Silk",
     description:
       "Gowns in silk charmeuse and duchesse satin, cut for the hour between dusk and midnight.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80",
   },
   archive: {
     name: "Atelier Archive",
     note: "Numbered Reissues",
     description:
       "Limited pieces from past ateliers, reissued in small numbers. Numbered, never repeated.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1600&q=80",
   },
 }
 
@@ -47,6 +62,7 @@ export async function generateMetadata({
     title: collection.name,
     description: collection.description,
     path: `/collection/${slug}`,
+    image: collection.imageUrl,
   })
 }
 
@@ -59,8 +75,27 @@ export default async function CollectionPage({
   const collection = COLLECTIONS[slug]
   if (!collection) notFound()
 
+  const breadcrumbLd = jsonLdBreadcrumbs([
+    { name: "Collections", url: "/collections" },
+    { name: collection.name, url: `/collection/${slug}` },
+  ])
+  const collectionLd = jsonLdCollection({
+    name: collection.name,
+    description: collection.description,
+    url: `/collection/${slug}`,
+    image: collection.imageUrl,
+  })
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
+      />
       <PageIntro
         kicker={collection.note}
         title={collection.name}

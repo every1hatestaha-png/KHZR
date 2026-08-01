@@ -3,7 +3,7 @@ import { Cormorant_Garamond, Inter } from "next/font/google"
 import "./globals.css"
 import { Providers } from "@/components/providers/providers"
 import { SITE } from "@/lib/constants"
-import { jsonLdOrganization } from "@/lib/seo"
+import { jsonLdOrganization, jsonLdWebsite } from "@/lib/seo"
 
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
@@ -41,7 +41,13 @@ export const metadata: Metadata = {
     title: `${SITE.name} — ${SITE.tagline}`,
     description: SITE.description,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    "max-snippet": -1,
+    "max-image-preview": "large",
+    "max-video-preview": -1,
+  },
 }
 
 export const viewport: Viewport = {
@@ -69,6 +75,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite()) }}
         />
       </body>
     </html>

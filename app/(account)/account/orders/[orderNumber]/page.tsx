@@ -7,6 +7,14 @@ import { Button } from "@/components/ui/button"
 import { resolveDbUser } from "@/lib/services/user-service"
 import { getAccountOrderDetail } from "@/lib/data-access/orders"
 import { formatDate } from "@/lib/utils"
+import { buildMetadata } from "@/lib/seo"
+
+export const metadata = buildMetadata({
+  title: "Order Details",
+  description: "Your KHZR order details.",
+  path: "/account/orders/[orderNumber]",
+  noindex: true,
+})
 
 export const dynamic = "force-dynamic"
 

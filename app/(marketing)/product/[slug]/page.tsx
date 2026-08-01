@@ -6,7 +6,11 @@ import { ProductCard } from "@/components/product/product-card"
 import { ProductGallery } from "@/components/product/product-gallery"
 import { Reveal } from "@/components/shared/reveal"
 import { SectionHeading } from "@/components/shared/section-heading"
-import { buildMetadata, jsonLdProduct } from "@/lib/seo"
+import {
+  buildMetadata,
+  jsonLdBreadcrumbs,
+  jsonLdProduct,
+} from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 import { getProductBySlug, getRelatedProducts } from "@/lib/data-access/site"
 
@@ -39,6 +43,7 @@ export default async function ProductPage({
 
   const related = await getRelatedProducts(product.slug, product.collectionSlug, 4)
   const available = product.variants.some((v) => v.stock > 0)
+  const productUrl = `${SITE.url}/product/${product.slug}`
   const jsonLd = jsonLdProduct({
     name: product.name,
     description: product.description,
@@ -46,9 +51,15 @@ export default async function ProductPage({
     price: product.price.toFixed(2),
     currency: product.currency,
     sku: product.sku,
-    url: `${SITE.url}/product/${product.slug}`,
+    url: productUrl,
     availability: available ? "InStock" : "OutOfStock",
+    collectionName: product.collectionName,
   })
+  const breadcrumbLd = jsonLdBreadcrumbs([
+    { name: "Collections", url: "/collections" },
+    { name: product.collectionName || "Collection", url: `/collection/${product.collectionSlug}` },
+    { name: product.name, url: `/product/${product.slug}` },
+  ])
 
   return (
     <>
@@ -108,6 +119,10 @@ export default async function ProductPage({
         </section>
       ) : null}
 
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

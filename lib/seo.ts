@@ -11,43 +11,51 @@ type SeoArgs = {
   noindex?: boolean
 }
 
+/** Absolute URL builder, anchored to the configured metadataBase. */
+export function absoluteUrl(path = "/"): string {
+  if (/^https?:\/\//.test(path)) return path
+  return `${SITE.url}${path === "/" ? "/" : `/${path.replace(/^\//, "")}`}`
+}
+
 export function buildMetadata({
   title,
   description = SITE.description,
   path = "/",
-  image,
+  image = "/opengraph-image",
   type = "website",
   publishedTime,
   noindex = false,
 }: SeoArgs = {}): Metadata {
-  const url = `${SITE.url}${path}`
-  const images = image
-    ? [{ url: image, width: 1200, height: 630, alt: title ?? SITE.name }]
-    : undefined
+  const url = absoluteUrl(path)
+  const resolvedImage = absoluteUrl(image)
 
   return {
-    title: title
-      ? { default: `${title} — ${SITE.name}`, template: `%s — ${SITE.name}` }
-      : { default: `${SITE.name} — ${SITE.tagline}`, template: `%s — ${SITE.name}` },
+    ...(title ? { title } : {}),
     description,
     alternates: { canonical: url },
     openGraph: {
-      title: title ?? SITE.name,
+      title: title ?? `${SITE.name} — ${SITE.tagline}`,
       description,
       url,
       siteName: SITE.name,
       locale: SITE.locale,
       type,
-      images,
+      images: [{ url: resolvedImage, alt: title ?? SITE.name }],
       ...(publishedTime ? { publishedTime } : {}),
     },
     twitter: {
       card: "summary_large_image",
-      title: title ?? SITE.name,
+      title: title ?? `${SITE.name} — ${SITE.tagline}`,
       description,
-      images,
+      images: [resolvedImage],
     },
-    robots: { index: !noindex, follow: true },
+    robots: {
+      index: !noindex,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
   }
 }
 
@@ -55,8 +63,16 @@ export function jsonLdOrganization() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE.url}/#organization`,
     name: SITE.legalName,
+    alternateName: SITE.name,
     url: SITE.url,
+    logo: {
+      "@type": "ImageObject",
+      url: `${SITE.url}/icon`,
+    },
+    slogan: SITE.tagline,
+    description: SITE.description,
     email: SITE.email,
     telephone: SITE.phone,
     address: {
@@ -71,6 +87,19 @@ export function jsonLdOrganization() {
   }
 }
 
+export function jsonLdWebsite() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE.url}/#website`,
+    name: SITE.name,
+    alternateName: SITE.legalName,
+    url: SITE.url,
+    description: SITE.description,
+    publisher: { "@id": `${SITE.url}/#organization` },
+  }
+}
+
 export function jsonLdProduct(input: {
   name: string
   description?: string | null
@@ -80,22 +109,27 @@ export function jsonLdProduct(input: {
   sku?: string | null
   url: string
   availability?: "InStock" | "OutOfStock" | "PreOrder"
+  collectionName?: string | null
   aggregateRating?: { rating: number; count: number }
 }) {
   return {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${input.url}#product`,
     name: input.name,
     description: input.description ?? undefined,
     image: input.image ?? undefined,
     sku: input.sku ?? undefined,
     brand: { "@type": "Brand", name: SITE.name },
+    category: input.collectionName ?? undefined,
     offers: {
       "@type": "Offer",
+      "@id": `${input.url}#offer`,
       price: input.price,
       priceCurrency: input.currency ?? SITE.currency,
       url: input.url,
       availability: `https://schema.org/${input.availability ?? "InStock"}`,
+      itemCondition: "https://schema.org/NewCondition",
     },
     ...(input.aggregateRating
       ? {
@@ -106,6 +140,24 @@ export function jsonLdProduct(input: {
           },
         }
       : {}),
+  }
+}
+
+export function jsonLdCollection(input: {
+  name: string
+  description?: string | null
+  url: string
+  image?: string | null
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${absoluteUrl(input.url)}#collection`,
+    name: input.name,
+    description: input.description ?? undefined,
+    url: absoluteUrl(input.url),
+    ...(input.image ? { primaryImageOfPage: { "@type": "ImageObject", url: input.image } } : {}),
+    isPartOf: { "@id": `${SITE.url}/#website` },
   }
 }
 
@@ -132,7 +184,7 @@ export function jsonLdBreadcrumbs(
       "@type": "ListItem",
       position: i + 1,
       name: item.name,
-      item: item.url,
+      item: absoluteUrl(item.url),
     })),
   }
 }
