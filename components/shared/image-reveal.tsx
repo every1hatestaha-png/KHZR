@@ -4,7 +4,7 @@ import * as React from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
-const EASE = [0.65, 0, 0.35, 1] as const
+const EASE = [0.22, 1, 0.36, 1] as const
 
 type ImageRevealProps = {
   children: React.ReactNode
@@ -25,7 +25,7 @@ export function ImageReveal({
   children,
   className,
   delay = 0,
-  duration = 1.4,
+  duration = 0.9,
   from = "bottom",
 }: ImageRevealProps) {
   const reduceMotion = useReducedMotion()
@@ -42,13 +42,13 @@ export function ImageReveal({
           : { clipPath: "inset(0% 0% 0% 0%)" }
       }
       viewport={{ once: true, margin: "-64px" }}
-      transition={{ duration, delay, ease: EASE }}
+      transition={{ duration: reduceMotion ? 0.01 : duration, delay: reduceMotion ? 0 : delay, ease: EASE }}
     >
       <motion.div
-        initial={reduceMotion ? undefined : { scale: 1.08 }}
+        initial={reduceMotion ? undefined : { scale: 1.03 }}
         whileInView={reduceMotion ? undefined : { scale: 1 }}
         viewport={{ once: true, margin: "-64px" }}
-        transition={{ duration, delay, ease: EASE }}
+        transition={{ duration: reduceMotion ? 0.01 : duration, delay: reduceMotion ? 0 : delay, ease: EASE }}
         className="h-full w-full"
       >
         {children}

@@ -33,7 +33,7 @@ export function LazyImage({
       decoding="async"
       sizes={sizes ?? "(max-width: 768px) 100vw, 50vw"}
       className={cn(
-        "bg-ivory transition-opacity duration-700 motion-reduce:transition-none",
+        "bg-ivory transition-opacity duration-[450ms] ease-lux motion-reduce:transition-none",
         loaded ? "opacity-100" : "opacity-0",
         className
       )}

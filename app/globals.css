@@ -70,8 +70,8 @@
   --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
   --animate-marquee: marquee 42s linear infinite;
   --animate-marquee-slow: marquee 64s linear infinite;
-  --animate-shimmer: shimmer 2.4s linear infinite;
-  --animate-fade-up: fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shimmer: shimmer 3s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  --animate-fade-up: fade-up 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
 
   @keyframes marquee {
     from {
@@ -201,6 +201,15 @@
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
     }
   }
 }

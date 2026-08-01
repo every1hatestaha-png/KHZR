@@ -91,7 +91,7 @@ export function CartDrawer() {
               <div className="mt-3 h-px w-full bg-sand" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Free shipping progress">
                 <div
                   className={cn(
-                    "h-px bg-champagne transition-all duration-700 ease-lux",
+                    "h-px bg-champagne transition-[width,opacity] duration-[420ms] ease-lux motion-reduce:transition-none",
                     hydrated ? "opacity-100" : "opacity-40"
                   )}
                   style={{ width: `${progress}%` }}

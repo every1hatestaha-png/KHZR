@@ -50,7 +50,7 @@ export function CollectionCard({
           </div>
           <ArrowRight
             aria-hidden
-            className="size-4 shrink-0 text-champagne opacity-0 transition-all duration-500 ease-lux group-hover:translate-x-1 group-hover:opacity-100"
+            className="size-4 shrink-0 text-champagne opacity-0 transition-[opacity,transform] duration-[240ms] ease-lux group-hover:translate-x-1 group-hover:opacity-100 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
           />
         </div>
       </Link>

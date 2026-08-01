@@ -22,7 +22,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full">
       <div
         className={cn(
-          "relative transition-[border-color,background-color] duration-500 ease-lux",
+          "relative transition-[border-color,background-color] duration-[320ms] ease-lux motion-reduce:transition-none",
           scrolled
             ? "border-b border-hairline bg-background/92 backdrop-blur-md"
             : "border-b border-transparent bg-background/60 backdrop-blur-sm"

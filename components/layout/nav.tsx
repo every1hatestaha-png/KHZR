@@ -51,7 +51,7 @@ function NavLink({
       <span
         aria-hidden
         className={cn(
-          "absolute bottom-0 left-0 h-px bg-champagne transition-transform duration-500 ease-lux",
+          "absolute bottom-0 left-0 h-px bg-champagne transition-transform duration-[260ms] ease-lux motion-reduce:transition-none",
           active ? "w-full" : "w-0 group-hover:w-full"
         )}
       />
@@ -109,7 +109,7 @@ export function Nav({ className }: { className?: string }) {
               <div
                 role="menu"
                 className={cn(
-                  "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 backdrop-blur-md transition-all duration-500 ease-lux",
+                  "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 backdrop-blur-md transition-[opacity,visibility] duration-[360ms] ease-lux motion-reduce:transition-none",
                   mega && "visible opacity-100"
                 )}
               >

@@ -33,14 +33,14 @@ export function WishlistToggle({
       }
       aria-pressed={saved}
       className={cn(
-        "inline-flex items-center justify-center rounded-none transition-colors duration-300 ease-lux focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne",
+        "inline-flex items-center justify-center rounded-none transition-[background-color,border-color,color,transform] duration-[220ms] ease-lux active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne motion-reduce:transition-none motion-reduce:active:scale-100",
         className
       )}
     >
       <Heart
         aria-hidden
         className={cn(
-          "size-4.5 stroke-[1.4] transition-colors",
+          "size-4.5 stroke-[1.4] transition-[color,fill,stroke] duration-[220ms] ease-lux motion-reduce:transition-none",
           saved
             ? "fill-noir stroke-noir"
             : "text-noir group-hover:text-stone"

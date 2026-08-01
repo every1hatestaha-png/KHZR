@@ -31,7 +31,7 @@ export function ProductGallery({
             initial={reduceMotion ? false : { opacity: 0, scale: 1.02 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 1.005 }}
-            transition={{ duration: reduceMotion ? 0.01 : 0.55, ease: EASE }}
+            transition={{ duration: reduceMotion ? 0.01 : 0.28, ease: EASE }}
           >
             <LazyImage
               src={current}
@@ -53,7 +53,7 @@ export function ProductGallery({
               aria-label={`View image ${i + 1} of ${images.length}`}
               aria-pressed={i === index}
               className={cn(
-                "relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-ivory transition-all duration-300 ease-lux",
+                "relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-ivory transition-[opacity,outline-color] duration-[220ms] ease-lux motion-reduce:transition-none",
                 i === index
                   ? "outline outline-1 outline-offset-2 outline-champagne"
                   : "opacity-55 hover:opacity-100 focus-visible:opacity-100"

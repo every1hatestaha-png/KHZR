@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
             src={product.imageUrl}
             alt={product.name}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="h-full w-full object-cover transition-transform duration-[1200ms] ease-lux group-hover:scale-[1.018]"
+            className="h-full w-full object-cover transition-transform duration-[700ms] ease-lux group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
           />
         </Link>
 
@@ -59,7 +59,7 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
             type="button"
             onClick={quickAdd}
             aria-label={`Add ${product.name} to your selection`}
-            className="absolute inset-x-3 bottom-3 flex h-11 translate-y-2 items-center justify-center border border-warm-white/55 bg-warm-white/82 text-[0.5625rem] font-medium uppercase tracking-[0.28em] text-noir opacity-0 backdrop-blur-sm transition-all duration-500 ease-lux hover:bg-warm-white focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
+            className="absolute inset-x-3 bottom-3 flex h-11 translate-y-2 items-center justify-center border border-warm-white/55 bg-warm-white/82 text-[0.5625rem] font-medium uppercase tracking-[0.28em] text-noir opacity-0 backdrop-blur-sm transition-[background-color,border-color,opacity,transform] duration-[240ms] ease-lux hover:bg-warm-white active:translate-y-px focus-visible:translate-y-0 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 motion-reduce:transition-none motion-reduce:active:translate-y-0"
           >
             Quick Add
           </button>

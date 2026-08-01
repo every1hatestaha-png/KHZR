@@ -5,7 +5,7 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap outline-none transition-all duration-300 ease-lux select-none focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap outline-none transition-[background-color,border-color,color,opacity,transform] duration-[220ms] ease-lux select-none active:translate-y-px focus-visible:ring-2 focus-visible:ring-champagne focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -21,7 +21,7 @@ const buttonVariants = cva(
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:ring-destructive/20",
         link: "text-noir underline-offset-8 hover:text-champagne hover:underline",
         "luxury-link":
-          "relative px-1 text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-noir transition-colors hover:text-stone after:absolute after:bottom-[-6px] after:left-0 after:h-px after:w-full after:origin-left after:scale-x-100 after:bg-champagne after:transition-transform after:duration-500 after:ease-lux hover:after:origin-right hover:after:scale-x-0",
+          "relative px-1 text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-noir transition-colors duration-[220ms] hover:text-stone after:absolute after:bottom-[-6px] after:left-0 after:h-px after:w-full after:origin-left after:scale-x-100 after:bg-champagne after:transition-transform after:duration-[280ms] after:ease-lux hover:after:origin-right hover:after:scale-x-0 motion-reduce:after:transition-none",
       },
       size: {
         default:
