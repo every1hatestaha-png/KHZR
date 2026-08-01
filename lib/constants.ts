@@ -26,25 +26,22 @@ export const SITE = {
 } as const
 
 export const NAV_LINKS = [
+  { label: "New In", href: "/collections?sort=newest" },
+  { label: "Shop", href: "/collections" },
   { label: "Collections", href: "/collections" },
-  { label: "Lookbook", href: "/lookbook" },
-  { label: "Journal", href: "/journal" },
-  { label: "Maison", href: "/about" },
+  { label: "Occasion", href: "/collection/evening" },
+  { label: "Essentials", href: "/collection/essentials" },
 ] as const
 
 export const FOOTER_LINKS = {
   house: [
-    { label: "Our Story", href: "/about" },
+    { label: "About KHZR", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "Careers", href: "/about#careers" },
-    { label: "Sustainability", href: "/about#sustainability" },
   ],
   client: [
     { label: "Shipping & Returns", href: "/contact#shipping" },
-    { label: "Size Guide", href: "/contact#size-guide" },
-    { label: "Care Guide", href: "/journal" },
-    { label: "Privacy", href: "/privacy" },
-    { label: "Terms", href: "/terms" },
+    { label: "Size & Fit", href: "/contact#size-guide" },
+    { label: "Fabric Care", href: "/contact#care" },
   ],
 } as const
 

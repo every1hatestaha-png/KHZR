@@ -6,26 +6,26 @@ import { usePathname } from "next/navigation"
 import { NAV_LINKS } from "@/lib/constants"
 import { cn } from "@/lib/utils"
 
-const COLLECTION_MENU = [
+const SHOP_MENU = [
   {
-    slug: "tailoring",
-    name: "The Tailoring Room",
-    note: "Coats, suits, trousers",
+    href: "/collections?sort=newest",
+    label: "New In",
+    note: "The current edit",
   },
   {
-    slug: "essentials",
-    name: "Crafted Essentials",
-    note: "Cashmere, silk, leather",
+    href: "/collections",
+    label: "All Clothing",
+    note: "Dresses, sets, separates",
   },
   {
-    slug: "evening",
-    name: "The Evening Atelier",
-    note: "Gowns in silk",
+    href: "/collection/evening",
+    label: "Occasion",
+    note: "Evening and event dressing",
   },
   {
-    slug: "archive",
-    name: "Atelier Archive",
-    note: "Numbered reissues",
+    href: "/collection/essentials",
+    label: "Essentials",
+    note: "Quiet everyday pieces",
   },
 ]
 
@@ -61,8 +61,22 @@ function NavLink({
 
 export function Nav({ className }: { className?: string }) {
   const pathname = usePathname()
-  const isCollections = pathname.startsWith("/collection")
   const [mega, setMega] = React.useState(false)
+
+  function activeFor(label: string, href: string) {
+    if (label === "Occasion") return pathname === "/collection/evening"
+    if (label === "Essentials") return pathname === "/collection/essentials"
+    if (label === "Collections") {
+      return (
+        pathname === "/collections" ||
+        (pathname.startsWith("/collection") &&
+          pathname !== "/collection/evening" &&
+          pathname !== "/collection/essentials")
+      )
+    }
+    if (label === "Shop" || label === "New In") return false
+    return pathname === href
+  }
 
   return (
     <nav
@@ -70,71 +84,60 @@ export function Nav({ className }: { className?: string }) {
       className={cn("flex items-center", className)}
     >
       <ul className="flex items-center gap-8">
-        <li
-          className="group"
-          onMouseEnter={() => setMega(true)}
-          onMouseLeave={() => setMega(false)}
-          onFocus={() => setMega(true)}
-          onBlur={(e) => {
-            if (!e.currentTarget.contains(e.relatedTarget)) setMega(false)
-          }}
-        >
-          <NavLink href="/collections" label="Collections" active={isCollections} />
-          <div
-            role="menu"
-            className={cn(
-              "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 shadow-[0_24px_48px_-24px_rgba(18,17,16,0.18)] backdrop-blur-md transition-all duration-500 ease-lux",
-              mega && "visible opacity-100"
-            )}
+        {NAV_LINKS.map((link) => (
+          <li
+            key={`${link.label}-${link.href}`}
+            className="group"
+            onMouseEnter={() => link.label === "Shop" && setMega(true)}
+            onMouseLeave={() => link.label === "Shop" && setMega(false)}
+            onFocus={() => link.label === "Shop" && setMega(true)}
+            onBlur={(e) => {
+              if (
+                link.label === "Shop" &&
+                !e.currentTarget.contains(e.relatedTarget)
+              ) {
+                setMega(false)
+              }
+            }}
           >
-            <div className="mx-auto grid max-w-6xl grid-cols-[1fr_1.4fr] gap-10 px-8 py-10">
-              <ul className="flex flex-col" role="none">
-                <li role="none">
-                  <Link
-                    href="/collections"
-                    role="menuitem"
-                    className="group flex flex-col gap-1 border-b border-hairline py-3.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
-                    tabIndex={mega ? 0 : -1}
-                    onMouseDown={() => setMega(false)}
-                  >
-                    <span className="font-display text-xl font-light text-noir transition-colors group-hover:text-stone">
-                      All Collections
-                    </span>
-                    <span className="text-xs text-taupe">
-                      The full maison offering
-                    </span>
-                  </Link>
-                </li>
-                {COLLECTION_MENU.map((c) => (
-                  <li key={c.slug} role="none">
-                    <Link
-                      href={`/collection/${c.slug}`}
-                      role="menuitem"
-                      className="group flex flex-col gap-1 border-b border-hairline py-3.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
-                      tabIndex={mega ? 0 : -1}
-                      onMouseDown={() => setMega(false)}
-                    >
-                      <span className="font-display text-xl font-light text-noir transition-colors group-hover:text-stone">
-                        {c.name}
-                      </span>
-                      <span className="text-xs text-taupe">{c.note}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <div className="relative hidden overflow-hidden bg-sand md:block" aria-hidden>
-                <div className="absolute inset-0 bg-gradient-to-t from-noir/20 to-transparent" />
-              </div>
-            </div>
-          </div>
-        </li>
-        {NAV_LINKS.filter((l) => l.label !== "Collections").map((link) => (
-          <li key={link.href}>
             <NavLink
               href={link.href}
               label={link.label}
-              active={pathname === link.href}
+              active={activeFor(link.label, link.href)}
             />
+            {link.label === "Shop" ? (
+              <div
+                role="menu"
+                className={cn(
+                  "invisible absolute inset-x-0 top-full z-40 border-b border-hairline bg-background/95 opacity-0 shadow-[0_24px_48px_-24px_rgba(18,17,16,0.12)] backdrop-blur-md transition-all duration-500 ease-lux",
+                  mega && "visible opacity-100"
+                )}
+              >
+                <ul
+                  className="mx-auto grid max-w-5xl grid-cols-4 gap-8 px-8 py-9"
+                  role="none"
+                >
+                  {SHOP_MENU.map((item) => (
+                    <li key={item.href} role="none">
+                      <Link
+                        href={item.href}
+                        role="menuitem"
+                        className="group flex flex-col gap-2 border-l border-hairline pl-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+                        tabIndex={mega ? 0 : -1}
+                        onMouseDown={() => setMega(false)}
+                      >
+                        <span className="font-display text-xl font-light text-noir transition-colors group-hover:text-stone">
+                          {item.label}
+                        </span>
+                        <span className="text-xs leading-relaxed text-taupe">
+                          {item.note}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>
