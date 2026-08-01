@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowRight, ShoppingBag } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { CartItem } from "@/components/cart/cart-item"
 import { Button } from "@/components/ui/button"
@@ -32,47 +31,51 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[1200px] px-5 pb-24 pt-16 lg:px-10 lg:pt-24">
-      <header className="border-b border-hairline pb-8">
+    <div className="mx-auto max-w-[1280px] px-5 pb-24 pt-16 lg:px-10 lg:pt-24">
+      <header className="border-b border-hairline pb-10">
+        <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
+          Cart
+        </p>
         <h1 className="font-display text-5xl font-light tracking-tight text-noir lg:text-6xl">
           Your Selection
         </h1>
-        <p className="mt-3 text-sm text-taupe">{SITE.shippingNote}</p>
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
+          Review each piece before payment. {SITE.shippingNote}, with returns handled calmly within thirty days.
+        </p>
       </header>
 
-{lines.length === 0 ? (
-        <div className="flex flex-col items-center gap-6 py-28 text-center">
-          <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
-          <div className="flex flex-col gap-1">
-            <p className="font-display text-2xl font-light text-noir">
+      {lines.length === 0 ? (
+        <div className="mx-auto flex max-w-xl flex-col items-center gap-7 py-28 text-center">
+          <div className="h-px w-16 bg-champagne" aria-hidden />
+          <div className="flex flex-col gap-2">
+            <p className="font-display text-3xl font-light text-noir lg:text-4xl">
               Your selection is empty
             </p>
-            <p className="text-sm text-taupe">
-              Begin with a single, considered piece.
+            <p className="text-sm leading-relaxed text-stone">
+              Begin with one piece that sets the line, then build the rest around it.
             </p>
           </div>
           <Button asChild variant="luxury-link">
             <Link href="/collections">
               Explore the Collections
-              <ArrowRight className="ml-3 size-3.5" />
             </Link>
           </Button>
         </div>
       ) : (
-        <div className="mt-10 grid gap-14 lg:grid-cols-[1fr_380px]">
+        <div className="mt-12 grid gap-16 lg:grid-cols-[1fr_400px]">
           <div className="flex flex-col">
             <ul className="divide-y divide-hairline">
               {lines.map((line) => (
                 <CartItem key={line.id} line={line} />
               ))}
             </ul>
-            <div className="mt-8 flex justify-between border-t border-hairline pt-6">
+            <div className="mt-10 flex flex-col gap-4 border-t border-hairline pt-6 sm:flex-row sm:items-center sm:justify-between">
               <Button
                 asChild
-                variant="ghost"
+                variant="luxury-link"
                 className="text-xs tracking-[0.24em]"
               >
-                <Link href="/collections">Continue Exploring</Link>
+                <Link href="/collections">Continue Shopping</Link>
               </Button>
               <button
                 type="button"
@@ -84,14 +87,20 @@ export default function CartPage() {
             </div>
           </div>
 
-          <aside className="h-fit border border-hairline bg-card p-8 lg:sticky lg:top-28">
-            <h2 className="font-display text-2xl font-light text-noir">
-              Summary
-            </h2>
+          <aside className="h-fit border border-hairline bg-ivory/35 p-7 lg:sticky lg:top-28 lg:p-8">
+            <div className="border-b border-hairline pb-5">
+              <p className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
+                Order Summary
+              </p>
+              <h2 className="mt-2 font-display text-3xl font-light text-noir">
+                Ready when you are.
+              </h2>
+            </div>
 
             <form
               onSubmit={handleApply}
               className="mt-6 flex items-stretch gap-2"
+              aria-label="Apply discount code"
             >
               <label htmlFor="discount-code" className="sr-only">
                 Discount code
@@ -101,7 +110,7 @@ export default function CartPage() {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Promo code"
+                placeholder="Discount code"
                 className="h-11 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
                 aria-label="Discount code"
               />
@@ -130,7 +139,7 @@ export default function CartPage() {
               </div>
             ) : null}
 
-            <dl className="mt-6 flex flex-col gap-4 text-sm">
+            <dl className="mt-7 flex flex-col gap-4 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-taupe">Subtotal</dt>
                 <dd className="font-display text-lg text-noir">
@@ -157,7 +166,7 @@ export default function CartPage() {
                 <dt className="text-taupe">Duties & taxes</dt>
                 <dd className="text-stone">Calculated at checkout</dd>
               </div>
-              <div className="flex items-center justify-between border-t border-hairline pt-4">
+              <div className="flex items-center justify-between border-t border-hairline pt-5">
                 <dt className="text-[0.6875rem] uppercase tracking-[0.24em] text-noir">
                   Total
                 </dt>
@@ -166,10 +175,13 @@ export default function CartPage() {
                 </dd>
               </div>
             </dl>
-            <Button asChild size="lg" className="mt-8 w-full">
+            <p className="mt-5 border-t border-hairline pt-5 text-xs leading-relaxed text-taupe">
+              Shipping, returns, duties, and taxes are confirmed before payment.
+            </p>
+
+            <Button asChild size="lg" className="mt-7 min-h-12 w-full">
               <Link href="/checkout">
-                Proceed to Checkout
-                <ArrowRight className="ml-3 size-3.5" />
+                Checkout
               </Link>
             </Button>
           </aside>

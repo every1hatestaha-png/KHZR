@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { ArrowLeft, ShoppingBag } from "lucide-react"
 import { PageIntro } from "@/components/shared/page-intro"
 import { Button } from "@/components/ui/button"
 import { buildMetadata } from "@/lib/seo"
@@ -7,7 +6,7 @@ import { getOrderByProviderSessionId } from "@/lib/data-access/orders"
 import { checkoutSessionIdSchema } from "@/lib/validations/checkout"
 
 export const metadata = buildMetadata({
-  title: "Checkout Cancelled",
+  title: "Checkout Paused",
   description: "Your KHZR checkout was not completed.",
   path: "/checkout/cancel",
   noindex: true,
@@ -29,21 +28,20 @@ export default async function CheckoutCancelPage({
     <>
       <PageIntro
         kicker="Checkout"
-        title="Your order was not placed."
-        description="No amount has been taken and your selection is still waiting in your bag. You may retry whenever you are ready."
+        title="Checkout is paused."
+        description="No amount has been taken. Your selection remains available, and you can return to payment whenever you are ready."
         align="center"
       >
-        <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
+        <span aria-hidden className="h-px w-16 bg-champagne" />
       </PageIntro>
 
-      <section className="flex items-center justify-center gap-4 border-t border-hairline px-5 py-16">
+      <section className="flex flex-col items-center justify-center gap-4 border-t border-hairline px-5 py-16 sm:flex-row">
         <Button asChild size="lg">
           <Link href="/checkout">
-            <ArrowLeft className="mr-3 size-4" />
             Return to Checkout
           </Link>
         </Button>
-        <Button asChild variant="outline" size="lg">
+        <Button asChild variant="luxury-link" size="lg">
           <Link href="/collections">Explore the Collections</Link>
         </Button>
       </section>

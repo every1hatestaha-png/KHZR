@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowLeft, ArrowRight, Lock, ShoppingBag } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { Button } from "@/components/ui/button"
 import { createCheckoutSessionAction } from "@/lib/actions/checkout-actions"
@@ -50,42 +49,44 @@ export default function CheckoutPage() {
     "h-12 w-full border border-hairline bg-background px-4 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
 
   return (
-    <div className="mx-auto max-w-[1200px] px-5 pb-24 pt-16 lg:px-10 lg:pt-24">
-      <header className="border-b border-hairline pb-8">
-        <p className="text-[0.6875rem] uppercase tracking-[0.32em] text-taupe">
-          <Lock className="mr-2 inline size-3.5" aria-hidden />
+    <div className="mx-auto max-w-[1280px] px-5 pb-24 pt-14 lg:px-10 lg:pt-24">
+      <header className="border-b border-hairline pb-9">
+        <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
           Secure Checkout
         </p>
-        <h1 className="mt-3 font-display text-5xl font-light tracking-tight text-noir lg:text-6xl">
-          Almost there.
+        <h1 className="mt-4 font-display text-5xl font-light tracking-tight text-noir lg:text-6xl">
+          Confirm your details.
         </h1>
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-stone">
-          Payment is handled by Stripe — your address and card details are
-          never stored by {SITE.name}.
+        <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
+          We collect only your contact note here. Address and payment are completed securely with Stripe.
         </p>
       </header>
 
       {lines.length === 0 ? (
-        <div className="flex flex-col items-center gap-6 py-28 text-center">
-          <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
-          <p className="font-display text-2xl font-light text-noir">
-            Your selection is empty
-          </p>
+        <div className="mx-auto flex max-w-xl flex-col items-center gap-7 py-28 text-center">
+          <div className="h-px w-16 bg-champagne" aria-hidden />
+          <div className="flex flex-col gap-2">
+            <p className="font-display text-3xl font-light text-noir lg:text-4xl">
+              Your selection is empty
+            </p>
+            <p className="text-sm leading-relaxed text-stone">
+              Return to the collections and choose the pieces you would like to checkout with.
+            </p>
+          </div>
           <Button asChild variant="luxury-link">
             <Link href="/collections">
               Explore the Collections
-              <ArrowRight className="ml-3 size-3.5" />
             </Link>
           </Button>
         </div>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="mt-10 grid gap-14 lg:grid-cols-[1fr_380px]"
+          className="mt-12 grid gap-16 lg:grid-cols-[1fr_400px]"
         >
-          <div className="flex flex-col gap-10">
-            <section className="flex flex-col gap-4">
-              <h2 className="font-display text-2xl font-light text-noir">
+          <div className="flex flex-col gap-12">
+            <section className="flex flex-col gap-5">
+              <h2 className="font-display text-3xl font-light text-noir">
                 Contact
               </h2>
               <label htmlFor="checkout-email" className="flex flex-col gap-2">
@@ -112,44 +113,60 @@ export default function CheckoutPage() {
                   rows={3}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Gifting instructions, tailoring notes…"
+                  placeholder="Gifting instructions, tailoring notes..."
                   className="w-full border border-hairline bg-background px-4 py-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
                 />
               </label>
             </section>
 
-            <section className="flex flex-col gap-3">
-              <h2 className="font-display text-2xl font-light text-noir">
-                Shipping &amp; payment
-              </h2>
-              <p className="text-sm leading-relaxed text-stone">
-                Your shipping and billing addresses are collected on Stripe&apos;s
-                secure payment page, which you are redirected to after this
-                step. {SITE.shippingNote}.
-              </p>            </section>
+            <section className="grid gap-5 border-y border-hairline py-6 text-sm leading-relaxed text-stone sm:grid-cols-3">
+              <div>
+                <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
+                  Payment
+                </p>
+                <p className="mt-2">Handled by Stripe on the next step.</p>
+              </div>
+              <div>
+                <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
+                  Shipping
+                </p>
+                <p className="mt-2">{SITE.shippingNote}.</p>
+              </div>
+              <div>
+                <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
+                  Returns
+                </p>
+                <p className="mt-2">Thirty days, unworn and with tags intact.</p>
+              </div>
+            </section>
 
             {error ? (
               <p
                 role="alert"
-                className="border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+                className="border border-hairline bg-ivory/50 px-4 py-3 text-sm text-noir"
               >
                 {error}
               </p>
             ) : null}
           </div>
 
-          <aside className="flex h-fit flex-col border border-hairline bg-card p-8 lg:sticky lg:top-28">
-            <h2 className="font-display text-2xl font-light text-noir">
-              Summary
-            </h2>
+          <aside className="flex h-fit flex-col border border-hairline bg-ivory/35 p-7 lg:sticky lg:top-28 lg:p-8">
+            <div className="border-b border-hairline pb-5">
+              <p className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
+                Summary
+              </p>
+              <h2 className="mt-2 font-display text-3xl font-light text-noir">
+                Your selection
+              </h2>
+            </div>
 
-            <ul className="mt-6 flex flex-col divide-y divide-hairline">
+            <ul className="mt-5 flex flex-col divide-y divide-hairline">
               {lines.map((line) => (
                 <li
                   key={line.id}
-                  className="flex items-center gap-4 py-4 text-sm"
+                  className="flex items-center gap-4 py-5 text-sm"
                 >
-                  <div className="relative size-14 shrink-0 bg-ivory">
+                  <div className="relative h-20 w-[3.75rem] shrink-0 bg-ivory">
                     {line.imageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -158,7 +175,7 @@ export default function CheckoutPage() {
                         className="size-full object-cover"
                       />
                     ) : null}
-                    <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center bg-noir text-[0.625rem] text-warm-white">
+                    <span className="absolute right-0 top-0 flex size-5 items-center justify-center bg-warm-white/90 text-[0.625rem] text-noir">
                       {line.quantity}
                     </span>
                   </div>
@@ -177,7 +194,7 @@ export default function CheckoutPage() {
               ))}
             </ul>
 
-            <form onSubmit={handleApply} className="mt-4 flex items-stretch gap-2">
+            <form onSubmit={handleApply} className="mt-5 flex items-stretch gap-2" aria-label="Apply discount code">
               <label htmlFor="checkout-discount" className="sr-only">
                 Discount code
               </label>
@@ -186,7 +203,7 @@ export default function CheckoutPage() {
                 type="text"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Promo code"
+                placeholder="Discount code"
                 className="h-11 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
               />
               <Button
@@ -214,7 +231,7 @@ export default function CheckoutPage() {
               </div>
             ) : null}
 
-            <dl className="mt-6 flex flex-col gap-4 text-sm">
+            <dl className="mt-7 flex flex-col gap-4 text-sm">
               <div className="flex items-center justify-between">
                 <dt className="text-taupe">Subtotal</dt>
                 <dd className="font-display text-lg text-noir">
@@ -256,11 +273,10 @@ export default function CheckoutPage() {
             <Button
               type="submit"
               size="lg"
-              className="mt-8 w-full"
+              className="mt-8 min-h-12 w-full"
               disabled={pending || !email}
             >
               {pending ? "Preparing…" : "Continue to Payment"}
-              {!pending ? <ArrowRight className="ml-3 size-4" /> : null}
             </Button>
 
             <Button
@@ -268,10 +284,7 @@ export default function CheckoutPage() {
               variant="ghost"
               className="mt-3 w-full text-xs tracking-[0.24em]"
             >
-              <Link href="/cart">
-                <ArrowLeft className="mr-2 size-3.5" />
-                Return to Your Selection
-              </Link>
+              <Link href="/cart">Return to Your Selection</Link>
             </Button>
           </aside>
         </form>

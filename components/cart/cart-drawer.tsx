@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { ArrowRight, ShoppingBag } from "lucide-react"
 import {
   Sheet,
   SheetContent,
@@ -46,12 +45,12 @@ export function CartDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
-<SheetContent
+        <SheetContent
           side="right"
-          className="w-full max-w-md gap-0 border-l-hairline bg-background p-0"
+          className="w-full max-w-[32rem] gap-0 border-l-hairline bg-background p-0"
         >
-        <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-7 py-6">
-          <SheetTitle className="font-display text-2xl font-light text-noir">
+        <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-7 py-7 lg:px-9">
+          <SheetTitle className="font-display text-3xl font-light text-noir">
             Your Selection
             {count > 0 ? (
               <span className="ml-2 align-super text-xs font-medium tracking-[0.2em] text-taupe">
@@ -62,10 +61,10 @@ export function CartDrawer() {
         </SheetHeader>
 
         {lines.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-5 px-8 py-20 text-center">
-            <ShoppingBag className="size-8 stroke-[1.25] text-taupe/60" aria-hidden />
-            <div className="flex flex-col gap-1">
-              <p className="font-display text-xl font-light text-noir">
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8 py-24 text-center">
+            <div className="h-px w-14 bg-champagne" aria-hidden />
+            <div className="flex flex-col gap-2">
+              <p className="font-display text-2xl font-light text-noir">
                 Your selection is empty
               </p>
               <p className="text-sm leading-relaxed text-taupe">
@@ -80,7 +79,7 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
-            <div className="border-b border-hairline px-7 py-4">
+            <div className="border-b border-hairline bg-ivory/35 px-7 py-5 lg:px-9">
               <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.22em] text-taupe">
                 <span>
                   {subtotal >= SITE.freeShippingThreshold
@@ -100,14 +99,14 @@ export function CartDrawer() {
               </div>
             </div>
 
-            <ul className="flex-1 divide-y divide-hairline overflow-y-auto px-7">
+            <ul className="flex-1 divide-y divide-hairline overflow-y-auto px-7 lg:px-9">
               {lines.map((line) => (
                 <CartItem key={line.id} line={line} />
               ))}
             </ul>
 
-            <div className="border-t border-hairline px-7 py-6">
-              <form onSubmit={handleApply} className="flex items-stretch gap-2">
+            <div className="border-t border-hairline bg-warm-white px-7 py-7 lg:px-9">
+              <form onSubmit={handleApply} className="flex items-stretch gap-2" aria-label="Apply discount code">
                 <label htmlFor="drawer-discount-code" className="sr-only">
                   Discount code
                 </label>
@@ -116,7 +115,7 @@ export function CartDrawer() {
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  placeholder="Promo code"
+                  placeholder="Discount code"
                   className="h-10 min-w-0 flex-1 border border-hairline bg-background px-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none"
                   aria-label="Discount code"
                 />
@@ -145,7 +144,7 @@ export function CartDrawer() {
                 </div>
               ) : null}
 
-              <div className="mt-5 flex flex-col gap-2.5">
+              <div className="mt-7 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-taupe">
                     Subtotal
@@ -174,7 +173,7 @@ export function CartDrawer() {
                       : "Calculated at checkout"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between border-t border-hairline pt-3">
+                <div className="flex items-center justify-between border-t border-hairline pt-4">
                   <span className="text-[0.6875rem] uppercase tracking-[0.28em] text-noir">
                     Total
                   </span>
@@ -183,19 +182,18 @@ export function CartDrawer() {
                   </span>
                 </div>
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-taupe">
-                Duties and taxes calculated at checkout.
+              <p className="mt-3 text-xs leading-relaxed text-taupe">
+                Duties and taxes are confirmed securely at payment.
               </p>
-              <div className="mt-5 flex flex-col gap-3">
-                <Button asChild size="lg" className="w-full">
+              <div className="mt-6 flex flex-col gap-4">
+                <Button asChild size="lg" className="min-h-12 w-full">
                   <Link href="/checkout" onClick={closeCart}>
-                    Proceed to Checkout
-                    <ArrowRight className="ml-3 size-3.5" />
+                    Checkout
                   </Link>
                 </Button>
-                <Button asChild variant="ghost" onClick={closeCart}>
-                  <Link href="/cart" className="text-xs tracking-[0.24em]">
-                    View Full Selection
+                <Button asChild variant="luxury-link" onClick={closeCart}>
+                  <Link href="/collections" className="text-xs tracking-[0.24em]">
+                    Continue Shopping
                   </Link>
                 </Button>
               </div>

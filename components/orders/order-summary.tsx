@@ -42,10 +42,10 @@ export function OrderSummary({
 }) {
   return (
     <div className="flex flex-col gap-8">
-      <section className="border border-hairline bg-card">
-        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-6 py-4">
+      <section className="border border-hairline bg-ivory/35">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-hairline px-6 py-5">
           <div className="flex flex-col gap-1">
-            <p className="font-display text-lg text-noir">{order.orderNumber}</p>
+            <p className="font-display text-2xl font-light text-noir">{order.orderNumber}</p>
             <p className="text-xs uppercase tracking-[0.2em] text-taupe">
               {formatDate(order.createdAt)}
             </p>
@@ -74,21 +74,21 @@ export function OrderSummary({
                 ) : null}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-display text-base text-noir">
+                <p className="truncate font-display text-lg font-light text-noir">
                   {item.name}
                 </p>
                 <p className="text-xs uppercase tracking-[0.18em] text-taupe">
                   {item.color} · {item.size} · Qty {item.quantity}
                 </p>
               </div>
-              <p className="font-display text-base text-noir">
+              <p className="font-display text-lg font-light text-noir">
                 {formatMoney(item.unitPrice * item.quantity, order.currency)}
               </p>
             </li>
           ))}
         </ul>
 
-        <dl className="flex flex-col gap-3 border-t border-hairline px-6 py-6 text-sm">
+        <dl className="flex flex-col gap-4 border-t border-hairline px-6 py-6 text-sm">
           <div className="flex items-center justify-between">
             <dt className="text-taupe">Subtotal</dt>
             <dd className="text-noir">{formatMoney(order.subtotal, order.currency)}</dd>
@@ -127,14 +127,14 @@ export function OrderSummary({
       </section>
 
       {order.shippingAddress || order.billingAddress ? (
-        <section className="grid gap-8 border border-hairline bg-card p-6 sm:grid-cols-2">
+        <section className="grid gap-8 border border-hairline bg-background p-6 sm:grid-cols-2">
           <AddressBlock title="Ship to" address={order.shippingAddress} />
           <AddressBlock title="Bill to" address={order.billingAddress} />
         </section>
       ) : null}
 
       {order.customerNotes ? (
-        <section className="border border-hairline bg-card p-6">
+        <section className="border border-hairline bg-background p-6">
           <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
             Order note
           </p>
