@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import { ClerkAuth, clerkEnabled } from "@/components/providers/clerk-auth"
 import {
+  clearWishlistAction,
   getWishlistAction,
   mergeWishlistAction,
   toggleWishlistAction,
@@ -21,6 +22,8 @@ type WishlistContextValue = {
   isSignedIn: boolean
   isInWishlist: (productSlug: string) => boolean
   toggle: (item: ProductSummary) => Promise<void>
+  remove: (item: ProductSummary) => Promise<void>
+  clear: () => Promise<void>
 }
 
 const WishlistContext = React.createContext<WishlistContextValue | null>(null)
@@ -131,6 +134,29 @@ function WishlistProviderCore({
     [signedIn]
   )
 
+  const remove = useCallback(
+    async (item: ProductSummary) => {
+      const exists = items.some((i) => i.productSlug === item.productSlug)
+      if (!exists) return
+      await toggle(item)
+    },
+    [items, toggle]
+  )
+
+  const clear = useCallback(async () => {
+    if (signedIn) {
+      const res = await clearWishlistAction()
+      if (!res.ok) {
+        toast.error(res.error ?? "Could not clear your saved pieces.")
+        return
+      }
+      setItems(res.items ?? [])
+    } else {
+      writeGuest([])
+      setItems([])
+    }
+  }, [signedIn])
+
   const ids = useMemo(() => items.map((i) => i.productSlug), [items])
   const count = useMemo(() => ids.length, [ids])
 
@@ -148,8 +174,10 @@ function WishlistProviderCore({
       isSignedIn: signedIn,
       isInWishlist,
       toggle,
+      remove,
+      clear,
     }),
-    [items, ids, count, hydrated, signedIn, isInWishlist, toggle]
+    [items, ids, count, hydrated, signedIn, isInWishlist, toggle, remove, clear]
   )
 
   return (

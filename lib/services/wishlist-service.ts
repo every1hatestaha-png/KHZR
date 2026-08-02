@@ -105,3 +105,8 @@ export async function mergeWishlist(
   }
   return getWishlist(userId)
 }
+
+export async function clearWishlist(userId: string): Promise<ProductSummary[]> {
+  await prisma.wishlistItem.deleteMany({ where: { userId } })
+  return []
+}

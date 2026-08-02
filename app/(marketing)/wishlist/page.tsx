@@ -10,8 +10,13 @@ import { Button } from "@/components/ui/button"
 import { useWishlist } from "@/components/wishlist/wishlist-provider"
 
 export default function WishlistPage() {
-  const { items, count, hydrated, isSignedIn, toggle } = useWishlist()
+  const { items, count, hydrated, isSignedIn, remove, clear } = useWishlist()
   const { addItem } = useCart()
+
+  async function moveToCart(item: (typeof items)[number]) {
+    await addItem(item)
+    await remove(item)
+  }
 
   return (
     <div className="mx-auto max-w-[1400px] px-5 pb-24 pt-16 lg:px-10 lg:pt-24">
@@ -62,7 +67,7 @@ export default function WishlistPage() {
       ) : (
         <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
           {items.map((item) => {
-            const saved = true
+            const stockLabel = item.available > 5 ? "In stock" : item.available > 0 ? `Only ${item.available} left` : "Sold out"
             return (
               <li key={item.productSlug} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-ivory/80">
@@ -82,9 +87,9 @@ export default function WishlistPage() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => void toggle(item)}
+                    onClick={() => void remove(item)}
                     aria-label={`Remove ${item.name} from your saved pieces`}
-                    aria-pressed={saved}
+                    aria-pressed={true}
                     className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-none bg-warm-white/78 backdrop-blur-sm transition-colors duration-300 ease-lux hover:bg-warm-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne sm:right-3 sm:top-3"
                   >
                     <Heart
@@ -95,11 +100,11 @@ export default function WishlistPage() {
                   {item.available > 0 ? (
                     <button
                       type="button"
-                      onClick={() => void addItem(item)}
+                      onClick={() => void moveToCart(item)}
                       aria-label={`Add ${item.name} to your selection`}
                       className="absolute inset-x-2 bottom-2 flex h-11 items-center justify-center border border-warm-white/55 bg-warm-white/88 text-[0.5625rem] font-medium uppercase tracking-[0.22em] text-noir opacity-100 backdrop-blur-sm transition-[background-color,border-color,opacity,transform] duration-[240ms] ease-lux hover:bg-warm-white active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne sm:inset-x-3 sm:bottom-3 sm:translate-y-2 sm:tracking-[0.28em] sm:opacity-0 sm:group-hover:translate-y-0 sm:group-hover:opacity-100 sm:group-focus-within:translate-y-0 sm:group-focus-within:opacity-100 motion-reduce:transition-none motion-reduce:active:translate-y-0"
                     >
-                      Add to Bag
+                      Move to Bag
                     </button>
                   ) : (
                     <span className="absolute inset-x-2 bottom-2 flex h-11 items-center justify-center border border-warm-white/55 bg-warm-white/88 text-[0.5625rem] font-medium uppercase tracking-[0.22em] text-stone backdrop-blur-sm sm:inset-x-3 sm:bottom-3 sm:tracking-[0.28em]">
@@ -124,6 +129,10 @@ export default function WishlistPage() {
                   {item.subtitle ? (
                     <p className="max-w-[18rem] text-xs leading-relaxed text-taupe">{item.subtitle}</p>
                   ) : null}
+                  <p className="text-xs uppercase tracking-[0.18em] text-taupe">{stockLabel}</p>
+                  <button type="button" onClick={() => void remove(item)} className="w-fit text-xs uppercase tracking-[0.2em] text-taupe underline-offset-4 hover:text-noir hover:underline">
+                    Remove
+                  </button>
                 </div>
               </li>
             )
@@ -133,11 +142,10 @@ export default function WishlistPage() {
 
       {hydrated && items.length > 0 ? (
         <div className="mt-16 border-t border-hairline pt-8 text-center">
-          <Button asChild variant="luxury-link">
-            <Link href="/collections">
-              Continue Shopping
-            </Link>
-          </Button>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button asChild variant="luxury-link"><Link href="/collections">Continue Shopping</Link></Button>
+            <Button type="button" variant="outline" onClick={() => void clear()}>Empty Wishlist</Button>
+          </div>
         </div>
       ) : null}
     </div>

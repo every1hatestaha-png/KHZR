@@ -19,6 +19,7 @@ import { quoteShipping } from "@/lib/services/shipping-service"
 import { getPaymentProvider } from "@/lib/payments"
 import { unavailableMessage } from "@/lib/payments/config"
 import type { PaymentProviderName } from "@/lib/payments/types"
+import { prisma } from "@/lib/prisma"
 
 export type CheckoutActionResult = {
   ok: boolean
@@ -74,6 +75,7 @@ export async function createCheckoutSessionAction(
     paymentMethod,
     notes,
     discountCode,
+    saveAddress,
   } = parsed.data
 
   try {
@@ -155,6 +157,31 @@ export async function createCheckoutSessionAction(
     imageUrl: line.imageUrl,
   }))
 
+  async function saveCheckoutAddress() {
+    if (!user || !saveAddress) return
+    await prisma.$transaction(async (tx) => {
+      const count = await tx.address.count({ where: { userId: user.id, type: "SHIPPING" } })
+      await tx.address.create({
+        data: {
+          userId: user.id,
+          type: "SHIPPING",
+          firstName,
+          lastName,
+          phone,
+          line1: streetAddress,
+          line2: houseApartment,
+          area,
+          city,
+          region: province,
+          postalCode: postalCode || "",
+          country: "PK",
+          deliveryNotes: notes || null,
+          isDefault: count === 0,
+        },
+      })
+    })
+  }
+
   if (paymentMethod === "cash_on_delivery") {
     try {
       await createLocalOrderRecord({
@@ -186,6 +213,7 @@ export async function createCheckoutSessionAction(
         },
         items: orderItems,
       })
+      await saveCheckoutAddress()
       await clearCart(token)
       return { ok: true, url: `/checkout/success?order=${orderNumber}` }
     } catch (err) {
@@ -247,6 +275,7 @@ export async function createCheckoutSessionAction(
         },
         items: orderItems,
       })
+      await saveCheckoutAddress()
       return { ok: true, url: payment.redirectUrl }
     } catch (err) {
       console.error("[checkout] failed to record wallet order:", err)
@@ -302,6 +331,7 @@ export async function createCheckoutSessionAction(
       paymentProvider: "stripe",
       items: orderItems,
     })
+    await saveCheckoutAddress()
   } catch (err) {
     console.error("[checkout] failed to record pending order:", err)
     const expired = await expireCheckoutSession(session.id)

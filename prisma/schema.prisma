@@ -10,7 +10,7 @@ datasource db {
 model User {
   id         String         @id @default(cuid())
   clerkId    String         @unique
-  email      String         @unique
+  email      String?        @unique
   firstName  String?
   lastName   String?
   phone      String?
@@ -32,13 +32,16 @@ model Address {
   type       AddressType @default(SHIPPING)
   firstName  String
   lastName   String
+  phone      String?
   company    String?
   line1      String
   line2      String?
+  area       String?
   city       String
   region     String?
   postalCode String
   country    String
+  deliveryNotes String?
   isDefault  Boolean     @default(false)
   createdAt  DateTime    @default(now())
   user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)

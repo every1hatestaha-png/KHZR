@@ -8,6 +8,13 @@ import { resolveDbUser } from "@/lib/services/user-service"
 import { listAccountOrders } from "@/lib/data-access/orders"
 import { formatDate, formatMoney } from "@/lib/utils"
 
+function paymentMethodLabel(value: string): string {
+  if (value === "cash_on_delivery") return "Cash on Delivery"
+  if (value === "easypaisa") return "Easypaisa"
+  if (value === "jazzcash") return "JazzCash"
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
 export const metadata = buildMetadata({
   title: "Your Orders",
   description: "Your KHZR order history.",
@@ -80,13 +87,14 @@ export default async function AccountOrdersPage() {
                       {order.orderNumber}
                     </p>
                     <p className="text-xs uppercase tracking-[0.2em] text-taupe">
-                      {formatDate(order.createdAt)} · {order.itemCount} item
-                      {order.itemCount === 1 ? "" : "s"}
+                      {formatDate(order.createdAt)} · {paymentMethodLabel(order.paymentProvider)} · {order.itemCount} item{order.itemCount === 1 ? "" : "s"}
                     </p>
+                    {order.trackingNumber ? <p className="text-sm text-stone">Tracking: {order.trackingNumber}</p> : null}
                   </div>
-                  <div className="flex items-center gap-4">
-                    <StatusBadge value={order.status} />
-                    <span className="font-display text-lg text-noir">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <StatusBadge value={order.paymentStatus} />
+                    <StatusBadge value={order.fulfillmentStatus} />
+                    <span className="ml-2 font-display text-lg text-noir">
                       {formatMoney(order.total)}
                     </span>
                   </div>

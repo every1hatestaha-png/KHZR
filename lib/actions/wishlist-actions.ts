@@ -2,6 +2,7 @@
 
 import { resolveDbUser } from "@/lib/services/user-service"
 import {
+  clearWishlist,
   getWishlist,
   mergeWishlist,
   toggleWishlist,
@@ -53,5 +54,12 @@ export async function mergeWishlistAction(
   }
 
   const items = await mergeWishlist(user.id, parsed.data.productSlugs)
+  return { ok: true, items }
+}
+
+export async function clearWishlistAction(): Promise<WishlistActionResult> {
+  const user = await resolveDbUser()
+  if (!user) return { ok: false, error: "Sign in to clear saved pieces." }
+  const items = await clearWishlist(user.id)
   return { ok: true, items }
 }

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, Heart, Package } from "lucide-react"
+import { ArrowRight, Heart, MapPin, Package, Settings, UserRound } from "lucide-react"
 import { PageIntro } from "@/components/shared/page-intro"
 import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
@@ -42,6 +42,13 @@ export default async function AccountPage() {
 
   const orders = await listAccountOrders(user.id)
   const recent = orders.slice(0, 4)
+  const cards = [
+    { href: "/account/profile", icon: UserRound, title: "Profile", description: "Name, phone and store email" },
+    { href: "/account/orders", icon: Package, title: "Orders", description: orders.length === 0 ? "No orders yet" : `${orders.length} order${orders.length === 1 ? "" : "s"}` },
+    { href: "/account/addresses", icon: MapPin, title: "Saved Addresses", description: "Delivery address book" },
+    { href: "/wishlist", icon: Heart, title: "Wishlist", description: "Saved pieces" },
+    { href: "/account/settings", icon: Settings, title: "Account Settings", description: "Sign-in and preferences" },
+  ]
 
   return (
     <>
@@ -52,41 +59,22 @@ export default async function AccountPage() {
       />
 
       <section className="mx-auto flex max-w-[1400px] flex-col gap-10 border-t border-hairline px-5 py-16 lg:px-10">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Link
-            href="/account/orders"
-            className="group flex flex-col gap-6 border border-hairline bg-card p-8 transition-colors duration-300 ease-lux hover:border-stone"
-          >
-            <Package className="size-6 text-taupe transition-colors group-hover:text-noir" />
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="font-display text-2xl font-light text-noir">
-                  Orders
-                </p>
-                <p className="mt-1 text-sm text-taupe">
-                  {orders.length === 0
-                    ? "No orders yet"
-                    : `${orders.length} order${orders.length === 1 ? "" : "s"}`}
-                </p>
-              </div>
-              <ArrowRight className="size-4 text-taupe transition-all group-hover:translate-x-1 group-hover:text-noir" />
-            </div>
-          </Link>
-          <Link
-            href="/wishlist"
-            className="group flex flex-col gap-6 border border-hairline bg-card p-8 transition-colors duration-300 ease-lux hover:border-stone"
-          >
-            <Heart className="size-6 text-taupe transition-colors group-hover:text-noir" />
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="font-display text-2xl font-light text-noir">
-                  Saved pieces
-                </p>
-                <p className="mt-1 text-sm text-taupe">Your wishlist</p>
-              </div>
-              <ArrowRight className="size-4 text-taupe transition-all group-hover:translate-x-1 group-hover:text-noir" />
-            </div>
-          </Link>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {cards.map((card) => {
+            const Icon = card.icon
+            return (
+              <Link key={card.href} href={card.href} className="group flex flex-col gap-6 border border-hairline bg-card p-8 transition-colors duration-300 ease-lux hover:border-stone">
+                <Icon className="size-6 text-taupe transition-colors group-hover:text-noir" />
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <p className="font-display text-2xl font-light text-noir">{card.title}</p>
+                    <p className="mt-1 text-sm text-taupe">{card.description}</p>
+                  </div>
+                  <ArrowRight className="size-4 text-taupe transition-all group-hover:translate-x-1 group-hover:text-noir" />
+                </div>
+              </Link>
+            )
+          })}
         </div>
 
         {recent.length > 0 ? (

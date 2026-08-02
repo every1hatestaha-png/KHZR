@@ -65,6 +65,7 @@ export const createCheckoutSchema = z.object({
   paymentMethod: z.enum(PAKISTAN_PAYMENT_METHODS),
   notes: z.string().trim().max(2000).optional().default(""),
   discountCode: z.string().trim().max(40).optional().default(""),
+  saveAddress: z.coerce.boolean().optional().default(false),
 })
 
 export const orderNumberSchema = z.object({

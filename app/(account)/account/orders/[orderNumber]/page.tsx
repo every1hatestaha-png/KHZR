@@ -18,6 +18,23 @@ export const metadata = buildMetadata({
 
 export const dynamic = "force-dynamic"
 
+function paymentMethodLabel(value: string): string {
+  if (value === "cash_on_delivery") return "Cash on Delivery"
+  if (value === "easypaisa") return "Easypaisa"
+  if (value === "jazzcash") return "JazzCash"
+  return value.charAt(0).toUpperCase() + value.slice(1)
+}
+
+function orderTimeline(order: NonNullable<Awaited<ReturnType<typeof getAccountOrderDetail>>>) {
+  return [
+    { label: "Order placed", value: order.createdAt },
+    order.paymentInitiatedAt ? { label: "Payment initiated", value: order.paymentInitiatedAt } : null,
+    order.paymentVerifiedAt ? { label: "Payment verified", value: order.paymentVerifiedAt } : null,
+    order.shippingDate ? { label: "Shipped", value: order.shippingDate } : null,
+    order.expectedDelivery ? { label: "Expected delivery", value: order.expectedDelivery } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string }>
+}
+
 export default async function AccountOrderDetailPage({
   params,
 }: {
@@ -73,7 +90,11 @@ export default async function AccountOrderDetailPage({
 
       <section className="mx-auto flex max-w-[800px] flex-col gap-6 border-t border-hairline px-5 pb-24 pt-12 lg:px-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <StatusBadge value={order.status} />
+          <div className="flex flex-wrap gap-2">
+            <StatusBadge value={order.status} />
+            <StatusBadge value={order.paymentStatus} />
+            <StatusBadge value={order.fulfillmentStatus} />
+          </div>
           <Button asChild variant="ghost" className="text-xs tracking-[0.24em]">
             <Link href="/account/orders">
               <ArrowLeft className="mr-2 size-3.5" />
@@ -81,6 +102,29 @@ export default async function AccountOrderDetailPage({
             </Link>
           </Button>
         </div>
+        <section className="grid gap-4 border border-hairline bg-card p-6 sm:grid-cols-2">
+          <div>
+            <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Payment</p>
+            <p className="mt-2 font-display text-xl text-noir">{paymentMethodLabel(order.paymentProvider)}</p>
+            {order.providerReference ? <p className="mt-1 break-all text-sm text-stone">Reference: {order.providerReference}</p> : null}
+          </div>
+          <div>
+            <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Delivery</p>
+            <p className="mt-2 font-display text-xl text-noir">{order.courier || "Courier pending"}</p>
+            <p className="mt-1 text-sm text-stone">{order.trackingNumber ? `Tracking: ${order.trackingNumber}` : "Tracking pending"}</p>
+          </div>
+        </section>
+        <section className="border border-hairline bg-card p-6">
+          <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Timeline</p>
+          <ol className="mt-4 grid gap-3 text-sm text-stone">
+            {orderTimeline(order).map((event) => (
+              <li key={`${event.label}-${event.value}`} className="flex justify-between gap-4 border-b border-hairline pb-2 last:border-0">
+                <span>{event.label}</span>
+                <time dateTime={event.value}>{formatDate(event.value)}</time>
+              </li>
+            ))}
+          </ol>
+        </section>
         <OrderSummary order={order} />
       </section>
     </>
