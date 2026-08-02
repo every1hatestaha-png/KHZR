@@ -20,6 +20,7 @@ model User {
   updatedAt  DateTime       @updatedAt
   addresses  Address[]
   orders     Order[]
+  promotionRedemptions PromotionRedemption[]
   reviews    Review[]
   wishlist   WishlistItem[]
 
@@ -68,6 +69,7 @@ model Collection {
   updatedAt      DateTime             @updatedAt
   campaigns      CampaignCollection[]
   products       ProductCollection[]
+  promotionTargets PromotionCollection[]
 
   @@map("collections")
 }
@@ -95,6 +97,7 @@ model Product {
   updatedAt       DateTime            @updatedAt
   lookbookEntries LookbookEntry[]
   orderItems      OrderItem[]
+  promotionTargets PromotionProduct[]
   collections     ProductCollection[]
   media           ProductMedia[]
   variants        ProductVariant[]
@@ -190,6 +193,9 @@ model Order {
   freeShippingApplied Boolean         @default(false)
   taxTotal          Decimal           @db.Decimal(10, 2)
   discountTotal     Decimal           @default(0) @db.Decimal(10, 2)
+  promotionId       String?
+  couponCode        String?
+  promotionType     String?
   total             Decimal           @db.Decimal(10, 2)
   shippingAddressId String?
   billingAddressId  String?
@@ -219,6 +225,7 @@ model Order {
   refundedAt        DateTime?
   shippingMethod    String?
   items             OrderItem[]
+  promotion         Promotion?        @relation(fields: [promotionId], references: [id])
   billingAddress    Address?          @relation("OrderBillingAddress", fields: [billingAddressId], references: [id])
   shippingAddress   Address?          @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id])
   user              User?             @relation(fields: [userId], references: [id])
@@ -228,7 +235,73 @@ model Order {
   @@index([paymentProvider, createdAt])
   @@index([phone])
   @@index([cartToken])
+  @@index([promotionId])
   @@map("orders")
+}
+
+model Promotion {
+  id                 String                  @id @default(cuid())
+  name               String
+  code               String?                 @unique
+  active             Boolean                 @default(true)
+  trigger            PromotionTrigger        @default(COUPON)
+  scope              PromotionScope          @default(STORE)
+  discountType       PromotionDiscountType
+  percentage         Decimal?                @db.Decimal(5, 2)
+  amount             Decimal?                @db.Decimal(10, 2)
+  startsAt           DateTime?
+  endsAt             DateTime?
+  maxUses            Int?
+  usesPerCustomer    Int?
+  minimumOrderValue  Decimal?                @db.Decimal(10, 2)
+  usageCount         Int                     @default(0)
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  orders             Order[]
+  products           PromotionProduct[]
+  collections        PromotionCollection[]
+  redemptions        PromotionRedemption[]
+
+  @@index([active, trigger])
+  @@index([code])
+  @@map("promotions")
+}
+
+model PromotionProduct {
+  promotionId String
+  productId   String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, productId])
+  @@map("promotion_products")
+}
+
+model PromotionCollection {
+  promotionId  String
+  collectionId String
+  promotion    Promotion  @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, collectionId])
+  @@map("promotion_collections")
+}
+
+model PromotionRedemption {
+  id          String    @id @default(cuid())
+  promotionId String
+  orderId     String?
+  userId      String?
+  email       String?
+  couponCode  String?
+  amount      Decimal   @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id])
+
+  @@index([promotionId, userId])
+  @@index([promotionId, email])
+  @@map("promotion_redemptions")
 }
 
 model OrderItem {
@@ -404,6 +477,23 @@ enum PaymentStatus {
   FAILED
   CANCELLED
   REFUNDED
+}
+
+enum PromotionTrigger {
+  COUPON
+  AUTOMATIC
+}
+
+enum PromotionScope {
+  STORE
+  PRODUCTS
+  COLLECTIONS
+}
+
+enum PromotionDiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  FREE_SHIPPING
 }
 
 enum FulfillmentStatus {

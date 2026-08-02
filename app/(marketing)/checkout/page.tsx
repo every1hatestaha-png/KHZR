@@ -6,7 +6,9 @@ import { useCart } from "@/components/cart/cart-provider"
 import { Button } from "@/components/ui/button"
 import {
   createCheckoutSessionAction,
+  quoteCheckoutPromotionAction,
   quoteCheckoutShippingAction,
+  type CheckoutPromotionQuoteActionResult,
   type ShippingQuoteActionResult,
 } from "@/lib/actions/checkout-actions"
 import { getCheckoutAccountAction } from "@/lib/actions/account-actions"
@@ -59,7 +61,7 @@ type CheckoutFields = {
 }
 
 export default function CheckoutPage() {
-  const { cart, discount, applyDiscount, clearDiscount } = useCart()
+  const { cart } = useCart()
   const { lines, subtotal, currency } = cart
 
   const [fields, setFields] = React.useState<CheckoutFields>({
@@ -78,16 +80,19 @@ export default function CheckoutPage() {
     saveAddress: false,
   })
   const [code, setCode] = React.useState("")
+  const [appliedCode, setAppliedCode] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [shippingQuote, setShippingQuote] = React.useState<ShippingQuoteActionResult | null>(null)
+  const [promotionQuote, setPromotionQuote] = React.useState<CheckoutPromotionQuoteActionResult | null>(null)
   const [shippingPending, setShippingPending] = React.useState(false)
   const [accountProfile, setAccountProfile] = React.useState<AccountProfileDTO | null>(null)
   const [savedAddresses, setSavedAddresses] = React.useState<AccountAddressDTO[]>([])
   const [selectedAddressId, setSelectedAddressId] = React.useState<string>("")
 
   const quotedShipping = shippingQuote?.ok ? shippingQuote.shipping : 0
-  const pricing = priceBreakdownWithShipping(subtotal, discount, quotedShipping)
+  const fallbackPricing = priceBreakdownWithShipping(subtotal, null, quotedShipping)
+  const pricing = promotionQuote?.ok ? promotionQuote.quote : fallbackPricing
 
   React.useEffect(() => {
     let cancelled = false
@@ -139,6 +144,26 @@ export default function CheckoutPage() {
     }
   }, [fields.province, fields.city, lines.length, subtotal])
 
+  React.useEffect(() => {
+    if (!fields.province || !fields.city || lines.length === 0 || !shippingQuote?.ok) {
+      setPromotionQuote(null)
+      return
+    }
+    let cancelled = false
+    void quoteCheckoutPromotionAction({
+      province: fields.province,
+      city: fields.city,
+      couponCode: appliedCode,
+    }).then((quote) => {
+      if (cancelled) return
+      setPromotionQuote(quote)
+      if (!quote.ok && appliedCode) setError(quote.error)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [fields.province, fields.city, lines.length, shippingQuote, appliedCode])
+
   function updateField<K extends keyof CheckoutFields>(
     key: K,
     value: CheckoutFields[K]
@@ -188,7 +213,15 @@ export default function CheckoutPage() {
   function handleApply(e: React.FormEvent | React.MouseEvent) {
     e.preventDefault()
     if (!code.trim()) return
-    if (applyDiscount(code.trim())) setCode("")
+    setError(null)
+    setAppliedCode(code.trim().toUpperCase())
+    setCode("")
+  }
+
+  function removeCoupon() {
+    setAppliedCode(null)
+    setPromotionQuote(null)
+    setError(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -203,7 +236,7 @@ export default function CheckoutPage() {
     }
     const res = await createCheckoutSessionAction({
       ...fields,
-      discountCode: discount?.code ?? "",
+      discountCode: appliedCode ?? "",
     })
     if (res.ok && res.url) {
       window.location.assign(res.url)
@@ -476,18 +509,22 @@ export default function CheckoutPage() {
               </Button>
             </div>
 
-            {discount ? (
+            {appliedCode || (promotionQuote?.ok && promotionQuote.quote.promotionName) ? (
               <div className="mt-3 flex items-center justify-between text-xs">
                 <span className="uppercase tracking-[0.2em] text-taupe">
-                  {discount.label}
+                  {promotionQuote?.ok && promotionQuote.quote.promotionName
+                    ? promotionQuote.quote.promotionName
+                    : appliedCode}
                 </span>
-                <button
-                  type="button"
-                  onClick={clearDiscount}
-                  className="uppercase tracking-[0.2em] text-taupe underline-offset-4 hover:text-noir hover:underline"
-                >
-                  Remove
-                </button>
+                {appliedCode ? (
+                  <button
+                    type="button"
+                    onClick={removeCoupon}
+                    className="uppercase tracking-[0.2em] text-taupe underline-offset-4 hover:text-noir hover:underline"
+                  >
+                    Remove
+                  </button>
+                ) : null}
               </div>
             ) : null}
 
@@ -512,9 +549,9 @@ export default function CheckoutPage() {
                   {shippingPending
                     ? "Calculating..."
                     : shippingQuote?.ok
-                      ? shippingQuote.freeShippingApplied
+                      ? pricing.shipping === 0
                         ? "Free shipping applied"
-                        : formatMoney(shippingQuote.shipping, currency)
+                        : formatMoney(pricing.shipping, currency)
                       : shippingQuote?.error ?? "Shipping calculated at checkout."}
                 </dd>
               </div>

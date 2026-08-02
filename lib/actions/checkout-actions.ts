@@ -1,7 +1,6 @@
 "use server"
 
 import { clearCart, getCartState, isDatabaseConfigured } from "@/lib/services/cart-service"
-import { priceBreakdownWithShipping } from "@/lib/services/pricing-service"
 import { createCheckoutSession, expireCheckoutSession } from "@/lib/services/stripe-service"
 import { sessionToken } from "@/lib/services/session-service"
 import { resolveDbUser } from "@/lib/services/user-service"
@@ -10,7 +9,6 @@ import {
   createOrderRecord,
   nextOrderNumber,
 } from "@/lib/services/order-service"
-import { applyDiscountCode } from "@/lib/discounts"
 import { createCheckoutSchema } from "@/lib/validations/checkout"
 import { CHECKOUT_COUNTRIES } from "@/lib/constants"
 import { rateLimit } from "@/lib/services/rate-limit"
@@ -20,6 +18,7 @@ import { getPaymentProvider } from "@/lib/payments"
 import { unavailableMessage } from "@/lib/payments/config"
 import type { PaymentProviderName } from "@/lib/payments/types"
 import { prisma } from "@/lib/prisma"
+import { quotePromotions, type PromotionQuote } from "@/lib/promotions"
 
 export type CheckoutActionResult = {
   ok: boolean
@@ -29,6 +28,10 @@ export type CheckoutActionResult = {
 
 export type ShippingQuoteActionResult =
   | { ok: true; zoneName: string; shipping: number; freeShippingThreshold: number; freeShippingApplied: boolean }
+  | { ok: false; error: string }
+
+export type CheckoutPromotionQuoteActionResult =
+  | { ok: true; quote: PromotionQuote }
   | { ok: false; error: string }
 
 const WALLET_PAYMENT_METHODS = new Set(["easypaisa", "jazzcash"])
@@ -51,6 +54,30 @@ export async function quoteCheckoutShippingAction(input: {
     }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Shipping could not be calculated." }
+  }
+}
+
+export async function quoteCheckoutPromotionAction(input: {
+  province: string
+  city: string
+  couponCode?: string | null
+}): Promise<CheckoutPromotionQuoteActionResult> {
+  const token = await sessionToken()
+  if (!token) return { ok: false, error: "Your bag could not be found." }
+  const cart = await getCartState(token)
+  if (cart.lines.length === 0) return { ok: false, error: "Your bag is empty." }
+  try {
+    const user = await resolveDbUser()
+    const shipping = await quoteShipping({ province: input.province, city: input.city, subtotal: cart.subtotal })
+    const quote = await quotePromotions({
+      cart,
+      shipping: shipping.shipping,
+      couponCode: input.couponCode,
+      userId: user?.id,
+    })
+    return quote.ok ? { ok: true, quote: quote.quote } : quote
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Promotion could not be calculated." }
   }
 }
 
@@ -114,23 +141,31 @@ export async function createCheckoutSessionAction(
     }
   }
 
-  const discount = discountCode ? applyDiscountCode(discountCode) : null
+  const user = await resolveDbUser()
+
   let shippingQuote: Awaited<ReturnType<typeof quoteShipping>>
   try {
     shippingQuote = await quoteShipping({ province, city, subtotal: cart.subtotal })
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "Shipping could not be calculated." }
   }
-  const pricing = priceBreakdownWithShipping(cart.subtotal, discount, shippingQuote.shipping)
+  const promotionQuote = await quotePromotions({
+    cart,
+    shipping: shippingQuote.shipping,
+    couponCode: discountCode,
+    userId: user?.id,
+    email: email || null,
+  })
+  if (!promotionQuote.ok) return { ok: false, error: promotionQuote.error }
+  const pricing = promotionQuote.quote
   const orderNumber = await nextOrderNumber()
-  const user = await resolveDbUser()
 
   const metadata: Record<string, string> = {
     orderNumber,
     cartToken: token,
     email: email || "",
     phone,
-    discountCode: discount?.code ?? "",
+    discountCode: pricing.couponCode ?? "",
     userId: user?.id ?? "",
     paymentMethod,
   }
@@ -193,9 +228,13 @@ export async function createCheckoutSessionAction(
         subtotal: pricing.subtotal,
         shippingTotal: pricing.shipping,
         shippingZone: shippingQuote.zoneName,
-        freeShippingApplied: shippingQuote.freeShippingApplied,
+        freeShippingApplied: shippingQuote.freeShippingApplied || pricing.freeShippingApplied,
         taxTotal: pricing.tax,
         discountTotal: pricing.discount,
+        promotionId: pricing.promotionId,
+        couponCode: pricing.couponCode,
+        promotionType: pricing.promotionType,
+        promotionCustomerEmail: email || null,
         total: pricing.total,
         shippingMethod:
           pricing.shipping > 0 ? "Pakistan Standard Delivery" : "Complimentary Pakistan Delivery",
@@ -248,9 +287,13 @@ export async function createCheckoutSessionAction(
         subtotal: pricing.subtotal,
         shippingTotal: pricing.shipping,
         shippingZone: shippingQuote.zoneName,
-        freeShippingApplied: shippingQuote.freeShippingApplied,
+        freeShippingApplied: shippingQuote.freeShippingApplied || pricing.freeShippingApplied,
         taxTotal: pricing.tax,
         discountTotal: pricing.discount,
+        promotionId: pricing.promotionId,
+        couponCode: pricing.couponCode,
+        promotionType: pricing.promotionType,
+        promotionCustomerEmail: email || null,
         total: pricing.total,
         shippingMethod:
           pricing.shipping > 0 ? "Pakistan Standard Delivery" : "Complimentary Pakistan Delivery",
@@ -321,9 +364,13 @@ export async function createCheckoutSessionAction(
       subtotal: pricing.subtotal,
       shippingTotal: pricing.shipping,
       shippingZone: shippingQuote.zoneName,
-      freeShippingApplied: shippingQuote.freeShippingApplied,
+      freeShippingApplied: shippingQuote.freeShippingApplied || pricing.freeShippingApplied,
       taxTotal: pricing.tax,
       discountTotal: pricing.discount,
+      promotionId: pricing.promotionId,
+      couponCode: pricing.couponCode,
+      promotionType: pricing.promotionType,
+      promotionCustomerEmail: email || null,
       total: pricing.total,
       shippingMethod: pricing.shipping > 0 ? "Standard Shipping" : "Complimentary Shipping",
       customerNotes: notes,

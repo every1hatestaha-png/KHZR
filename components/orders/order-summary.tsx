@@ -105,10 +105,16 @@ export function OrderSummary({
           </div>
           {order.discountTotal > 0 ? (
             <div className="flex items-center justify-between">
-              <dt className="text-taupe">Discount</dt>
+              <dt className="text-taupe">Discount{order.couponCode ? ` (${order.couponCode})` : ""}</dt>
               <dd className="text-champagne">
                 −{formatMoney(order.discountTotal, order.currency)}
               </dd>
+            </div>
+          ) : null}
+          {order.promotionType ? (
+            <div className="flex items-center justify-between">
+              <dt className="text-taupe">Promotion type</dt>
+              <dd className="text-noir">{order.promotionType.replace("_", " ").toLowerCase()}</dd>
             </div>
           ) : null}
           <div className="flex items-center justify-between">

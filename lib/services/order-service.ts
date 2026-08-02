@@ -49,6 +49,9 @@ export type CreateOrderInput = {
   freeShippingApplied?: boolean
   taxTotal: number
   discountTotal: number
+  promotionId?: string | null
+  couponCode?: string | null
+  promotionType?: string | null
   total: number
   shippingMethod: string
   customerNotes?: string | null
@@ -56,6 +59,7 @@ export type CreateOrderInput = {
   billingAddress?: OrderAddressInput
   providerSessionId: string
   paymentProvider?: string
+  promotionCustomerEmail?: string | null
   items: OrderLineInput[]
 }
 
@@ -151,6 +155,9 @@ export async function createOrderRecord(
           freeShippingApplied: input.freeShippingApplied ?? false,
           taxTotal: input.taxTotal,
           discountTotal: input.discountTotal,
+          promotionId: input.promotionId || null,
+          couponCode: input.couponCode || null,
+          promotionType: input.promotionType || null,
           total: input.total,
           shippingMethod: input.shippingMethod,
           cartToken: input.cartToken,
@@ -174,6 +181,34 @@ export async function createOrderRecord(
           },
         },
         include: { items: true },
+      }).then(async (order) => {
+        if (input.promotionId && input.discountTotal > 0) {
+          const promotion = await tx.promotion.findUnique({
+            where: { id: input.promotionId },
+            select: { maxUses: true },
+          })
+          const usage = await tx.promotion.updateMany({
+            where: {
+              id: input.promotionId,
+              ...(promotion?.maxUses === null || promotion?.maxUses === undefined
+                ? {}
+                : { usageCount: { lt: promotion.maxUses } }),
+            },
+            data: { usageCount: { increment: 1 } },
+          })
+          if (usage.count !== 1) throw new Error("Promotion usage limit exceeded.")
+          await tx.promotionRedemption.create({
+            data: {
+              promotionId: input.promotionId,
+              orderId: order.id,
+              userId: input.userId || null,
+              email: input.promotionCustomerEmail?.toLowerCase() || input.email?.toLowerCase() || null,
+              couponCode: input.couponCode || null,
+              amount: input.discountTotal,
+            },
+          })
+        }
+        return order
       })
     })
     return { order, created: true }
@@ -247,6 +282,9 @@ export async function createLocalOrderRecord(
         freeShippingApplied: input.freeShippingApplied ?? false,
         taxTotal: input.taxTotal,
         discountTotal: input.discountTotal,
+        promotionId: input.promotionId || null,
+        couponCode: input.couponCode || null,
+        promotionType: input.promotionType || null,
         total: input.total,
         shippingMethod: input.shippingMethod,
         cartToken: input.cartToken,
@@ -274,6 +312,34 @@ export async function createLocalOrderRecord(
         },
       },
       include: { items: true },
+    }).then(async (order) => {
+      if (input.promotionId && input.discountTotal > 0) {
+        const promotion = await tx.promotion.findUnique({
+          where: { id: input.promotionId },
+          select: { maxUses: true },
+        })
+        const usage = await tx.promotion.updateMany({
+          where: {
+            id: input.promotionId,
+            ...(promotion?.maxUses === null || promotion?.maxUses === undefined
+              ? {}
+              : { usageCount: { lt: promotion.maxUses } }),
+          },
+          data: { usageCount: { increment: 1 } },
+        })
+        if (usage.count !== 1) throw new Error("Promotion usage limit exceeded.")
+        await tx.promotionRedemption.create({
+          data: {
+            promotionId: input.promotionId,
+            orderId: order.id,
+            userId: input.userId || null,
+            email: input.promotionCustomerEmail?.toLowerCase() || input.email?.toLowerCase() || null,
+            couponCode: input.couponCode || null,
+            amount: input.discountTotal,
+          },
+        })
+      }
+      return order
     })
   })
 }

@@ -42,6 +42,9 @@ export type OrderSummaryDTO = {
   providerResponseMessage: string | null
   paymentInitiatedAt: string | null
   paymentFailedAt: string | null
+  promotionId: string | null
+  couponCode: string | null
+  promotionType: string | null
   fulfillmentStage: string
   shippingZone: string | null
   freeShippingApplied: boolean
@@ -126,6 +129,9 @@ export function toOrderSummaryDTO(order: Order & { items: OrderItem[] }): OrderS
     providerResponseMessage: order.providerResponseMessage,
     paymentInitiatedAt: order.paymentInitiatedAt?.toISOString() ?? null,
     paymentFailedAt: order.paymentFailedAt?.toISOString() ?? null,
+    promotionId: order.promotionId,
+    couponCode: order.couponCode,
+    promotionType: order.promotionType,
     fulfillmentStage: order.fulfillmentStage,
     shippingZone: order.shippingZone,
     freeShippingApplied: order.freeShippingApplied,

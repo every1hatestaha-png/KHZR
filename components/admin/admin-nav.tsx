@@ -8,6 +8,7 @@ import {
   LayoutDashboardIcon,
   PackageIcon,
   ReceiptTextIcon,
+  TagsIcon,
   TruckIcon,
   WalletCardsIcon,
 } from "lucide-react"
@@ -19,6 +20,7 @@ const NAV = [
   { href: "/admin/categories", label: "Categories", icon: FolderIcon, exact: false },
   { href: "/admin/inventory", label: "Inventory", icon: WalletCardsIcon, exact: false },
   { href: "/admin/orders", label: "Orders", icon: ReceiptTextIcon, exact: false },
+  { href: "/admin/promotions", label: "Promotions", icon: TagsIcon, exact: false },
   { href: "/admin/shipping", label: "Shipping", icon: TruckIcon, exact: false },
 ]
 
