@@ -65,6 +65,13 @@ export type CreateLocalOrderInput = Omit<
 > & {
   shippingAddress: OrderAddressInput
   billingAddress?: OrderAddressInput
+  reserveInventory?: boolean
+  paymentStatus?: PaymentStatus
+  providerTransactionId?: string | null
+  providerReference?: string | null
+  providerResponseCode?: string | null
+  providerResponseMessage?: string | null
+  paymentInitiatedAt?: Date | null
 }
 
 const ORDER_NUMBER_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -212,14 +219,16 @@ export async function createLocalOrderRecord(
         })
       : shippingAddress
 
-    const stockEntries = mergeStockEntries(await orderItemsToStock(input.items))
-    for (const { variantId, quantity } of stockEntries) {
-      const decremented = await tx.productVariant.updateMany({
-        where: { id: variantId, stock: { gte: quantity } },
-        data: { stock: { decrement: quantity } },
-      })
-      if (decremented.count !== 1) {
-        throw new Error(`Insufficient stock for variant ${variantId}.`)
+    if (input.reserveInventory ?? true) {
+      const stockEntries = mergeStockEntries(await orderItemsToStock(input.items))
+      for (const { variantId, quantity } of stockEntries) {
+        const decremented = await tx.productVariant.updateMany({
+          where: { id: variantId, stock: { gte: quantity } },
+          data: { stock: { decrement: quantity } },
+        })
+        if (decremented.count !== 1) {
+          throw new Error(`Insufficient stock for variant ${variantId}.`)
+        }
       }
     }
 
@@ -229,8 +238,8 @@ export async function createLocalOrderRecord(
         ...(input.userId ? { userId: input.userId } : {}),
         email: input.email || null,
         phone: input.phone || null,
-        status: "CONFIRMED",
-        paymentStatus: "PENDING",
+        status: input.paymentStatus === "AWAITING_PAYMENT" ? "PENDING" : "CONFIRMED",
+        paymentStatus: input.paymentStatus ?? "PENDING",
         currency: "PKR",
         subtotal: input.subtotal,
         shippingTotal: input.shippingTotal,
@@ -245,6 +254,11 @@ export async function createLocalOrderRecord(
         shippingAddressId: shippingAddress.id,
         billingAddressId: billingAddress.id,
         paymentProvider: input.paymentProvider ?? "cash_on_delivery",
+        providerTransactionId: input.providerTransactionId || null,
+        providerReference: input.providerReference || null,
+        providerResponseCode: input.providerResponseCode || null,
+        providerResponseMessage: input.providerResponseMessage || null,
+        paymentInitiatedAt: input.paymentInitiatedAt || null,
         items: {
           create: input.items.map((item) => ({
             ...(item.variantId ? { variantId: item.variantId } : {}),
@@ -370,6 +384,71 @@ export async function markOrderPaidAndDecrementInventory(
 
     return true
   })
+}
+
+export async function markWalletOrderPaidAndDecrementInventory(input: {
+  orderNumber: string
+  providerTransactionId?: string | null
+  providerReference?: string | null
+  providerResponseCode?: string | null
+  providerResponseMessage?: string | null
+}): Promise<boolean> {
+  const order = await prisma.order.findUnique({
+    where: { orderNumber: input.orderNumber },
+    include: { items: true },
+  })
+  if (!order || order.paymentStatus !== "AWAITING_PAYMENT") return false
+  const stockEntries = mergeStockEntries(await orderItemsToStock(order.items))
+
+  return prisma.$transaction(async (tx) => {
+    const paid = await tx.order.updateMany({
+      where: { id: order.id, paymentStatus: "AWAITING_PAYMENT" },
+      data: {
+        paymentStatus: "PAID",
+        status: "CONFIRMED",
+        paymentVerifiedAt: new Date(),
+        providerTransactionId: input.providerTransactionId || order.providerTransactionId,
+        providerReference: input.providerReference || order.providerReference,
+        providerResponseCode: input.providerResponseCode || order.providerResponseCode,
+        providerResponseMessage: input.providerResponseMessage || order.providerResponseMessage,
+      },
+    })
+    if (paid.count !== 1) return false
+
+    for (const { variantId, quantity } of stockEntries) {
+      const decremented = await tx.productVariant.updateMany({
+        where: { id: variantId, stock: { gte: quantity } },
+        data: { stock: { decrement: quantity } },
+      })
+      if (decremented.count !== 1) {
+        throw new Error(`Insufficient stock for variant ${variantId}.`)
+      }
+    }
+    return true
+  })
+}
+
+export async function markWalletOrderFailed(input: {
+  orderNumber: string
+  cancelled?: boolean
+  providerTransactionId?: string | null
+  providerReference?: string | null
+  providerResponseCode?: string | null
+  providerResponseMessage?: string | null
+}): Promise<boolean> {
+  const result = await prisma.order.updateMany({
+    where: { orderNumber: input.orderNumber, paymentStatus: "AWAITING_PAYMENT" },
+    data: {
+      paymentStatus: input.cancelled ? "CANCELLED" : "FAILED",
+      ...(input.cancelled ? { status: "CANCELLED" as const, cancelledAt: new Date() } : {}),
+      paymentFailedAt: new Date(),
+      providerTransactionId: input.providerTransactionId || undefined,
+      providerReference: input.providerReference || undefined,
+      providerResponseCode: input.providerResponseCode || undefined,
+      providerResponseMessage: input.providerResponseMessage || undefined,
+    },
+  })
+  return result.count === 1
 }
 
 /** Restores variant stock after a failed or cancelled order. */

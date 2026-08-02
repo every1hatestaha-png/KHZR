@@ -55,22 +55,22 @@ export default async function CheckoutSuccessPage({
   }
 
   const paid = order.paymentStatus === "PAID"
-  const localPayment = order.paymentProvider !== "stripe"
+  const cod = order.paymentProvider === "cash_on_delivery"
   const contact = order.email || order.phone || "your contact details"
 
   return (
     <>
       <PageIntro
-        kicker={paid || localPayment ? "Order confirmed" : "Order received"}
-        title={paid || localPayment ? "Thank you." : "Confirming your payment."}
+        kicker={paid || cod ? "Order confirmed" : "Order received"}
+        title={paid || cod ? "Thank you." : "Awaiting payment."}
         description={
-          paid || localPayment
+          paid || cod
             ? `Order ${order.orderNumber} is confirmed. We will contact you at ${contact}.`
-            : "Your payment is being confirmed. The order details below will update shortly."
+            : "Your order has been created and will confirm after the payment provider verifies the transaction."
         }
         align="center"
       >
-        {paid || localPayment ? (
+        {paid || cod ? (
           <span aria-hidden className="h-px w-16 bg-champagne" />
         ) : null}
       </PageIntro>
@@ -94,7 +94,7 @@ export default async function CheckoutSuccessPage({
             <Link href="/account">Go to Account</Link>
           </Button>
         </div>
-        {!paid && !localPayment ? (
+        {!paid && !cod ? (
           <p className="text-center text-xs uppercase tracking-[0.2em] text-taupe">
             We will email you once payment is confirmed.
           </p>

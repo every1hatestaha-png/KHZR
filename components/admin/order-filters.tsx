@@ -158,8 +158,10 @@ export function OrderFilters({
           <SelectContent>
             <SelectItem value="all">All payments</SelectItem>
             <SelectItem value="PENDING">Pending</SelectItem>
+            <SelectItem value="AWAITING_PAYMENT">Awaiting payment</SelectItem>
             <SelectItem value="PAID">Paid</SelectItem>
             <SelectItem value="FAILED">Failed</SelectItem>
+            <SelectItem value="CANCELLED">Cancelled</SelectItem>
             <SelectItem value="REFUNDED">Refunded</SelectItem>
           </SelectContent>
         </Select>

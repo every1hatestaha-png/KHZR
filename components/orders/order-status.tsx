@@ -3,6 +3,7 @@ import type { OrderStatus, PaymentStatus, FulfillmentStatus } from "@prisma/clie
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pending",
+  AWAITING_PAYMENT: "Awaiting payment",
   CONFIRMED: "Confirmed",
   FULFILLED: "Fulfilled",
   SHIPPED: "Shipped",
@@ -17,6 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_TONES: Record<string, string> = {
   PENDING: "border-hairline text-taupe",
+  AWAITING_PAYMENT: "border-hairline text-taupe",
   CONFIRMED: "border-hairline text-noir",
   FULFILLED: "border-hairline text-stone",
   SHIPPED: "border-hairline text-stone",

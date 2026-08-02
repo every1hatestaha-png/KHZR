@@ -36,6 +36,12 @@ export type OrderSummaryDTO = {
   email: string | null
   phone: string | null
   paymentProvider: string
+  providerTransactionId: string | null
+  providerReference: string | null
+  providerResponseCode: string | null
+  providerResponseMessage: string | null
+  paymentInitiatedAt: string | null
+  paymentFailedAt: string | null
   fulfillmentStage: string
   shippingZone: string | null
   freeShippingApplied: boolean
@@ -114,6 +120,12 @@ export function toOrderSummaryDTO(order: Order & { items: OrderItem[] }): OrderS
     email: order.email,
     phone: order.phone,
     paymentProvider: order.paymentProvider,
+    providerTransactionId: order.providerTransactionId,
+    providerReference: order.providerReference,
+    providerResponseCode: order.providerResponseCode,
+    providerResponseMessage: order.providerResponseMessage,
+    paymentInitiatedAt: order.paymentInitiatedAt?.toISOString() ?? null,
+    paymentFailedAt: order.paymentFailedAt?.toISOString() ?? null,
     fulfillmentStage: order.fulfillmentStage,
     shippingZone: order.shippingZone,
     freeShippingApplied: order.freeShippingApplied,

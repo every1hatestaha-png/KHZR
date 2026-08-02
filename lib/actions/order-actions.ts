@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/actions/admin-actions"
 import {
   cancelOrder,
   getOrderWithRelations,
+  markWalletOrderPaidAndDecrementInventory,
   setFulfillmentStatus,
   transitionOrderStatus,
 } from "@/lib/services/order-service"
@@ -227,6 +228,19 @@ export async function markPaymentVerifiedAction(
   const { orderNumber } = parsed.data
 
   try {
+    const order = await prisma.order.findUnique({ where: { orderNumber } })
+    if (!order) return { ok: false, error: "Order not found." }
+
+    if (
+      (order.paymentProvider === "easypaisa" || order.paymentProvider === "jazzcash") &&
+      order.paymentStatus === "AWAITING_PAYMENT"
+    ) {
+      const paid = await markWalletOrderPaidAndDecrementInventory({ orderNumber })
+      if (!paid) return { ok: false, error: "Payment could not be verified." }
+      revalidateOrder(orderNumber)
+      return { ok: true, orderNumber, message: "Payment marked paid." }
+    }
+
     await prisma.order.update({
       where: { orderNumber },
       data: { paymentStatus: "PAID", paymentVerifiedAt: new Date() },

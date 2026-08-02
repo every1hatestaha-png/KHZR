@@ -16,6 +16,9 @@ import { CHECKOUT_COUNTRIES } from "@/lib/constants"
 import { rateLimit } from "@/lib/services/rate-limit"
 import { assertProductionEnvironment } from "@/lib/env"
 import { quoteShipping } from "@/lib/services/shipping-service"
+import { getPaymentProvider } from "@/lib/payments"
+import { unavailableMessage } from "@/lib/payments/config"
+import type { PaymentProviderName } from "@/lib/payments/types"
 
 export type CheckoutActionResult = {
   ok: boolean
@@ -27,11 +30,7 @@ export type ShippingQuoteActionResult =
   | { ok: true; zoneName: string; shipping: number; freeShippingThreshold: number; freeShippingApplied: boolean }
   | { ok: false; error: string }
 
-const LOCAL_PAYMENT_METHODS = new Set([
-  "cash_on_delivery",
-  "easypaisa",
-  "jazzcash",
-])
+const WALLET_PAYMENT_METHODS = new Set(["easypaisa", "jazzcash"])
 
 const toCents = (value: number) => Math.round(value * 100)
 
@@ -156,7 +155,7 @@ export async function createCheckoutSessionAction(
     imageUrl: line.imageUrl,
   }))
 
-  if (LOCAL_PAYMENT_METHODS.has(paymentMethod)) {
+  if (paymentMethod === "cash_on_delivery") {
     try {
       await createLocalOrderRecord({
         orderNumber,
@@ -192,6 +191,67 @@ export async function createCheckoutSessionAction(
     } catch (err) {
       console.error("[checkout] failed to place Pakistan order:", err)
       return { ok: false, error: "Checkout could not be completed." }
+    }
+  }
+
+  if (WALLET_PAYMENT_METHODS.has(paymentMethod)) {
+    const provider = getPaymentProvider(paymentMethod as PaymentProviderName)
+    const payment = await provider.createPayment({
+      orderNumber,
+      amount: pricing.total,
+      currency: "PKR",
+      customerName: `${firstName} ${lastName}`,
+      customerPhone: phone,
+      customerEmail: email || null,
+      returnUrl: `${baseUrl}/checkout/success?order=${orderNumber}`,
+      callbackUrl: `${baseUrl}/api/payments/${paymentMethod}/callback`,
+    })
+    if (!payment.ok) {
+      return { ok: false, error: payment.configurationError ? unavailableMessage() : payment.error }
+    }
+
+    try {
+      await createLocalOrderRecord({
+        orderNumber,
+        userId: user?.id,
+        email: email || null,
+        phone,
+        cartToken: token,
+        subtotal: pricing.subtotal,
+        shippingTotal: pricing.shipping,
+        shippingZone: shippingQuote.zoneName,
+        freeShippingApplied: shippingQuote.freeShippingApplied,
+        taxTotal: pricing.tax,
+        discountTotal: pricing.discount,
+        total: pricing.total,
+        shippingMethod:
+          pricing.shipping > 0 ? "Pakistan Standard Delivery" : "Complimentary Pakistan Delivery",
+        customerNotes: notes,
+        paymentProvider: paymentMethod,
+        paymentStatus: "AWAITING_PAYMENT",
+        reserveInventory: false,
+        providerTransactionId: payment.providerTransactionId,
+        providerReference: payment.providerReference,
+        providerResponseCode: payment.providerResponseCode,
+        providerResponseMessage: payment.providerResponseMessage,
+        paymentInitiatedAt: new Date(),
+        shippingAddress: {
+          firstName,
+          lastName,
+          line1: streetAddress,
+          line2: `${houseApartment}, ${area}`,
+          city,
+          region: province,
+          postalCode: postalCode || "",
+          country: "PK",
+        },
+        items: orderItems,
+      })
+      return { ok: true, url: payment.redirectUrl }
+    } catch (err) {
+      console.error("[checkout] failed to record wallet order:", err)
+      await provider.expireOrCancelPayment({ orderNumber, providerTransactionId: payment.providerTransactionId })
+      return { ok: false, error: "Checkout could not be started." }
     }
   }
 

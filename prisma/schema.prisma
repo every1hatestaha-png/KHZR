@@ -201,6 +201,12 @@ model Order {
   paymentProvider   String            @default("stripe")
   providerSessionId String?           @unique
   providerPaymentId String?           @unique
+  providerTransactionId String?       @unique
+  providerReference String?
+  providerResponseCode String?
+  providerResponseMessage String?
+  paymentInitiatedAt DateTime?
+  paymentFailedAt   DateTime?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   cancelledAt       DateTime?
@@ -390,8 +396,10 @@ enum OrderStatus {
 
 enum PaymentStatus {
   PENDING
+  AWAITING_PAYMENT
   PAID
   FAILED
+  CANCELLED
   REFUNDED
 }
 

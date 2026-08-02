@@ -163,6 +163,20 @@ export function OrderSummary({
         </section>
       ) : null}
 
+      {order.providerTransactionId || order.providerReference || order.providerResponseCode ? (
+        <section className="border border-hairline bg-background p-6">
+          <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">
+            Payment reference
+          </p>
+          <div className="mt-2 grid gap-1 text-sm leading-relaxed text-stone">
+            {order.providerTransactionId ? <p>Transaction: {order.providerTransactionId}</p> : null}
+            {order.providerReference ? <p>Reference: {order.providerReference}</p> : null}
+            {order.providerResponseCode ? <p>Response: {order.providerResponseCode}</p> : null}
+            {order.providerResponseMessage ? <p>{order.providerResponseMessage}</p> : null}
+          </div>
+        </section>
+      ) : null}
+
       {order.customerNotes ? (
         <section className="border border-hairline bg-background p-6">
           <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">

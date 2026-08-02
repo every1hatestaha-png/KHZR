@@ -18,6 +18,14 @@ function stageLabel(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
+function statusLabel(value: string): string {
+  return value
+    .toLowerCase()
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ")
+}
+
 export const metadata = {
   title: "Order",
 }
@@ -80,7 +88,13 @@ export default async function AdminOrderDetailPage({
             <div className="border border-hairline bg-card p-5">
               <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Payment</p>
               <p className="mt-2 font-display text-xl text-noir">{paymentMethodLabel(order.paymentProvider)}</p>
-              <p className="mt-1 text-sm text-stone">{order.paymentStatus}</p>
+              <p className="mt-1 text-sm text-stone">{statusLabel(order.paymentStatus)}</p>
+              {order.providerTransactionId ? (
+                <p className="mt-1 break-all text-xs text-taupe">Txn {order.providerTransactionId}</p>
+              ) : null}
+              {order.providerReference ? (
+                <p className="mt-1 break-all text-xs text-taupe">Ref {order.providerReference}</p>
+              ) : null}
             </div>
             <div className="border border-hairline bg-card p-5">
               <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Fulfillment</p>
