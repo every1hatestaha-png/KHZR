@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { ProductBuybox } from "@/components/product/product-buybox"
 import { ProductCard } from "@/components/product/product-card"
 import { ProductGallery } from "@/components/product/product-gallery"
+import { ProductReviews } from "@/components/reviews/product-reviews"
 import { Reveal } from "@/components/shared/reveal"
 import { SectionHeading } from "@/components/shared/section-heading"
 import {
@@ -14,6 +15,8 @@ import {
 } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 import { getProductBySlug, getRelatedProducts } from "@/lib/data-access/site"
+import { getProductReviewSummary, getReviewEligibility } from "@/lib/data-access/reviews"
+import { resolveDbUser } from "@/lib/services/user-service"
 
 export async function generateMetadata({
   params,
@@ -43,6 +46,11 @@ export default async function ProductPage({
   if (!product) notFound()
 
   const related = await getRelatedProducts(product.slug, product.collectionSlug, 4)
+  const user = await resolveDbUser()
+  const [reviewSummary, reviewEligibility] = await Promise.all([
+    getProductReviewSummary(product.slug),
+    getReviewEligibility(user?.id ?? null, product.slug),
+  ])
   const available = product.variants.some((v) => v.stock > 0)
   const productUrl = `${SITE.url}/product/${product.slug}`
   const jsonLd = jsonLdProduct({
@@ -100,6 +108,12 @@ export default async function ProductPage({
           </Reveal>
         </div>
       </section>
+
+      <ProductReviews
+        summary={reviewSummary}
+        productSlug={product.slug}
+        eligibility={reviewEligibility}
+      />
 
       {related.length > 0 ? (
         <section className="border-t border-hairline bg-ivory/30">

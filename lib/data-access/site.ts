@@ -29,6 +29,8 @@ export type ProductCardDTO = {
   currency: string
   imageUrl: string
   isNew: boolean
+  averageRating: number
+  reviewCount: number
   badge: "NEW" | "LOW_STOCK" | "OUT_OF_STOCK" | null
   defaultVariant: {
     variantId: string
@@ -59,6 +61,8 @@ function fallbackCard(p: FallbackProduct): ProductCardDTO {
     currency: p.currency,
     imageUrl: p.images[0],
     isNew: p.isNew,
+    averageRating: 0,
+    reviewCount: 0,
     badge:
       p.stockStatus === "OUT_OF_STOCK"
         ? "OUT_OF_STOCK"
@@ -83,6 +87,8 @@ function cardDTO(product: {
   compareAtPrice: { toString(): string } | null
   currency: string
   isNew: boolean
+  averageRating: { toString(): string }
+  reviewCount: number
   stockStatus: string
   media: { url: string }[]
   variants: { id: string; size: string; color: string; colorHex: string | null; stock: number }[]
@@ -100,6 +106,8 @@ function cardDTO(product: {
     currency: product.currency,
     imageUrl: product.media[0]?.url ?? "",
     isNew: product.isNew,
+    averageRating: Number(product.averageRating.toString()),
+    reviewCount: product.reviewCount,
     badge: product.stockStatus as ProductCardDTO["badge"],
     defaultVariant: {
       variantId: variant?.id ?? "",
@@ -122,6 +130,8 @@ export type ProductDetailDTO = {
   compareAtPrice: number | null
   currency: string
   isNew: boolean
+  averageRating: number
+  reviewCount: number
   badge: "NEW" | "LOW_STOCK" | "OUT_OF_STOCK" | null
   sku: string
   collectionSlug: string
@@ -154,6 +164,8 @@ function fallbackToDetail(p: FallbackProduct): ProductDetailDTO {
     compareAtPrice: p.compareAtPrice ? Number(p.compareAtPrice) : null,
     currency: p.currency,
     isNew: p.isNew,
+    averageRating: 0,
+    reviewCount: 0,
     badge,
     sku: p.sku,
     collectionSlug: p.collectionSlug,
@@ -180,6 +192,8 @@ function detailDTO(row: {
   compareAtPrice: { toString(): string } | null
   currency: string
   isNew: boolean
+  averageRating: { toString(): string }
+  reviewCount: number
   stockStatus: string
   sku: string | null
   status: string
@@ -213,6 +227,8 @@ function detailDTO(row: {
       : null,
     currency: row.currency,
     isNew: row.isNew,
+    averageRating: Number(row.averageRating.toString()),
+    reviewCount: row.reviewCount,
     badge,
     sku: row.sku ?? "",
     collectionSlug: collection?.slug ?? "",

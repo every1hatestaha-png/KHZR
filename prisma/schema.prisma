@@ -90,6 +90,8 @@ model Product {
   sku             String?             @unique
   isNew           Boolean             @default(false)
   isFeatured      Boolean             @default(false)
+  averageRating   Decimal             @default(0) @db.Decimal(3, 2)
+  reviewCount     Int                 @default(0)
   sortOrder       Int                 @default(0)
   seoTitle        String?
   seoDescription  String?
@@ -360,12 +362,35 @@ model Review {
   body       String?
   isVerified Boolean  @default(false)
   isApproved Boolean  @default(false)
+  status     ReviewStatus @default(PENDING)
+  isFeatured Boolean  @default(false)
+  helpfulCount Int    @default(0)
+  approvedAt DateTime?
+  approvedBy String?
+  adminReply String?
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  images     ReviewImage[]
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   user       User?    @relation(fields: [userId], references: [id])
 
+  @@unique([userId, productId])
   @@index([productId, isApproved])
+  @@index([productId, status])
   @@map("reviews")
+}
+
+model ReviewImage {
+  id        String   @id @default(cuid())
+  reviewId  String
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_images")
 }
 
 model JournalPost {
@@ -494,6 +519,12 @@ enum PromotionDiscountType {
   PERCENTAGE
   FIXED_AMOUNT
   FREE_SHIPPING
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  HIDDEN
 }
 
 enum FulfillmentStatus {
