@@ -11,6 +11,7 @@ import {
   toggleWishlistAction,
 } from "@/lib/actions/wishlist-actions"
 import type { ProductSummary } from "@/types"
+import { analytics, productToAnalyticsItem } from "@/lib/analytics"
 
 const STORAGE_KEY = "khzr_wishlist"
 
@@ -113,12 +114,19 @@ function WishlistProviderCore({
 
   const toggle = useCallback(
     async (item: ProductSummary) => {
+      const wasSaved = items.some((i) => i.productSlug === item.productSlug)
       if (signedIn) {
         const res = await toggleWishlistAction({ productSlug: item.productSlug })
         if (!res.ok) {
           toast.error(res.error ?? "Could not update your saved pieces.")
           return
         }
+        analytics.wishlist({
+          action: wasSaved ? "remove" : "add",
+          item: productToAnalyticsItem(item),
+          value: item.unitPrice,
+          currency: "PKR",
+        })
         setItems(res.items ?? [])
       } else {
         setItems((prev) => {
@@ -129,9 +137,15 @@ function WishlistProviderCore({
           writeGuest(next)
           return next
         })
+        analytics.wishlist({
+          action: wasSaved ? "remove" : "add",
+          item: productToAnalyticsItem(item),
+          value: item.unitPrice,
+          currency: "PKR",
+        })
       }
     },
-    [signedIn]
+    [items, signedIn]
   )
 
   const remove = useCallback(

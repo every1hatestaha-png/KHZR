@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { PageIntro } from "@/components/shared/page-intro"
 import { OrderSummary } from "@/components/orders/order-summary"
+import { PurchaseTracker } from "@/components/analytics/purchase-tracker"
 import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
 import { buildMetadata } from "@/lib/seo"
@@ -60,6 +61,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <>
+      {(paid || cod) ? <PurchaseTracker order={order} /> : null}
       <PageIntro
         kicker={paid || cod ? "Order confirmed" : "Order received"}
         title={paid || cod ? "Thank you." : "Awaiting payment."}

@@ -63,6 +63,7 @@ export default async function ProductPage({
     url: productUrl,
     availability: available ? "InStock" : "OutOfStock",
     collectionName: product.collectionName,
+    aggregateRating: product.reviewCount > 0 ? { rating: product.averageRating, count: product.reviewCount } : undefined,
   })
   const breadcrumbLd = jsonLdBreadcrumbs([
     { name: "Collections", url: "/collections" },
@@ -101,7 +102,7 @@ export default async function ProductPage({
 
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-20">
           <Reveal className="lg:col-span-7 xl:col-span-8">
-            <ProductGallery images={product.images} alt={product.name} />
+            <ProductGallery images={product.images} alt={product.name} productSlug={product.slug} />
           </Reveal>
           <Reveal delay={0.1} className="lg:col-span-5 xl:col-span-4">
             <ProductBuybox product={product} />

@@ -12,6 +12,7 @@ import {
   type ShippingQuoteActionResult,
 } from "@/lib/actions/checkout-actions"
 import { getCheckoutAccountAction } from "@/lib/actions/account-actions"
+import { analytics, cartLineToAnalyticsItem } from "@/lib/analytics"
 import { priceBreakdownWithShipping } from "@/lib/services/pricing-service"
 import { formatMoney } from "@/lib/utils"
 import type { AccountAddressDTO, AccountProfileDTO } from "@/lib/data-access/account"
@@ -121,6 +122,15 @@ export default function CheckoutPage() {
       cancelled = true
     }
   }, [])
+
+  React.useEffect(() => {
+    if (lines.length === 0) return
+    analytics.beginCheckout({
+      value: subtotal,
+      currency,
+      items: lines.map(cartLineToAnalyticsItem),
+    })
+  }, [lines, subtotal, currency])
 
   React.useEffect(() => {
     if (!fields.province || !fields.city || lines.length === 0) {

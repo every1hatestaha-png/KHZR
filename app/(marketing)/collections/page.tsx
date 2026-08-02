@@ -1,5 +1,6 @@
 import { PageIntro } from "@/components/shared/page-intro"
 import { CollectionCard } from "@/components/collections/collection-card"
+import { CollectionTracker } from "@/components/analytics/event-trackers"
 import { buildMetadata, jsonLdItemList, jsonLdScript } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
@@ -46,9 +47,11 @@ export const metadata = buildMetadata({
   image: COLLECTIONS[0].imageUrl,
 })
 
-export default function CollectionsPage() {
+export default async function CollectionsPage({ searchParams }: { searchParams: Promise<{ sort?: string; filter?: string }> }) {
+  const query = await searchParams
   return (
     <>
+      <CollectionTracker slug="collections" name="All Collections" sort={query.sort} filter={query.filter} />
       <PageIntro
         kicker="Shop"
         title="The Collections"

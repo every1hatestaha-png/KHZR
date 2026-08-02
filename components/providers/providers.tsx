@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "@/components/ui/sonner"
 import { CartProvider } from "@/components/cart/cart-provider"
 import { WishlistProvider } from "@/components/wishlist/wishlist-provider"
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider"
 
 const CartDrawer = dynamic(
   () =>
@@ -22,6 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <WishlistProvider>
           {children}
           <CartDrawer />
+          <React.Suspense fallback={null}>
+            <AnalyticsProvider />
+          </React.Suspense>
         </WishlistProvider>
       </CartProvider>
       <Toaster

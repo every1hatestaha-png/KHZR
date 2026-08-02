@@ -1,4 +1,5 @@
 import { PageIntro } from "@/components/shared/page-intro"
+import { SearchTracker } from "@/components/analytics/event-trackers"
 import { buildMetadata } from "@/lib/seo"
 
 export const metadata = buildMetadata({
@@ -8,9 +9,11 @@ export const metadata = buildMetadata({
   noindex: true,
 })
 
-export default function SearchPage() {
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const query = await searchParams
   return (
     <>
+      <SearchTracker term={query.q} />
       <PageIntro
         kicker="Search"
         title="Find a piece."

@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { PageIntro } from "@/components/shared/page-intro"
 import { Button } from "@/components/ui/button"
+import { CollectionTracker } from "@/components/analytics/event-trackers"
 import {
   buildMetadata,
   jsonLdBreadcrumbs,
@@ -69,10 +70,13 @@ export async function generateMetadata({
 
 export default async function CollectionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>
+  searchParams: Promise<{ sort?: string; filter?: string }>
 }) {
   const { slug } = await params
+  const query = await searchParams
   const collection = COLLECTIONS[slug]
   if (!collection) notFound()
 
@@ -89,6 +93,7 @@ export default async function CollectionPage({
 
   return (
     <>
+      <CollectionTracker slug={slug} name={collection.name} sort={query.sort} filter={query.filter} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}

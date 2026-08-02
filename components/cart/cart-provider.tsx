@@ -14,6 +14,7 @@ import { ClerkAuth, clerkEnabled } from "@/components/providers/clerk-auth"
 import { applyDiscountCode } from "@/lib/discounts"
 import { emptyCart } from "@/types"
 import type { CartState, Discount, ProductSummary } from "@/types"
+import { analytics, cartLineToAnalyticsItem, productToAnalyticsItem } from "@/lib/analytics"
 import { cn } from "@/lib/utils"
 
 type CartContextValue = {
@@ -138,11 +139,16 @@ function CartProviderCore({
       if (!res.ok) {
         toast.error(res.error ?? "Could not add to your selection.")
       } else {
+        analytics.addToCart({
+          item: productToAnalyticsItem(product, qty),
+          value: product.unitPrice * qty,
+          currency: cart.currency,
+        })
         applyServer(res.cart)
         setIsOpen(true)
       }
     },
-    [applyServer]
+    [applyServer, cart.currency]
   )
 
   const updateQuantity = useCallback(
@@ -180,6 +186,7 @@ function CartProviderCore({
 
   const removeItem = useCallback(
     async (lineId: string) => {
+      const removed = cart.lines.find((l) => l.id === lineId)
       setCart((prev) => {
         const line = prev.lines.find((l) => l.id === lineId)
         if (!line) return prev
@@ -193,9 +200,18 @@ function CartProviderCore({
 
       const res = await removeItemAction({ lineId })
       if (!res.ok) toast.error(res.error ?? "Could not remove this item.")
-      else applyServer(res.cart)
+      else {
+        if (removed) {
+          analytics.removeFromCart({
+            item: cartLineToAnalyticsItem(removed),
+            value: removed.unitPrice * removed.quantity,
+            currency: cart.currency,
+          })
+        }
+        applyServer(res.cart)
+      }
     },
-    [applyServer]
+    [applyServer, cart.lines, cart.currency]
   )
 
   const clearCart = useCallback(async () => {

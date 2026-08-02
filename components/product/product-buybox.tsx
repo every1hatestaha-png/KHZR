@@ -7,12 +7,28 @@ import { Price } from "@/components/shared/price"
 import { QuantityStepper } from "@/components/shared/quantity-stepper"
 import { Button } from "@/components/ui/button"
 import { WishlistToggle } from "@/components/wishlist/wishlist-toggle"
+import { analytics } from "@/lib/analytics"
 import { detailToSummary } from "@/lib/product-summary"
 import type { ProductDetailDTO } from "@/lib/data-access/site"
 import { cn } from "@/lib/utils"
 
 export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   const { addItem } = useCart()
+
+  React.useEffect(() => {
+    const first = product.variants.find((variant) => variant.stock > 0) ?? product.variants[0]
+    analytics.productViewed({
+      item: {
+        item_id: product.slug,
+        item_name: product.name,
+        item_variant: first ? [first.color, first.size].filter(Boolean).join(" / ") : undefined,
+        price: product.price,
+        quantity: 1,
+      },
+      value: product.price,
+      currency: product.currency,
+    })
+  }, [product])
 
   const sizes = Array.from(new Set(product.variants.map((v) => v.size)))
   const colors = Array.from(new Set(product.variants.map((v) => v.color)))
@@ -52,6 +68,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
 
   function selectColor(color: string) {
     setSelectedColor(color)
+    analytics.productOption({ option: "color", value: color, productSlug: product.slug })
     if (
       selectedSize &&
       !product.variants.some(
@@ -67,6 +84,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
 
   function selectSize(size: string) {
     setSelectedSize(size)
+    analytics.productOption({ option: "size", value: size, productSlug: product.slug })
     if (
       selectedColor &&
       !product.variants.some(
@@ -82,7 +100,8 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
 
   function handleAdd() {
     if (!selectedVariant) return
-    void addItem(detailToSummary(product, selectedVariant), quantity)
+    const summary = detailToSummary(product, selectedVariant)
+    void addItem(summary, quantity)
   }
 
   const addLabel = soldOut

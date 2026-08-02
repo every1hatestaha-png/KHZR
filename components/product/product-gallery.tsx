@@ -3,6 +3,7 @@
 import * as React from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
 import { LazyImage } from "@/components/shared/lazy-image"
+import { analytics } from "@/lib/analytics"
 import { cn } from "@/lib/utils"
 
 const EASE = [0.16, 1, 0.3, 1] as const
@@ -10,9 +11,11 @@ const EASE = [0.16, 1, 0.3, 1] as const
 export function ProductGallery({
   images,
   alt,
+  productSlug,
 }: {
   images: string[]
   alt: string
+  productSlug?: string
 }) {
   const [index, setIndex] = React.useState(0)
   const reduceMotion = useReducedMotion()
@@ -49,7 +52,10 @@ export function ProductGallery({
             <button
               key={src}
               type="button"
-              onClick={() => setIndex(i)}
+              onClick={() => {
+                setIndex(i)
+                if (productSlug) analytics.productOption({ option: "gallery_image", value: String(i + 1), productSlug })
+              }}
               aria-label={`View image ${i + 1} of ${images.length}`}
               aria-pressed={i === index}
               className={cn(
