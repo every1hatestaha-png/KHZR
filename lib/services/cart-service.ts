@@ -62,7 +62,7 @@ function toState(items: Array<Parameters<typeof toLine>[0]>): CartState {
       (n, l) => n + l.unitPrice * l.quantity,
       0
     ),
-    currency: lines[0] ? "USD" : "USD",
+    currency: lines[0] ? "PKR" : "PKR",
   }
 }
 

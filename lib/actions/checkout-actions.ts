@@ -1,7 +1,7 @@
 "use server"
 
 import { clearCart, getCartState, isDatabaseConfigured } from "@/lib/services/cart-service"
-import { priceBreakdown } from "@/lib/services/pricing-service"
+import { priceBreakdownWithShipping } from "@/lib/services/pricing-service"
 import { createCheckoutSession, expireCheckoutSession } from "@/lib/services/stripe-service"
 import { sessionToken } from "@/lib/services/session-service"
 import { resolveDbUser } from "@/lib/services/user-service"
@@ -15,12 +15,17 @@ import { createCheckoutSchema } from "@/lib/validations/checkout"
 import { CHECKOUT_COUNTRIES } from "@/lib/constants"
 import { rateLimit } from "@/lib/services/rate-limit"
 import { assertProductionEnvironment } from "@/lib/env"
+import { quoteShipping } from "@/lib/services/shipping-service"
 
 export type CheckoutActionResult = {
   ok: boolean
   error?: string
   url?: string
 }
+
+export type ShippingQuoteActionResult =
+  | { ok: true; zoneName: string; shipping: number; freeShippingThreshold: number; freeShippingApplied: boolean }
+  | { ok: false; error: string }
 
 const LOCAL_PAYMENT_METHODS = new Set([
   "cash_on_delivery",
@@ -29,6 +34,25 @@ const LOCAL_PAYMENT_METHODS = new Set([
 ])
 
 const toCents = (value: number) => Math.round(value * 100)
+
+export async function quoteCheckoutShippingAction(input: {
+  province: string
+  city: string
+  subtotal: number
+}): Promise<ShippingQuoteActionResult> {
+  try {
+    const quote = await quoteShipping(input)
+    return {
+      ok: true,
+      zoneName: quote.zoneName,
+      shipping: quote.shipping,
+      freeShippingThreshold: quote.freeShippingThreshold,
+      freeShippingApplied: quote.freeShippingApplied,
+    }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Shipping could not be calculated." }
+  }
+}
 
 export async function createCheckoutSessionAction(
   input: unknown
@@ -90,7 +114,13 @@ export async function createCheckoutSessionAction(
   }
 
   const discount = discountCode ? applyDiscountCode(discountCode) : null
-  const pricing = priceBreakdown(cart.subtotal, discount)
+  let shippingQuote: Awaited<ReturnType<typeof quoteShipping>>
+  try {
+    shippingQuote = await quoteShipping({ province, city, subtotal: cart.subtotal })
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Shipping could not be calculated." }
+  }
+  const pricing = priceBreakdownWithShipping(cart.subtotal, discount, shippingQuote.shipping)
   const orderNumber = await nextOrderNumber()
   const user = await resolveDbUser()
 
@@ -136,6 +166,8 @@ export async function createCheckoutSessionAction(
         cartToken: token,
         subtotal: pricing.subtotal,
         shippingTotal: pricing.shipping,
+        shippingZone: shippingQuote.zoneName,
+        freeShippingApplied: shippingQuote.freeShippingApplied,
         taxTotal: pricing.tax,
         discountTotal: pricing.discount,
         total: pricing.total,
@@ -199,6 +231,8 @@ export async function createCheckoutSessionAction(
       cartToken: token,
       subtotal: pricing.subtotal,
       shippingTotal: pricing.shipping,
+      shippingZone: shippingQuote.zoneName,
+      freeShippingApplied: shippingQuote.freeShippingApplied,
       taxTotal: pricing.tax,
       discountTotal: pricing.discount,
       total: pricing.total,

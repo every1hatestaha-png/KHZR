@@ -45,6 +45,8 @@ export type CreateOrderInput = {
   cartToken: string
   subtotal: number
   shippingTotal: number
+  shippingZone?: string | null
+  freeShippingApplied?: boolean
   taxTotal: number
   discountTotal: number
   total: number
@@ -138,6 +140,8 @@ export async function createOrderRecord(
           currency: "USD",
           subtotal: input.subtotal,
           shippingTotal: input.shippingTotal,
+          shippingZone: input.shippingZone || null,
+          freeShippingApplied: input.freeShippingApplied ?? false,
           taxTotal: input.taxTotal,
           discountTotal: input.discountTotal,
           total: input.total,
@@ -227,9 +231,11 @@ export async function createLocalOrderRecord(
         phone: input.phone || null,
         status: "CONFIRMED",
         paymentStatus: "PENDING",
-        currency: "USD",
+        currency: "PKR",
         subtotal: input.subtotal,
         shippingTotal: input.shippingTotal,
+        shippingZone: input.shippingZone || null,
+        freeShippingApplied: input.freeShippingApplied ?? false,
         taxTotal: input.taxTotal,
         discountTotal: input.discountTotal,
         total: input.total,

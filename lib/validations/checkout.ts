@@ -122,4 +122,11 @@ export const adminInternalNotesSchema = z.object({
   internalNotes: z.string().trim().max(4000).optional().default(""),
 })
 
+export const adminShippingZoneUpdateSchema = z.object({
+  id: z.string().min(1).max(120),
+  amount: z.coerce.number().min(0).max(100000),
+  freeShippingThreshold: z.coerce.number().min(0).max(10000000),
+  active: z.coerce.boolean(),
+})
+
 export type CreateCheckoutInput = z.infer<typeof createCheckoutSchema>

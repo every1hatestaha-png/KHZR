@@ -4,9 +4,12 @@ import * as React from "react"
 import Link from "next/link"
 import { useCart } from "@/components/cart/cart-provider"
 import { Button } from "@/components/ui/button"
-import { createCheckoutSessionAction } from "@/lib/actions/checkout-actions"
-import { priceBreakdown } from "@/lib/services/pricing-service"
-import { SITE } from "@/lib/constants"
+import {
+  createCheckoutSessionAction,
+  quoteCheckoutShippingAction,
+  type ShippingQuoteActionResult,
+} from "@/lib/actions/checkout-actions"
+import { priceBreakdownWithShipping } from "@/lib/services/pricing-service"
 import { formatMoney } from "@/lib/utils"
 
 const PAKISTAN_PROVINCES = [
@@ -73,8 +76,33 @@ export default function CheckoutPage() {
   const [code, setCode] = React.useState("")
   const [pending, setPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [shippingQuote, setShippingQuote] = React.useState<ShippingQuoteActionResult | null>(null)
+  const [shippingPending, setShippingPending] = React.useState(false)
 
-  const pricing = priceBreakdown(subtotal, discount)
+  const quotedShipping = shippingQuote?.ok ? shippingQuote.shipping : 0
+  const pricing = priceBreakdownWithShipping(subtotal, discount, quotedShipping)
+
+  React.useEffect(() => {
+    if (!fields.province || !fields.city || lines.length === 0) {
+      setShippingQuote(null)
+      return
+    }
+    let cancelled = false
+    setShippingPending(true)
+    void quoteCheckoutShippingAction({
+      province: fields.province,
+      city: fields.city,
+      subtotal,
+    }).then((quote) => {
+      if (!cancelled) {
+        setShippingQuote(quote)
+        setShippingPending(false)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [fields.province, fields.city, lines.length, subtotal])
 
   function updateField<K extends keyof CheckoutFields>(
     key: K,
@@ -94,6 +122,11 @@ export default function CheckoutPage() {
     if (pending) return
     setPending(true)
     setError(null)
+    if (!shippingQuote?.ok) {
+      setPending(false)
+      setError(shippingQuote?.error ?? "Shipping could not be calculated for this address.")
+      return
+    }
     const res = await createCheckoutSessionAction({
       ...fields,
       discountCode: discount?.code ?? "",
@@ -117,7 +150,8 @@ export default function CheckoutPage() {
       fields.area &&
       fields.streetAddress &&
       fields.houseApartment &&
-      fields.paymentMethod
+      fields.paymentMethod &&
+      shippingQuote?.ok
   )
 
   return (
@@ -253,7 +287,7 @@ export default function CheckoutPage() {
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
                   Shipping
                 </p>
-                <p className="mt-2">{SITE.shippingNote}.</p>
+                <p className="mt-2">Calculated from province, city, and order subtotal.</p>
               </div>
               <div>
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
@@ -374,11 +408,21 @@ export default function CheckoutPage() {
               <div className="flex items-center justify-between">
                 <dt className="text-taupe">Shipping</dt>
                 <dd className="text-stone">
-                  {pricing.shipping === 0
-                    ? "Complimentary"
-                    : formatMoney(pricing.shipping, currency)}
+                  {shippingPending
+                    ? "Calculating..."
+                    : shippingQuote?.ok
+                      ? shippingQuote.freeShippingApplied
+                        ? "Free shipping applied"
+                        : formatMoney(shippingQuote.shipping, currency)
+                      : shippingQuote?.error ?? "Shipping calculated at checkout."}
                 </dd>
               </div>
+              {shippingQuote?.ok ? (
+                <div className="flex items-center justify-between">
+                  <dt className="text-taupe">Zone</dt>
+                  <dd className="text-stone">{shippingQuote.zoneName}</dd>
+                </div>
+              ) : null}
               <div className="flex items-center justify-between">
                 <dt className="text-taupe">Duties &amp; taxes</dt>
                 <dd className="text-stone">

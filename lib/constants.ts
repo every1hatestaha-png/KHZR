@@ -22,7 +22,7 @@ export const SITE = {
   },
   freeShippingThreshold: 350,
   shippingNote: "Complimentary shipping on orders over $350",
-  currency: "USD",
+  currency: "PKR",
 } as const
 
 export const NAV_LINKS = [

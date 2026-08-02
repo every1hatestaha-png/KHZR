@@ -116,9 +116,17 @@ export function OrderSummary({
             <dd className="text-noir">
               {order.shippingTotal > 0
                 ? formatMoney(order.shippingTotal, order.currency)
-                : "Complimentary"}
+                : order.freeShippingApplied
+                  ? "Free shipping applied"
+                  : "Complimentary"}
             </dd>
           </div>
+          {order.shippingZone ? (
+            <div className="flex items-center justify-between">
+              <dt className="text-taupe">Shipping zone</dt>
+              <dd className="text-noir">{order.shippingZone}</dd>
+            </div>
+          ) : null}
           {order.taxTotal > 0 ? (
             <div className="flex items-center justify-between">
               <dt className="text-taupe">{TAX_LABEL}</dt>

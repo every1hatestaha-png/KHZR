@@ -6,7 +6,6 @@ import { useCart } from "@/components/cart/cart-provider"
 import { CartItem } from "@/components/cart/cart-item"
 import { Button } from "@/components/ui/button"
 import { discountAmount } from "@/lib/discounts"
-import { SITE } from "@/lib/constants"
 import { formatMoney } from "@/lib/utils"
 
 export default function CartPage() {
@@ -22,7 +21,6 @@ export default function CartPage() {
 
   const saved = discountAmount(discount, subtotal)
   const total = Math.max(0, subtotal - saved)
-  const freeShipping = subtotal >= SITE.freeShippingThreshold
 
   function handleApply(e: React.FormEvent) {
     e.preventDefault()
@@ -40,7 +38,7 @@ export default function CartPage() {
           Your Selection
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
-          Review sizes, colours, and quantities before checkout. {SITE.shippingNote}.
+          Review sizes, colours, and quantities before checkout. Shipping is calculated at checkout.
         </p>
       </header>
 
@@ -158,9 +156,7 @@ export default function CartPage() {
               <div className="flex items-center justify-between">
                 <dt className="text-taupe">Shipping</dt>
                 <dd className="text-stone">
-                  {freeShipping
-                    ? "Complimentary"
-                    : "Calculated at checkout"}
+                  Shipping calculated at checkout.
                 </dd>
               </div>
               <div className="flex items-center justify-between">

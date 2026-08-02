@@ -37,6 +37,8 @@ export type OrderSummaryDTO = {
   phone: string | null
   paymentProvider: string
   fulfillmentStage: string
+  shippingZone: string | null
+  freeShippingApplied: boolean
   currency: string
   status: OrderStatus
   paymentStatus: PaymentStatus
@@ -113,6 +115,8 @@ export function toOrderSummaryDTO(order: Order & { items: OrderItem[] }): OrderS
     phone: order.phone,
     paymentProvider: order.paymentProvider,
     fulfillmentStage: order.fulfillmentStage,
+    shippingZone: order.shippingZone,
+    freeShippingApplied: order.freeShippingApplied,
     currency: order.currency,
     status: order.status,
     paymentStatus: order.paymentStatus,

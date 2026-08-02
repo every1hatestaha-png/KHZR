@@ -46,3 +46,15 @@ export function priceBreakdown(
   const total = roundMoney(taxable + tax + shipping)
   return { subtotal, discount: discountTotal, shipping, tax, total }
 }
+
+export function priceBreakdownWithShipping(
+  subtotal: number,
+  discount: Discount | null,
+  shipping: number
+): PriceBreakdown {
+  const discountTotal = calculateDiscount(discount, subtotal)
+  const taxable = roundMoney(subtotal - discountTotal)
+  const tax = calculateTax(Math.max(0, taxable))
+  const total = roundMoney(taxable + tax + shipping)
+  return { subtotal, discount: discountTotal, shipping, tax, total }
+}

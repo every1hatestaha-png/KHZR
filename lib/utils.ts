@@ -9,6 +9,7 @@ const CURRENCIES: Record<string, { locale: string; symbol: string }> = {
   USD: { locale: "en-US", symbol: "$" },
   EUR: { locale: "de-DE", symbol: "€" },
   GBP: { locale: "en-GB", symbol: "£" },
+  PKR: { locale: "en-PK", symbol: "Rs" },
 }
 
 export function formatMoney(

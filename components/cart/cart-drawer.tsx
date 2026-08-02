@@ -12,9 +12,7 @@ import { Button } from "@/components/ui/button"
 import { useCart } from "@/components/cart/cart-provider"
 import { CartItem } from "@/components/cart/cart-item"
 import { discountAmount } from "@/lib/discounts"
-import { SITE } from "@/lib/constants"
 import { formatMoney } from "@/lib/utils"
-import { cn } from "@/lib/utils"
 
 export function CartDrawer() {
   const {
@@ -29,11 +27,6 @@ export function CartDrawer() {
   const { lines, subtotal, count, currency } = cart
   const [code, setCode] = React.useState("")
 
-  const remaining = Math.max(0, SITE.freeShippingThreshold - subtotal)
-  const progress = Math.min(
-    100,
-    (subtotal / SITE.freeShippingThreshold) * 100
-  )
   const saved = discountAmount(discount, subtotal)
   const total = Math.max(0, subtotal - saved)
 
@@ -81,21 +74,8 @@ export function CartDrawer() {
           <>
             <div className="border-b border-hairline bg-ivory/35 px-5 py-4 sm:px-7 sm:py-5 lg:px-9">
               <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.22em] text-taupe">
-                <span>
-                  {subtotal >= SITE.freeShippingThreshold
-                    ? "Shipping is complimentary"
-                    : `Add ${formatMoney(remaining)} for free shipping`}
-                </span>
-                <span>{Math.round(progress)}%</span>
-              </div>
-              <div className="mt-3 h-px w-full bg-sand" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} aria-label="Free shipping progress">
-                <div
-                  className={cn(
-                    "h-px bg-champagne transition-[width,opacity] duration-[420ms] ease-lux motion-reduce:transition-none",
-                    hydrated ? "opacity-100" : "opacity-40"
-                  )}
-                  style={{ width: `${progress}%` }}
-                />
+                <span>Shipping calculated at checkout.</span>
+                <span>{hydrated ? `${count} item${count === 1 ? "" : "s"}` : ""}</span>
               </div>
             </div>
 
@@ -169,9 +149,7 @@ export function CartDrawer() {
                     Shipping
                   </span>
                   <span className="text-xs text-taupe">
-                    {subtotal >= SITE.freeShippingThreshold
-                      ? "Complimentary"
-                      : "Calculated at checkout"}
+                    Shipping calculated at checkout.
                   </span>
                 </div>
                 <div className="flex items-center justify-between border-t border-hairline pt-4">
