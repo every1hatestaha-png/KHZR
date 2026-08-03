@@ -16,6 +16,19 @@ function sweep(now: number) {
   }
 }
 
+function hitBucket(key: string, max: number, windowMs: number): boolean {
+  const now = Date.now()
+  const bucket = buckets.get(key)
+  if (!bucket || now - bucket.windowStart > windowMs) {
+    buckets.set(key, { windowStart: now, count: 1 })
+    sweep(now)
+    return true
+  }
+  if (bucket.count >= max) return false
+  bucket.count += 1
+  return true
+}
+
 /**
  * Lightweight, per-IP, in-memory rate limit for server actions. Returns true
  * when the request is allowed. Falls open (no limit) when the caller's IP
@@ -33,15 +46,17 @@ export async function rateLimit(
     store.get("x-real-ip")?.trim()
   if (!ip) return true
 
-  const now = Date.now()
   const key = `${scope}:${ip}`
-  const bucket = buckets.get(key)
-  if (!bucket || now - bucket.windowStart > windowMs) {
-    buckets.set(key, { windowStart: now, count: 1 })
-    sweep(now)
-    return true
-  }
-  if (bucket.count >= max) return false
-  bucket.count += 1
-  return true
+  return hitBucket(key, max, windowMs)
+}
+
+export async function rateLimitKey(
+  scope: string,
+  key: string,
+  max: number,
+  windowMs = SWEEP_WINDOW_MS
+): Promise<boolean> {
+  const normalized = key.trim().toLowerCase()
+  if (!normalized) return true
+  return hitBucket(`${scope}:${normalized}`, max, windowMs)
 }

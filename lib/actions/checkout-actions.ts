@@ -8,7 +8,7 @@ import {
   nextOrderNumber,
 } from "@/lib/services/order-service"
 import { createCheckoutSchema } from "@/lib/validations/checkout"
-import { rateLimit } from "@/lib/services/rate-limit"
+import { rateLimit, rateLimitKey } from "@/lib/services/rate-limit"
 import { assertProductionEnvironment } from "@/lib/env"
 import { quoteShipping } from "@/lib/services/shipping-service"
 import { prisma } from "@/lib/prisma"
@@ -33,6 +33,8 @@ export async function quoteCheckoutShippingAction(input: {
   city: string
 }): Promise<ShippingQuoteActionResult> {
   try {
+    const allowed = await rateLimit("checkout:shipping-quote", 80, 15 * 60 * 1000)
+    if (!allowed) return { ok: false, error: "Too many quote attempts. Please try again shortly." }
     const token = await sessionToken()
     if (!token) return { ok: false, error: "Your bag could not be found." }
     const cart = await getCartState(token)
@@ -55,6 +57,8 @@ export async function quoteCheckoutPromotionAction(input: {
   city: string
   couponCode?: string | null
 }): Promise<CheckoutPromotionQuoteActionResult> {
+  const allowed = await rateLimit("checkout:promotion-quote", 40, 15 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many promotion attempts. Please try again shortly." }
   const token = await sessionToken()
   if (!token) return { ok: false, error: "Your bag could not be found." }
   const cart = await getCartState(token)
@@ -105,8 +109,12 @@ export async function createCheckoutSessionAction(
     return { ok: false, error: "Checkout is unavailable right now." }
   }
 
-  const allowed = await rateLimit("checkout", 20, 60 * 60 * 1000)
-  if (!allowed) {
+  const allowedByIp = await rateLimit("checkout", 10, 15 * 60 * 1000)
+  const allowedByPhone = await rateLimitKey("checkout:phone", phone.replace(/\D/g, ""), 4, 60 * 60 * 1000)
+  const allowedByEmail = email
+    ? await rateLimitKey("checkout:email", email, 4, 60 * 60 * 1000)
+    : true
+  if (!allowedByIp || !allowedByPhone || !allowedByEmail) {
     return { ok: false, error: "Too many checkout attempts. Please try again shortly." }
   }
 
@@ -192,7 +200,7 @@ export async function createCheckoutSessionAction(
 
   if (paymentMethod === "cash_on_delivery") {
     try {
-      await createLocalOrderRecord({
+      const order = await createLocalOrderRecord({
         orderNumber,
         userId: user?.id,
         email: email || null,
@@ -225,9 +233,13 @@ export async function createCheckoutSessionAction(
         },
         items: orderItems,
       })
-      await saveCheckoutAddress()
       await clearCart(token)
-      return { ok: true, url: `/checkout/success?order=${orderNumber}` }
+      try {
+        await saveCheckoutAddress()
+      } catch (err) {
+        console.error("[checkout] failed to save checkout address:", err)
+      }
+      return { ok: true, url: `/checkout/success?order=${order.orderNumber}` }
     } catch (err) {
       console.error("[checkout] failed to place Pakistan order:", err)
       return { ok: false, error: "Checkout could not be completed." }

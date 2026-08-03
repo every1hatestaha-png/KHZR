@@ -23,7 +23,9 @@ function toLine(item: {
     size: string
     color: string
     colorHex: string | null
+    priceOverride: { toString(): string } | null
     stock: number
+    active: boolean
     product: {
       id: string
       slug: string
@@ -31,10 +33,14 @@ function toLine(item: {
       subtitle: string | null
       price: { toString(): string }
       currency: string
+      status: string
       media: { url: string }[]
     }
   }
 }): CartLine {
+  const available = item.variant.active && item.variant.product.status === "ACTIVE"
+    ? item.variant.stock
+    : 0
   return {
     id: item.id,
     variantId: item.variant.id,
@@ -47,9 +53,11 @@ function toLine(item: {
     color: item.variant.color,
     colorHex: item.variant.colorHex,
     imageUrl: item.variant.product.media[0]?.url ?? null,
-    unitPrice: toNumber(item.variant.product.price),
+    unitPrice: item.variant.priceOverride
+      ? toNumber(item.variant.priceOverride)
+      : toNumber(item.variant.product.price),
     quantity: item.quantity,
-    available: Math.max(0, item.variant.stock),
+    available: Math.max(0, available),
   }
 }
 
@@ -85,6 +93,7 @@ export async function getCartState(token: string | null): Promise<CartState> {
                   subtitle: true,
                   price: true,
                   currency: true,
+                  status: true,
                   media: { select: { url: true }, orderBy: { position: "asc" }, take: 1 },
                 },
               },

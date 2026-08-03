@@ -10,6 +10,7 @@ import type {
   OrderItem,
   OrderStatus,
   PaymentStatus,
+  Prisma,
 } from "@prisma/client"
 
 export type OrderWithItems = Order & { items: OrderItem[] }
@@ -79,6 +80,7 @@ export type CreateLocalOrderInput = Omit<
 }
 
 const ORDER_NUMBER_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+const DUPLICATE_ORDER_WINDOW_MS = 15 * 60 * 1000
 
 export function generateOrderNumber(): string {
   let suffix = ""
@@ -231,12 +233,54 @@ export async function findOrderByProviderSession(
   })
 }
 
+function sameMoney(left: unknown, right: number) {
+  return Number(left) === right
+}
+
+function sameOrderLines(left: OrderItem[], right: OrderLineInput[]) {
+  if (left.length !== right.length) return false
+  const key = (item: { variantId: string | null; productId: string; quantity: number; unitPrice: unknown }) =>
+    `${item.variantId ?? ""}:${item.productId}:${item.quantity}:${Number(item.unitPrice)}`
+  const leftKeys = left.map(key).sort()
+  const rightKeys = right.map(key).sort()
+  return leftKeys.every((value, index) => value === rightKeys[index])
+}
+
+async function findDuplicateLocalOrder(
+  tx: Prisma.TransactionClient,
+  input: CreateLocalOrderInput
+): Promise<OrderWithItems | null> {
+  const recentOrders = await tx.order.findMany({
+    where: {
+      cartToken: input.cartToken,
+      paymentProvider: input.paymentProvider ?? "cash_on_delivery",
+      createdAt: { gte: new Date(Date.now() - DUPLICATE_ORDER_WINDOW_MS) },
+      status: { not: "CANCELLED" },
+    },
+    include: { items: true },
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  })
+  return recentOrders.find((order) =>
+    sameMoney(order.subtotal, input.subtotal) &&
+    sameMoney(order.shippingTotal, input.shippingTotal) &&
+    sameMoney(order.taxTotal, input.taxTotal) &&
+    sameMoney(order.discountTotal, input.discountTotal) &&
+    sameMoney(order.total, input.total) &&
+    sameOrderLines(order.items, input.items)
+  ) ?? null
+}
+
 export async function createLocalOrderRecord(
   input: CreateLocalOrderInput
 ): Promise<OrderWithItems> {
   const orderNumber = input.orderNumber || (await nextOrderNumber())
 
   return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${input.cartToken}))`
+    const duplicate = await findDuplicateLocalOrder(tx, input)
+    if (duplicate) return duplicate
+
     const shippingAddress = await tx.address.create({
       data: {
         type: "SHIPPING",
