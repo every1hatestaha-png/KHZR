@@ -6,6 +6,13 @@ import { CART_TTL_DAYS } from "@/lib/constants"
 import { emptyCart } from "@/types"
 import type { CartLine, CartState } from "@/types"
 
+export class CartServiceError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = "CartServiceError"
+  }
+}
+
 export function isDatabaseConfigured() {
   return Boolean(process.env.DATABASE_URL)
 }
@@ -220,11 +227,32 @@ export async function addToCart(token: string, input: {
   const cart = await prisma.cart.findUnique({ where: { token } })
   if (!cart) return emptyCart()
 
+  const variant = await prisma.productVariant.findUnique({
+    where: { id: input.variantId },
+    select: {
+      id: true,
+      active: true,
+      stock: true,
+      product: { select: { status: true } },
+    },
+  })
+  if (!variant || !variant.active || variant.product.status !== "ACTIVE") {
+    throw new CartServiceError("This size is unavailable.")
+  }
+  if (variant.stock <= 0) {
+    throw new CartServiceError("This size is unavailable.")
+  }
+
   const existing = await prisma.cartItem.findUnique({
     where: {
       cartId_variantId: { cartId: cart.id, variantId: input.variantId },
     },
   })
+
+  const nextQuantity = (existing?.quantity ?? 0) + input.quantity
+  if (nextQuantity > variant.stock) {
+    throw new CartServiceError(`Only ${variant.stock} available in this size.`)
+  }
 
   if (existing) {
     await prisma.cartItem.update({
@@ -257,6 +285,24 @@ export async function updateCartQuantity(
   if (quantity <= 0) {
     await prisma.cartItem.deleteMany({ where: { id: lineId, cartId: cart.id } })
   } else {
+    const line = await prisma.cartItem.findFirst({
+      where: { id: lineId, cartId: cart.id },
+      select: {
+        variant: {
+          select: {
+            stock: true,
+            active: true,
+            product: { select: { status: true } },
+          },
+        },
+      },
+    })
+    if (!line || !line.variant.active || line.variant.product.status !== "ACTIVE" || line.variant.stock <= 0) {
+      throw new CartServiceError("This size is unavailable.")
+    }
+    if (quantity > line.variant.stock) {
+      throw new CartServiceError(`Only ${line.variant.stock} available in this size.`)
+    }
     await prisma.cartItem.updateMany({
       where: { id: lineId, cartId: cart.id },
       data: { quantity: Math.min(10, quantity) },

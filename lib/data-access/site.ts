@@ -432,6 +432,7 @@ export async function getFeaturedProducts(): Promise<ProductCardDTO[]> {
       where: { status: "ACTIVE", isFeatured: true },
       include: {
         media: { orderBy: { position: "asc" }, take: 1 },
+        collections: { take: 1, include: { collection: { select: { slug: true, name: true } } } },
         variants: {
           where: { active: true },
           select: { id: true, size: true, color: true, colorHex: true, stock: true },

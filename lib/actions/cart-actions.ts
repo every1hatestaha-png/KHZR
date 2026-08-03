@@ -2,6 +2,7 @@
 
 import {
   addToCart,
+  CartServiceError,
   clearCart,
   ensureCartToken,
   getCartState,
@@ -57,9 +58,16 @@ export async function addItemAction(
     }
   }
   if (token) {
-    await addToCart(token, { variantId, quantity })
-    const cart = await getCartState(token)
-    return { ok: true, cart }
+    try {
+      await addToCart(token, { variantId, quantity })
+      const cart = await getCartState(token)
+      return { ok: true, cart }
+    } catch (error) {
+      if (error instanceof CartServiceError) {
+        return { ok: false, error: error.message, cart: await getCartState(token) }
+      }
+      return { ok: false, error: "This item could not be added to your bag.", cart: await getCartState(token) }
+    }
   }
 
   // No persistence configured — the client keeps its optimistic state.
@@ -79,9 +87,16 @@ export async function updateQuantityAction(
   const token = await sessionToken()
   if (!token) return { ok: true, cart: null }
 
-  await updateCartQuantity(token, parsed.data.lineId, parsed.data.quantity)
-  const cart = await getCartState(token)
-  return { ok: true, cart }
+  try {
+    await updateCartQuantity(token, parsed.data.lineId, parsed.data.quantity)
+    const cart = await getCartState(token)
+    return { ok: true, cart }
+  } catch (error) {
+    if (error instanceof CartServiceError) {
+      return { ok: false, error: error.message, cart: await getCartState(token) }
+    }
+    return { ok: false, error: "Quantity could not be updated.", cart: await getCartState(token) }
+  }
 }
 
 export async function removeItemAction(

@@ -29,7 +29,7 @@ export function Header() {
         )}
       >
         <div className="relative mx-auto flex h-14 max-w-[1400px] items-center justify-between px-3 sm:px-5 lg:h-[4.5rem] lg:px-8 xl:px-10">
-          <div className="flex items-center lg:w-[39%] xl:w-[38%]">
+          <div className="flex items-center lg:w-[36%] xl:w-[35%]">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}

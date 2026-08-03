@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { toast } from "sonner"
 import { useCart } from "@/components/cart/cart-provider"
 import { ProductAccordions } from "@/components/product/product-accordions"
 import { Price } from "@/components/shared/price"
@@ -40,9 +41,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   const [selectedColor, setSelectedColor] = React.useState<string | null>(
     () => inStockVariants[0]?.color ?? null
   )
-  const [selectedSize, setSelectedSize] = React.useState<string | null>(
-    () => inStockVariants[0]?.size ?? null
-  )
+  const [selectedSize, setSelectedSize] = React.useState<string | null>(null)
   const [quantity, setQuantity] = React.useState(1)
 
   const selectedVariant =
@@ -101,7 +100,18 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   }
 
   function handleAdd() {
-    if (!selectedVariant) return
+    if (!selectedSize) {
+      toast.error("Choose a size before adding this item.")
+      return
+    }
+    if (!selectedVariant) {
+      toast.error("This size is unavailable.")
+      return
+    }
+    if (quantity > selectedVariant.stock) {
+      toast.error(`Only ${selectedVariant.stock} available in this size.`)
+      return
+    }
     const summary = detailToSummary(product, selectedVariant)
     void addItem(summary, quantity)
   }
@@ -246,6 +256,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
             <QuantityStepper
               value={quantity}
               onChange={setQuantity}
+              max={selectedVariant?.stock ?? 10}
               label={`quantity of ${product.name}`}
             />
           </div>
@@ -255,10 +266,15 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
               size="lg"
               className="min-h-12 w-full"
               onClick={handleAdd}
-              disabled={soldOut || !selectedVariant}
+              disabled={soldOut}
             >
               {addLabel}
             </Button>
+            {!soldOut && !selectedSize ? (
+              <p className="text-center text-xs text-stone">Choose a size to add this item.</p>
+            ) : selectedSize && !selectedVariant ? (
+              <p className="text-center text-xs text-stone">This size is unavailable.</p>
+            ) : null}
             <div className="flex items-center justify-center gap-3 border border-hairline bg-background px-4 py-3">
               <WishlistToggle
                 item={wishlistItem}
@@ -294,7 +310,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
             size="sm"
             className="min-h-11 shrink-0 px-5"
             onClick={handleAdd}
-            disabled={soldOut || !selectedVariant}
+            disabled={soldOut}
           >
             {addLabel}
           </Button>

@@ -91,21 +91,20 @@ function CartProviderCore({
           (l) => l.variantId === product.variantId
         )
         if (existing) {
+          const nextQuantity = Math.min(
+            Math.max(product.available, 1),
+            existing.quantity + qty
+          )
+          const delta = nextQuantity - existing.quantity
           return {
             ...prev,
             lines: prev.lines.map((l) =>
               l.variantId === product.variantId
-                ? {
-                    ...l,
-                    quantity: Math.min(
-                      Math.max(product.available, 1),
-                      l.quantity + qty
-                    ),
-                  }
+                ? { ...l, quantity: nextQuantity }
                 : l
             ),
-            count: prev.count + qty,
-            subtotal: prev.subtotal + product.unitPrice * qty,
+            count: prev.count + delta,
+            subtotal: prev.subtotal + product.unitPrice * delta,
           }
         }
         const line = {
@@ -137,6 +136,7 @@ function CartProviderCore({
         quantity: qty,
       })
       if (!res.ok) {
+        applyServer(res.cart)
         toast.error(res.error ?? "Could not add to your selection.")
       } else {
         analytics.addToCart({
@@ -178,8 +178,10 @@ function CartProviderCore({
       })
 
       const res = await updateQuantityAction({ lineId, quantity })
-      if (!res.ok) toast.error(res.error ?? "Could not update quantity.")
-      else applyServer(res.cart)
+      if (!res.ok) {
+        applyServer(res.cart)
+        toast.error(res.error ?? "Could not update quantity.")
+      } else applyServer(res.cart)
     },
     [applyServer]
   )
