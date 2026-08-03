@@ -12,10 +12,10 @@ export function CartItem({ line }: { line: CartLine }) {
   const { updateQuantity, removeItem } = useCart()
 
   return (
-    <li className="flex gap-5 py-7 lg:gap-6">
+    <li className="grid min-w-0 grid-cols-[5rem_minmax(0,1fr)] gap-3 py-6 sm:grid-cols-[5.5rem_minmax(0,1fr)] sm:gap-4 lg:grid-cols-[6rem_minmax(0,1fr)] lg:gap-5">
       <Link
         href={`/product/${line.productSlug}`}
-        className="relative block h-36 w-28 shrink-0 overflow-hidden bg-ivory lg:h-40 lg:w-[7.5rem]"
+        className="relative block aspect-[3/4] w-20 shrink-0 overflow-hidden bg-ivory sm:w-[5.5rem] lg:w-24"
         onClick={() => undefined}
         aria-hidden
         tabIndex={-1}
@@ -31,39 +31,40 @@ export function CartItem({ line }: { line: CartLine }) {
         ) : null}
       </Link>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-col gap-2">
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_2.75rem] items-start gap-2">
           <div className="min-w-0">
-            <p className="font-display text-xl font-light leading-tight text-noir">
+            <p className="break-words font-display text-lg font-light leading-tight text-noir sm:text-xl">
               {line.name}
             </p>
             {line.subtitle ? (
-              <p className="mt-1 text-xs leading-relaxed text-taupe">{line.subtitle}</p>
+              <p className="mt-1 break-words text-xs leading-relaxed text-taupe">{line.subtitle}</p>
             ) : null}
           </div>
           <button
             type="button"
             onClick={() => void removeItem(line.id)}
             aria-label={`Remove ${line.name}`}
-            className="min-h-11 min-w-11 text-taupe/70 transition-colors hover:text-noir focus-visible:outline-2 focus-visible:outline-champagne"
+            className="flex min-h-11 min-w-11 items-start justify-center pt-1 text-taupe/70 transition-colors hover:text-noir focus-visible:outline-2 focus-visible:outline-champagne"
           >
             <X className="size-4" />
           </button>
         </div>
 
-        <p className="text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
+        <p className="break-words text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
           {line.color}
           <span aria-hidden> · </span>
           {line.size}
         </p>
 
-        <div className="mt-auto flex items-end justify-between gap-4 pt-3">
+        <div className="mt-auto flex min-w-0 flex-col items-start gap-3 pt-3 min-[390px]:flex-row min-[390px]:items-end min-[390px]:justify-between">
           <QuantityStepper
             value={line.quantity}
             onChange={(q) => void updateQuantity(line.id, q)}
             label={`quantity of ${line.name}`}
+            className="shrink-0"
           />
-          <p className="font-display text-lg font-light text-noir">
+          <p className="break-words font-display text-lg font-light text-noir min-[390px]:text-right">
             {formatMoney(line.unitPrice * line.quantity)}
           </p>
         </div>

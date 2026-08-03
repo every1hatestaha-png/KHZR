@@ -40,7 +40,7 @@ export function CartDrawer() {
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
         <SheetContent
           side="right"
-          className="w-full max-w-[32rem] gap-0 border-l border-hairline bg-background p-0"
+          className="w-[min(100vw,30rem)] max-w-none gap-0 overflow-x-hidden border-l border-hairline bg-background p-0 sm:w-[min(100vw,28rem)]"
         >
         <SheetHeader className="flex-row items-center justify-between border-b border-hairline px-5 py-5 pr-14 sm:px-7 sm:py-7 lg:px-9">
           <SheetTitle className="font-display text-2xl font-light text-noir sm:text-3xl">
@@ -72,20 +72,20 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
-            <div className="border-b border-hairline bg-ivory/35 px-5 py-4 sm:px-7 sm:py-5 lg:px-9">
-              <div className="flex items-center justify-between text-[0.6875rem] uppercase tracking-[0.22em] text-taupe">
+            <div className="border-b border-hairline bg-ivory/35 px-4 py-4 sm:px-6 sm:py-5 lg:px-7">
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 text-[0.6875rem] uppercase tracking-[0.22em] text-taupe">
                 <span>Shipping calculated at checkout.</span>
                 <span>{hydrated ? `${count} item${count === 1 ? "" : "s"}` : ""}</span>
               </div>
             </div>
 
-            <ul className="flex-1 divide-y divide-hairline overflow-y-auto px-5 sm:px-7 lg:px-9">
+            <ul className="flex-1 divide-y divide-hairline overflow-x-hidden overflow-y-auto px-4 sm:px-6 lg:px-7">
               {lines.map((line) => (
                 <CartItem key={line.id} line={line} />
               ))}
             </ul>
 
-            <div className="border-t border-hairline bg-warm-white px-5 py-5 sm:px-7 sm:py-7 lg:px-9">
+            <div className="border-t border-hairline bg-warm-white px-4 py-5 sm:px-6 sm:py-7 lg:px-7">
               <form onSubmit={handleApply} className="flex items-stretch gap-2" aria-label="Apply discount code">
                 <label htmlFor="drawer-discount-code" className="sr-only">
                   Discount code
