@@ -7,7 +7,7 @@ import type { CampaignDTO } from "@/lib/data-access/site"
 export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
   return (
     <section
-      className="relative flex min-h-[78svh] items-center overflow-hidden bg-ivory sm:min-h-[84svh] lg:min-h-[calc(100svh-4.5rem)]"
+      className="relative flex min-h-[78svh] items-center overflow-hidden bg-ivory sm:min-h-[84svh] lg:min-h-[75vh]"
       aria-label={campaign.title}
     >
       <LazyImage
