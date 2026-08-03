@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import dynamic from "next/dynamic"
-import { ClerkProvider } from "@clerk/nextjs"
 import { Toaster } from "@/components/ui/sonner"
 import { CartProvider } from "@/components/cart/cart-provider"
 import { WishlistProvider } from "@/components/wishlist/wishlist-provider"
@@ -14,10 +13,8 @@ const CartDrawer = dynamic(
   { ssr: false }
 )
 
-const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-
 export function Providers({ children }: { children: React.ReactNode }) {
-  const app = (
+  return (
     <>
       <CartProvider>
         <WishlistProvider>
@@ -41,24 +38,4 @@ export function Providers({ children }: { children: React.ReactNode }) {
       />
     </>
   )
-
-  if (clerkPublishableKey) {
-    return (
-      <ClerkProvider
-        publishableKey={clerkPublishableKey}
-        appearance={{
-          variables: {
-            colorPrimary: "#121110",
-            colorBackground: "#FAF7F2",
-            fontFamily: "Inter, sans-serif",
-            borderRadius: "0",
-          },
-        }}
-      >
-        {app}
-      </ClerkProvider>
-    )
-  }
-
-  return app
 }

@@ -4,9 +4,9 @@ export const SITE = {
   tagline: "Womenswear with a clear line.",
   description:
     "KHZR makes ready-to-wear eastern dresses for women in Pakistan, priced for everyday launch shopping in PKR.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://khzr.example.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://khzr.studio",
   locale: "en_PK",
-  email: "care@khzr.example.com",
+  email: "care@khzr.studio",
   phone: "+92 300 0000000",
   address: {
     line1: "KHZR Studio",

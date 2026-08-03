@@ -16,9 +16,9 @@ import type { WishlistActionResult } from "@/types"
 
 export async function getWishlistAction(): Promise<WishlistActionResult> {
   const user = await resolveDbUser()
-  if (!user) return { ok: true, items: [] }
+  if (!user) return { ok: true, items: [], signedIn: false }
   const items = await getWishlist(user.id)
-  return { ok: true, items }
+  return { ok: true, items, signedIn: true }
 }
 
 export async function toggleWishlistAction(

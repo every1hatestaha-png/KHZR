@@ -61,6 +61,7 @@ export type Discount = {
 export type WishlistActionResult = {
   ok: boolean
   error?: string
+  signedIn?: boolean
   /** Full saved list from the server (signed-in sessions). */
   items?: ProductSummary[]
 }

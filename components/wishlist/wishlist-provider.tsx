@@ -3,7 +3,6 @@
 import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
-import { ClerkAuth, clerkEnabled } from "@/components/providers/clerk-auth"
 import {
   clearWishlistAction,
   getWishlistAction,
@@ -31,18 +30,10 @@ const WishlistContext = React.createContext<WishlistContextValue | null>(null)
 
 type WishlistProviderProps = {
   children: React.ReactNode
-  clerkUserId?: string | null
 }
 
 export function WishlistProvider(props: WishlistProviderProps) {
-  if (clerkEnabled) {
-    return (
-      <ClerkAuth>
-        {(userId) => <WishlistProviderCore {...props} clerkUserId={userId} />}
-      </ClerkAuth>
-    )
-  }
-  return <WishlistProviderCore {...props} clerkUserId={null} />
+  return <WishlistProviderCore {...props} />
 }
 
 function readGuest(): ProductSummary[] {
@@ -68,17 +59,20 @@ function writeGuest(items: ProductSummary[]) {
 
 function WishlistProviderCore({
   children,
-  clerkUserId,
 }: WishlistProviderProps) {
   const [items, setItems] = useState<ProductSummary[]>([])
   const [hydrated, setHydrated] = useState(false)
-  const signedIn = clerkUserId !== null
+  const [signedIn, setSignedIn] = useState(false)
 
   useEffect(() => {
     let cancelled = false
 
     async function sync() {
-      if (signedIn) {
+      const server = await getWishlistAction()
+      const isServerSignedIn = Boolean(server.ok && server.signedIn)
+      if (!cancelled) setSignedIn(isServerSignedIn)
+
+      if (isServerSignedIn) {
         const guest = readGuest()
         if (guest.length > 0) {
           const merged = await mergeWishlistAction(
@@ -92,9 +86,8 @@ function WishlistProviderCore({
             return
           }
         }
-        const res = await getWishlistAction()
         if (!cancelled) {
-          setItems(res.ok ? (res.items ?? []) : [])
+          setItems(server.ok ? (server.items ?? []) : [])
           setHydrated(true)
         }
       } else {
@@ -110,7 +103,7 @@ function WishlistProviderCore({
     return () => {
       cancelled = true
     }
-  }, [signedIn])
+  }, [])
 
   const toggle = useCallback(
     async (item: ProductSummary) => {

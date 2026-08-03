@@ -129,10 +129,10 @@ const PRODUCTS: Array<{
   {
     slug: "ivory-bloom",
     name: "Ivory Bloom",
-    subtitle: "Eastern ready-to-wear placeholder",
+    subtitle: "Ivory embroidered lawn suit",
     description:
-      "A restrained ready-to-wear eastern dress placeholder. Final fabric, work, and included pieces should be confirmed by the owner before launch.",
-    composition: "Fabric details pending owner confirmation",
+      "An ivory ready-to-wear eastern dress with delicate embroidered detailing, cut for polished day-to-evening wear.",
+    composition: "Embroidered lawn",
     care: "Follow the care label attached to the garment.",
     price: "5500.00",
     isNew: true,
@@ -147,10 +147,10 @@ const PRODUCTS: Array<{
   {
     slug: "slate-garden",
     name: "Slate Garden",
-    subtitle: "Printed Pret placeholder",
+    subtitle: "Slate floral printed lawn set",
     description:
-      "A restrained Printed Pret placeholder for launch browsing. Final fabric, work, and included pieces should be confirmed by the owner before launch.",
-    composition: "Fabric details pending owner confirmation",
+      "A soft slate Printed Pret set with a restrained floral layout and everyday-ready eastern tailoring.",
+    composition: "Printed lawn",
     care: "Follow the care label attached to the garment.",
     price: "4500.00",
     isNew: true,
@@ -165,10 +165,10 @@ const PRODUCTS: Array<{
   {
     slug: "noir-petal",
     name: "Noir Petal",
-    subtitle: "Embroidered Pret placeholder",
+    subtitle: "Black embroidered ready-to-wear suit",
     description:
-      "A restrained Embroidered Pret placeholder for launch browsing. Final fabric, embroidery, and included pieces should be confirmed by the owner before launch.",
-    composition: "Fabric details pending owner confirmation",
+      "A midnight black Embroidered Pret suit with tonal floral work and a refined occasion-ready finish.",
+    composition: "Embroidered fabric",
     care: "Follow the care label attached to the garment.",
     price: "6000.00",
     isFeatured: true,
@@ -182,10 +182,10 @@ const PRODUCTS: Array<{
   {
     slug: "azure-flora",
     name: "Azure Flora",
-    subtitle: "Printed Pret placeholder",
+    subtitle: "Sky blue floral printed set",
     description:
-      "A restrained Printed Pret placeholder for launch browsing. Final fabric, work, and included pieces should be confirmed by the owner before launch.",
-    composition: "Fabric details pending owner confirmation",
+      "A fresh sky blue Printed Pret set with airy floral artwork and a comfortable ready-to-wear silhouette.",
+    composition: "Printed lawn",
     care: "Follow the care label attached to the garment.",
     price: "5000.00",
     isNew: true,
@@ -200,10 +200,10 @@ const PRODUCTS: Array<{
   {
     slug: "verdant-line",
     name: "Verdant Line",
-    subtitle: "Ready to Wear placeholder",
+    subtitle: "Deep teal vintage floral lawn",
     description:
-      "A restrained ready-to-wear eastern dress placeholder. Final fabric, work, and included pieces should be confirmed by the owner before launch.",
-    composition: "Fabric details pending owner confirmation",
+      "A deep teal ready-to-wear dress with vintage floral character and a clean, easy fit for daily polish.",
+    composition: "Printed lawn",
     care: "Follow the care label attached to the garment.",
     price: "5200.00",
     isFeatured: true,

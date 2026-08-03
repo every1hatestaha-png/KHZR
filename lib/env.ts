@@ -1,9 +1,17 @@
 const REQUIRED_PRODUCTION_ENV = [
   "NEXT_PUBLIC_SITE_URL",
+  "NEXT_PUBLIC_GA_MEASUREMENT_ID",
   "DATABASE_URL",
   "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
   "CLERK_SECRET_KEY",
+  "KHZR_ADMIN_EMAIL",
   "REVALIDATE_SECRET",
+  "RESEND_API_KEY",
+  "EMAIL_FROM",
+  "KHZR_ORDER_NOTIFICATION_EMAIL",
+  "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME",
+  "CLOUDINARY_API_KEY",
+  "CLOUDINARY_API_SECRET",
 ] as const
 
 function missingProductionEnv(): string[] {
@@ -20,6 +28,14 @@ function invalidProductionEnv(): string[] {
     } catch {
       invalid.push("NEXT_PUBLIC_SITE_URL")
     }
+  }
+  const adminEmail = process.env.KHZR_ADMIN_EMAIL
+  if (adminEmail && !/^\S+@\S+\.\S+$/.test(adminEmail.trim())) {
+    invalid.push("KHZR_ADMIN_EMAIL")
+  }
+  const notificationEmail = process.env.KHZR_ORDER_NOTIFICATION_EMAIL
+  if (notificationEmail && !/^\S+@\S+\.\S+$/.test(notificationEmail.trim())) {
+    invalid.push("KHZR_ORDER_NOTIFICATION_EMAIL")
   }
   return invalid
 }

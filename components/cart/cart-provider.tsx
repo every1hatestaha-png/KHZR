@@ -10,7 +10,6 @@ import {
   removeItemAction,
   updateQuantityAction,
 } from "@/lib/actions/cart-actions"
-import { ClerkAuth, clerkEnabled } from "@/components/providers/clerk-auth"
 import { applyDiscountCode } from "@/lib/discounts"
 import { emptyCart } from "@/types"
 import type { CartState, Discount, ProductSummary } from "@/types"
@@ -41,24 +40,15 @@ function localLineId() {
 type CartProviderProps = {
   children: React.ReactNode
   className?: string
-  clerkUserId?: string | null
 }
 
 export function CartProvider(props: CartProviderProps) {
-  if (clerkEnabled) {
-    return (
-      <ClerkAuth>
-        {(userId) => <CartProviderCore {...props} clerkUserId={userId} />}
-      </ClerkAuth>
-    )
-  }
-  return <CartProviderCore {...props} clerkUserId={null} />
+  return <CartProviderCore {...props} />
 }
 
 function CartProviderCore({
   children,
   className,
-  clerkUserId,
 }: CartProviderProps) {
   const [cart, setCart] = useState<CartState>(emptyCart())
   const [isOpen, setIsOpen] = useState(false)
@@ -81,7 +71,7 @@ function CartProviderCore({
     return () => {
       cancelled = true
     }
-  }, [clerkUserId])
+  }, [])
 
   const addItem = useCallback(
     async (product: ProductSummary, quantity = 1) => {
