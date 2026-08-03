@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { PageIntro } from "@/components/shared/page-intro"
 import { Button } from "@/components/ui/button"
+import { SignOutButton } from "@/components/account/sign-out-button"
 import { getAccountProfile } from "@/lib/data-access/account"
 import { resolveDbUser } from "@/lib/services/user-service"
 import { buildMetadata } from "@/lib/seo"
@@ -33,6 +34,7 @@ export default async function AccountSettingsPage() {
         <div className="flex flex-wrap gap-3">
           <Button asChild variant="outline"><Link href="/account/profile">Edit Profile</Link></Button>
           <Button asChild variant="outline"><Link href="/account/addresses">Manage Addresses</Link></Button>
+          <SignOutButton />
         </div>
       </section>
     </>

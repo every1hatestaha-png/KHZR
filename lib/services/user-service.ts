@@ -2,6 +2,14 @@ import "server-only"
 
 import { prisma } from "@/lib/prisma"
 
+export type VerifiedClerkIdentity = {
+  clerkId: string
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+  imageUrl: string | null
+}
+
 function clerkConfigured() {
   return Boolean(
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
@@ -24,6 +32,28 @@ export async function resolveDbUser(): Promise<{ id: string } | null> {
   }
 }
 
+export async function resolveVerifiedClerkIdentity(): Promise<VerifiedClerkIdentity | null> {
+  if (!clerkConfigured()) return null
+  try {
+    const { auth, clerkClient } = await import("@clerk/nextjs/server")
+    const { userId } = await auth()
+    if (!userId) return null
+    const client = await clerkClient()
+    const clerkUser = await client.users.getUser(userId)
+    const primaryEmail = clerkUser.primaryEmailAddress
+    const verified = primaryEmail?.verification?.status === "verified"
+    return {
+      clerkId: userId,
+      firstName: clerkUser.firstName ?? null,
+      lastName: clerkUser.lastName ?? null,
+      email: verified ? primaryEmail.emailAddress : null,
+      imageUrl: clerkUser.imageUrl ?? null,
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function getOrCreateUserByClerkId(clerkId: string) {
   const existing = await prisma.user.findUnique({ where: { clerkId } })
   if (existing) return existing
@@ -35,7 +65,9 @@ export async function getOrCreateUserByClerkId(clerkId: string) {
     const { clerkClient } = await import("@clerk/nextjs/server")
     const client = await clerkClient()
     const clerkUser = await client.users.getUser(clerkId)
-    email = clerkUser.primaryEmailAddress?.emailAddress ?? email
+    email = clerkUser.primaryEmailAddress?.verification?.status === "verified"
+      ? clerkUser.primaryEmailAddress.emailAddress
+      : email
     firstName = clerkUser.firstName ?? null
     lastName = clerkUser.lastName ?? null
   } catch {

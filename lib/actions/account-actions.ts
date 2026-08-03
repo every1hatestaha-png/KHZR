@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getAccountProfile, listAccountAddresses } from "@/lib/data-access/account"
-import { resolveDbUser } from "@/lib/services/user-service"
+import { resolveDbUser, resolveVerifiedClerkIdentity } from "@/lib/services/user-service"
+import { requireAdminAccess } from "@/lib/services/admin-auth"
 import { rateLimitKey } from "@/lib/services/rate-limit"
 import {
   addressIdSchema,
@@ -14,6 +15,23 @@ import {
 export type AccountActionResult =
   | { ok: true; message: string }
   | { ok: false; error: string }
+
+export async function getAccountMenuAction() {
+  const identity = await resolveVerifiedClerkIdentity()
+  if (!identity) return { ok: true as const, signedIn: false as const }
+  const adminDenied = await requireAdminAccess()
+  return {
+    ok: true as const,
+    signedIn: true as const,
+    profile: {
+      firstName: identity.firstName ?? "",
+      lastName: identity.lastName ?? "",
+      email: identity.email ?? "",
+      imageUrl: identity.imageUrl ?? "",
+    },
+    isAdmin: !adminDenied,
+  }
+}
 
 export async function getCheckoutAccountAction() {
   const user = await resolveDbUser()
@@ -33,15 +51,16 @@ export async function updateProfileAction(input: unknown): Promise<AccountAction
 
   const parsed = profileSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Profile could not be read." }
+  const identity = await resolveVerifiedClerkIdentity()
 
   try {
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        firstName: parsed.data.firstName,
-        lastName: parsed.data.lastName,
+        firstName: identity?.firstName ?? parsed.data.firstName,
+        lastName: identity?.lastName ?? parsed.data.lastName,
         phone: parsed.data.phone || null,
-        email: parsed.data.email || null,
+        email: identity?.email ?? undefined,
       },
     })
     revalidatePath("/account")

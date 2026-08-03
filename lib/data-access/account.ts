@@ -1,6 +1,7 @@
 import "server-only"
 
 import { prisma } from "@/lib/prisma"
+import { resolveVerifiedClerkIdentity } from "@/lib/services/user-service"
 
 export type AccountProfileDTO = {
   firstName: string
@@ -8,6 +9,7 @@ export type AccountProfileDTO = {
   phone: string
   email: string
   clerkManagedEmail: boolean
+  imageUrl: string
 }
 
 export type AccountAddressDTO = {
@@ -56,13 +58,17 @@ function toAddressDTO(address: {
 }
 
 export async function getAccountProfile(userId: string): Promise<AccountProfileDTO> {
-  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } })
+  const [user, identity] = await Promise.all([
+    prisma.user.findUniqueOrThrow({ where: { id: userId } }),
+    resolveVerifiedClerkIdentity(),
+  ])
   return {
-    firstName: user.firstName ?? "",
-    lastName: user.lastName ?? "",
+    firstName: identity?.firstName ?? user.firstName ?? "",
+    lastName: identity?.lastName ?? user.lastName ?? "",
     phone: user.phone ?? "",
-    email: user.email?.endsWith("@local.invalid") ? "" : user.email ?? "",
+    email: identity?.email ?? (user.email?.endsWith("@local.invalid") ? "" : user.email ?? ""),
     clerkManagedEmail: Boolean(user.clerkId),
+    imageUrl: identity?.imageUrl ?? "",
   }
 }
 

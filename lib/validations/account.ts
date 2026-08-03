@@ -19,15 +19,6 @@ export const profileSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name.").max(80),
   lastName: z.string().trim().min(1, "Enter your last name.").max(80),
   phone: z.string().trim().max(30).optional().default(""),
-  email: z
-    .string()
-    .trim()
-    .max(200)
-    .optional()
-    .default("")
-    .refine((value) => !value || z.string().email().safeParse(value).success, {
-      message: "Enter a valid email address.",
-    }),
 })
 
 export const addressIdSchema = z.object({
