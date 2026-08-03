@@ -16,7 +16,7 @@ const SECTIONS = [
   },
   {
     title: "Payments",
-    body: "Payments are processed by Stripe. KHZR does not store full card numbers or card security codes.",
+    body: "KHZR stores order and payment status details needed to process and reconcile purchases. We do not store wallet PINs, card numbers, or card security codes.",
   },
   {
     title: "Service providers",

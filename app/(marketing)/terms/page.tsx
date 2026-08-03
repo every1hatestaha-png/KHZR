@@ -20,7 +20,7 @@ const SECTIONS = [
   },
   {
     title: "Pricing and payment",
-    body: "Prices are shown in USD. Shipping, duties, taxes, and payment are confirmed during checkout through Stripe.",
+    body: "Prices are shown in PKR. Shipping, duties, taxes, and payment options are confirmed during checkout.",
   },
   {
     title: "Owner review required",

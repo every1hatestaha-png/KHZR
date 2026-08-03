@@ -14,11 +14,11 @@ const CURRENCIES: Record<string, { locale: string; symbol: string }> = {
 
 export function formatMoney(
   amount: number | string,
-  currency: string = "USD",
+  currency: string = "PKR",
   opts?: { withSymbol?: boolean; compact?: boolean }
 ) {
   const value = typeof amount === "string" ? parseFloat(amount) : amount
-  const { locale, symbol } = CURRENCIES[currency] ?? CURRENCIES.USD
+  const { locale, symbol } = CURRENCIES[currency] ?? CURRENCIES.PKR
   const formatted = new Intl.NumberFormat(locale, {
     style: "currency",
     currency,

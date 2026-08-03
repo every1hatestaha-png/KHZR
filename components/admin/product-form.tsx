@@ -87,7 +87,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
   const [compareAtPrice, setCompareAtPrice] = React.useState(
     initial?.compareAtPrice != null ? String(initial.compareAtPrice) : ""
   )
-  const [currency, setCurrency] = React.useState<string>(initial?.currency ?? "USD")
+  const [currency, setCurrency] = React.useState<string>(initial?.currency ?? "PKR")
   const [status, setStatus] = React.useState<string>(initial?.status ?? "DRAFT")
   const [stockStatus, setStockStatus] = React.useState<string>(initial?.stockStatus ?? "IN_STOCK")
   const [sku, setSku] = React.useState(initial?.sku ?? "")
@@ -293,6 +293,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="PKR">PKR</SelectItem>
                 <SelectItem value="USD">USD</SelectItem>
                 <SelectItem value="EUR">EUR</SelectItem>
                 <SelectItem value="GBP">GBP</SelectItem>

@@ -5,23 +5,23 @@ export const SITE = {
   description:
     "KHZR is a womenswear label for sharp silhouettes, warm neutrals, and clothes that move from day to evening.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://khzr.example.com",
-  locale: "en_US",
+  locale: "en_PK",
   email: "care@khzr.example.com",
-  phone: "+1 212 555 0148",
+  phone: "+92 300 0000000",
   address: {
-    line1: "12 Mercer Street",
-    line2: "SoHo",
-    city: "New York",
-    region: "NY",
-    postalCode: "10013",
-    country: "US",
+    line1: "KHZR Studio",
+    line2: "",
+    city: "Lahore",
+    region: "Punjab",
+    postalCode: "54000",
+    country: "PK",
   },
   social: {
     instagram: "https://instagram.com",
     pinterest: "https://pinterest.com",
   },
-  freeShippingThreshold: 350,
-  shippingNote: "Complimentary shipping on orders over $350",
+  freeShippingThreshold: 6000,
+  shippingNote: "Complimentary shipping on eligible Pakistan orders",
   currency: "PKR",
 } as const
 
@@ -57,13 +57,13 @@ export const CART_TTL_DAYS = 30
 
 /** Shipping pricing architecture — flat standard rate, complimentary over the threshold. */
 export const SHIPPING = {
-  standardRate: 15,
-  standardLabel: "Standard Shipping",
-  complimentaryLabel: "Complimentary Shipping",
+  standardRate: 250,
+  standardLabel: "Pakistan Standard Delivery",
+  complimentaryLabel: "Complimentary Pakistan Delivery",
 } as const
 
-/** Tax architecture — single flat rate applied to the discounted subtotal (US default). */
-export const TAX_RATE = 0.08875
+/** Tax architecture — Pakistan checkout currently treats listed prices as tax-inclusive. */
+export const TAX_RATE = 0
 export const TAX_LABEL = "Duties & Taxes"
 
 /** Countries offered for checkout shipping (ISO 3166-1 alpha-2, Stripe-compatible). */

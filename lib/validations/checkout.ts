@@ -33,6 +33,8 @@ export const PAKISTAN_PAYMENT_METHODS = [
   "stripe",
 ] as const
 
+export const CHECKOUT_PAYMENT_METHODS = ["cash_on_delivery"] as const
+
 export const FULFILLMENT_STAGES = [
   "pending",
   "confirmed",
@@ -62,7 +64,7 @@ export const createCheckoutSchema = z.object({
   streetAddress: z.string().trim().min(1, "Enter your street address.").max(200),
   houseApartment: z.string().trim().min(1, "Enter your house or apartment.").max(120),
   postalCode: z.string().trim().max(20).optional().default(""),
-  paymentMethod: z.enum(PAKISTAN_PAYMENT_METHODS),
+  paymentMethod: z.enum(CHECKOUT_PAYMENT_METHODS),
   notes: z.string().trim().max(2000).optional().default(""),
   discountCode: z.string().trim().max(40).optional().default(""),
   saveAddress: z.coerce.boolean().optional().default(false),

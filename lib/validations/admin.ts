@@ -7,7 +7,7 @@ export const STOCK_STATUSES = [
   "OUT_OF_STOCK",
   "PRE_ORDER",
 ] as const
-export const CURRENCIES = ["USD", "EUR", "GBP"] as const
+export const CURRENCIES = ["PKR", "USD", "EUR", "GBP"] as const
 
 const httpImageUrl = z
   .string()
@@ -64,7 +64,7 @@ export const productSchema = z.object({
     .optional()
     .transform((v) => (v === "" || v === undefined ? null : Number(v)))
     .pipe(z.number().finite().nonnegative().nullable()),
-  currency: z.enum(CURRENCIES).default("USD"),
+  currency: z.enum(CURRENCIES).default("PKR"),
   status: z.enum(STATUSES).default("DRAFT"),
   stockStatus: z.enum(STOCK_STATUSES).default("IN_STOCK"),
   sku: z.string().trim().max(120).optional().default(""),

@@ -61,7 +61,7 @@ function formatAddress(address?: OrderEmailAddress | null): string {
   return lines.map((line) => `<div>${line}</div>`).join("")
 }
 
-function itemsHtml(lines: OrderEmailLine[]): string {
+function itemsHtml(lines: OrderEmailLine[], currency: string): string {
   return lines
     .map((line) => {
       const row = [
@@ -69,7 +69,7 @@ function itemsHtml(lines: OrderEmailLine[]): string {
         `<div style="font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#121110">${esc(line.name)}</div>`,
         `<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#8A7B6C;margin-top:3px">${esc(line.color)} · ${esc(line.size)} · Qty ${line.quantity}</div>`,
         `</td>`,
-        `<td style="padding:12px 0;border-bottom:1px solid #E4DCCD;text-align:right;vertical-align:top;white-space:nowrap;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#121110">${formatMoney(line.unitPrice * line.quantity)}</td>`,
+        `<td style="padding:12px 0;border-bottom:1px solid #E4DCCD;text-align:right;vertical-align:top;white-space:nowrap;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#121110">${formatMoney(line.unitPrice * line.quantity, currency)}</td>`,
       ].join("")
       return `<tr>${row}</tr>`
     })
@@ -78,20 +78,20 @@ function itemsHtml(lines: OrderEmailLine[]): string {
 
 function totalsHtml(data: OrderEmailData): string {
   const rows: Array<[string, string]> = [
-    ["Subtotal", formatMoney(data.subtotal)],
+    ["Subtotal", formatMoney(data.subtotal, data.currency)],
   ]
   if (data.discount > 0) {
-    rows.push(["Discount", `−${formatMoney(data.discount)}`])
+    rows.push(["Discount", `−${formatMoney(data.discount, data.currency)}`])
   }
-  rows.push(["Shipping", data.shipping > 0 ? formatMoney(data.shipping) : "Complimentary"])
+  rows.push(["Shipping", data.shipping > 0 ? formatMoney(data.shipping, data.currency) : "Complimentary"])
   if (data.tax > 0) {
-    rows.push([TAX_LABEL, formatMoney(data.tax)])
+    rows.push([TAX_LABEL, formatMoney(data.tax, data.currency)])
   }
   const line = (label: string, value: string, strong = false) =>
     `<tr><td style="padding:4px 0;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#8A7B6C">${esc(label)}</td><td style="padding:4px 0;text-align:right;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:#121110;${strong ? "font-size:18px" : ""}">${value}</td></tr>`
   return rows
     .map(([label, value]) => line(label, value))
-    .join("") + line("Total", formatMoney(data.total), true)
+    .join("") + line("Total", formatMoney(data.total, data.currency), true)
 }
 
 function shell({
@@ -171,7 +171,7 @@ export async function sendOrderConfirmationEmail(
   const body = [
     `<div style="font-size:14px;line-height:1.7;color:#5C5248">Thank you for your order. We are preparing your pieces and will email you again once they ship.</div>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr><td style="padding-bottom:4px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">Order ${esc(data.orderNumber)}</td><td style="padding-bottom:4px;text-align:right;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">${esc(formatDate(data.createdAt))}</td></tr></table>`,
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines)}</table>`,
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines, data.currency)}</table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">${totalsHtml(data)}</table>`,
     data.shippingAddress
       ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;border-top:1px solid #E4DCCD;padding-top:16px"><tr><td style="vertical-align:top;padding-right:20px"><div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C;margin-bottom:8px">Ship to</div><div style="font-size:13px;line-height:1.7;color:#121110">${formatAddress(data.shippingAddress)}</div></td></tr></table>`
@@ -193,7 +193,7 @@ export async function sendShippingConfirmationEmail(
   const body = [
     `<div style="font-size:14px;line-height:1.7;color:#5C5248">Your order has shipped and is on its way.</div>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr><td style="padding-bottom:4px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">Order ${esc(data.orderNumber)}</td></tr></table>`,
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines)}</table>`,
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines, data.currency)}</table>`,
     data.shippingAddress
       ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;border-top:1px solid #E4DCCD;padding-top:16px"><tr><td style="vertical-align:top;padding-right:20px"><div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C;margin-bottom:8px">Ship to</div><div style="font-size:13px;line-height:1.7;color:#121110">${formatAddress(data.shippingAddress)}</div></td></tr></table>`
       : "",
@@ -212,7 +212,7 @@ export async function sendOrderStatusEmail(
   const body = [
     `<div style="font-size:14px;line-height:1.7;color:#5C5248">A note on order ${esc(data.orderNumber)}: its status is now <strong style="color:#121110">${esc(statusLabel)}</strong>.</div>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr><td style="padding-bottom:4px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">Order ${esc(data.orderNumber)}</td></tr></table>`,
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines)}</table>`,
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines, data.currency)}</table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">${totalsHtml(data)}</table>`,
   ].join("")
   return sendEmail(

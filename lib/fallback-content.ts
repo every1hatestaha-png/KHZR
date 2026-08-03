@@ -363,7 +363,7 @@ export const FALLBACK_PRODUCTS: FallbackProduct[] = PRODUCTS.map((p) => ({
   care: p.care,
   price: p.price,
   compareAtPrice: p.compareAtPrice ?? null,
-  currency: "USD",
+  currency: "PKR",
   isNew: p.isNew ?? false,
   isFeatured: p.isFeatured ?? false,
   stockStatus: p.stockStatus ?? "IN_STOCK",

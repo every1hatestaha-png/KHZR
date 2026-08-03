@@ -12,7 +12,7 @@ type PriceProps = {
 
 export function Price({
   value,
-  currency = "USD",
+  currency = "PKR",
   compareAt,
   className,
   size = "md",

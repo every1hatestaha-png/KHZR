@@ -4,7 +4,7 @@ import { buildMetadata } from "@/lib/seo"
 export const metadata: Metadata = buildMetadata({
   title: "Checkout",
   description:
-    "Secure KHZR checkout — payment handled by Stripe, your card details are never stored.",
+    "Secure KHZR checkout for Pakistan delivery and Cash on Delivery orders.",
   path: "/checkout",
   noindex: true,
 })

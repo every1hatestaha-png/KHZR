@@ -23,7 +23,7 @@ export type CartState = {
 }
 
 export function emptyCart(): CartState {
-  return { lines: [], count: 0, subtotal: 0, currency: "USD" }
+  return { lines: [], count: 0, subtotal: 0, currency: "PKR" }
 }
 
 export type CartActionResult = {

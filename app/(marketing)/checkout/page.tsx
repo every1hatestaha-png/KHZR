@@ -33,16 +33,6 @@ const PAYMENT_METHODS = [
     label: "Cash on Delivery",
     description: "Pay in cash when your order arrives.",
   },
-  {
-    value: "easypaisa",
-    label: "Easypaisa",
-    description: "Place the order now. Payment instructions will follow.",
-  },
-  {
-    value: "jazzcash",
-    label: "JazzCash",
-    description: "Place the order now. Payment instructions will follow.",
-  },
 ] as const
 
 type CheckoutFields = {
@@ -142,7 +132,6 @@ export default function CheckoutPage() {
     void quoteCheckoutShippingAction({
       province: fields.province,
       city: fields.city,
-      subtotal,
     }).then((quote) => {
       if (!cancelled) {
         setShippingQuote(quote)
@@ -281,7 +270,7 @@ export default function CheckoutPage() {
           Delivery across Pakistan.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone">
-          Enter your delivery details and choose Cash on Delivery, Easypaisa, or JazzCash.
+          Enter your delivery details and place your order with Cash on Delivery.
         </p>
       </header>
 
@@ -425,7 +414,7 @@ export default function CheckoutPage() {
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
                   Payment
                 </p>
-                <p className="mt-2">Cash on Delivery, Easypaisa, or JazzCash.</p>
+                <p className="mt-2">Cash on Delivery.</p>
               </div>
               <div>
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">

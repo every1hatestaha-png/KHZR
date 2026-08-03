@@ -266,7 +266,7 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
           </div>
 
           <p className="text-center text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
-            Complimentary shipping. Secure payment through Stripe.
+            Pakistan delivery. Cash on Delivery available.
           </p>
         </div>
 
