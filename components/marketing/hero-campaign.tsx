@@ -7,7 +7,7 @@ import type { CampaignDTO } from "@/lib/data-access/site"
 export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
   return (
     <section
-      className="relative flex min-h-[78svh] items-center overflow-hidden bg-ivory sm:min-h-[84svh] lg:min-h-[75vh]"
+      className="relative flex min-h-[78svh] items-center overflow-hidden bg-ivory sm:min-h-[84svh] lg:h-[75vh] lg:min-h-0"
       aria-label={campaign.title}
     >
       <LazyImage
@@ -24,15 +24,15 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
         className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-noir/70 via-noir/34 to-transparent lg:w-[62%]"
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
-        <div className="max-w-[36rem] py-8 sm:py-12 lg:ml-8 lg:py-20">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-5 py-20 sm:px-8 lg:px-10 lg:py-12 xl:py-16">
+        <div className="max-w-[36rem] py-8 sm:py-12 lg:ml-8 lg:py-4 xl:py-8">
           {campaign.kicker ? (
             <p className="animate-fade-up flex items-center gap-4 text-[0.6875rem] font-medium uppercase tracking-[0.38em] text-warm-white/88 [animation-delay:150ms]">
               <span className="h-px w-12 bg-warm-white/55" aria-hidden />
               {campaign.kicker}
             </p>
           ) : null}
-          <h1 className="mt-8 animate-fade-up font-display text-5xl font-light leading-[1.02] tracking-tight text-warm-white [overflow-wrap:anywhere] [animation-delay:300ms] sm:text-7xl lg:text-[6.75rem]">
+          <h1 className="mt-8 animate-fade-up font-display text-5xl font-light leading-[1.02] tracking-tight text-warm-white [overflow-wrap:anywhere] [animation-delay:300ms] sm:text-7xl lg:text-[5rem] xl:text-[6rem]">
             {campaign.title}
           </h1>
           {campaign.subtitle ? (
