@@ -8,9 +8,18 @@ import {
   productSchema,
 } from "@/lib/validations/admin"
 import { uploadProductImage } from "@/lib/services/media-service"
+import {
+  importProductsFromCsv,
+  previewProductImport,
+  productImportSampleCsv,
+} from "@/lib/product-import"
 
 export type AdminActionResult =
   | { ok: true; message?: string; productId?: string }
+  | { ok: false; error: string }
+
+export type ProductImportActionResult =
+  | { ok: true; result: Awaited<ReturnType<typeof previewProductImport>> | Awaited<ReturnType<typeof importProductsFromCsv>> }
   | { ok: false; error: string }
 
 function clerkConfigured() {
@@ -471,4 +480,42 @@ export async function uploadImageAction(
     }
   }
   return { ok: true, url: uploaded.url, publicId: uploaded.publicId }
+}
+
+function csvFileFromFormData(formData: FormData) {
+  const file = formData.get("file")
+  if (!(file instanceof File)) throw new Error("Upload a CSV file.")
+  return file
+}
+
+export async function previewProductImportAction(formData: FormData): Promise<ProductImportActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  try {
+    return { ok: true, result: await previewProductImport(csvFileFromFormData(formData)) }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "The CSV could not be previewed." }
+  }
+}
+
+export async function importProductCsvAction(formData: FormData): Promise<ProductImportActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  try {
+    const result = await importProductsFromCsv({
+      file: csvFileFromFormData(formData),
+      dryRun: formData.get("dryRun") === "true",
+      validRowsOnly: formData.get("validRowsOnly") === "true",
+    })
+    if (result.imported) revalidateAll()
+    return { ok: true, result }
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "The CSV could not be imported." }
+  }
+}
+
+export async function productImportSampleCsvAction(): Promise<string> {
+  const denied = await requireAdmin()
+  if (denied) return ""
+  return productImportSampleCsv()
 }

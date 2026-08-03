@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { PackageIcon, TriangleAlertIcon } from "lucide-react"
+import { PackageIcon, TriangleAlertIcon, UploadIcon } from "lucide-react"
 import { AdminHeading } from "@/components/admin/admin-heading"
 import { Pagination } from "@/components/admin/pagination"
 import { ProductFilters } from "@/components/admin/product-filters"
@@ -46,12 +46,20 @@ export default async function AdminProductsPage({
         title="Products"
         description="Create, edit, feature and retire every piece in the maison."
         actions={
-          <Button asChild>
-            <Link href="/admin/products/new">
-              <PackageIcon />
-              New Product
-            </Link>
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline">
+              <Link href="/admin/products/import">
+                <UploadIcon />
+                Import CSV
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/admin/products/new">
+                <PackageIcon />
+                New Product
+              </Link>
+            </Button>
+          </div>
         }
       />
 
