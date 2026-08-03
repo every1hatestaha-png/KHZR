@@ -4,7 +4,7 @@ import { ProductRail } from "@/components/marketing/product-rail"
 import { BrandStatement } from "@/components/marketing/brand-statement"
 import { CategoryGrid } from "@/components/marketing/category-grid"
 import { FinalHomeCta } from "@/components/marketing/final-home-cta"
-import { getFeaturedProducts, getHomeCampaigns } from "@/lib/data-access/site"
+import { getFeaturedProducts, getHomeCampaigns, getHomepageSettingsCampaign } from "@/lib/data-access/site"
 import { buildMetadata, jsonLdItemList, jsonLdScript } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
@@ -14,13 +14,14 @@ export const metadata = buildMetadata({
 })
 
 export default async function HomePage() {
-  const [campaigns, products] = await Promise.all([
+  const [campaigns, products, settingsHero] = await Promise.all([
     getHomeCampaigns(),
     getFeaturedProducts(),
+    getHomepageSettingsCampaign(),
   ])
 
   const [, second] = campaigns
-  const heroCampaign = {
+  const heroCampaign = settingsHero ?? {
     kicker: "Ready to Wear",
     title: "Eastern dresses, ready now.",
     subtitle:

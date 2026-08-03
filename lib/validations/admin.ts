@@ -129,5 +129,55 @@ export const inventoryUpdateSchema = z.object({
     .min(1),
 })
 
+export const bulkProductActionSchema = z.object({
+  productIds: z.array(z.string().min(1).max(160)).min(1).max(100),
+  action: z.enum(["feature", "unfeature", "archive", "activate"]),
+})
+
+export const bulkPriceUpdateSchema = z.object({
+  productIds: z.array(z.string().min(1).max(160)).min(1).max(100),
+  price: z
+    .union([z.string(), z.number()])
+    .transform((v) => (typeof v === "string" ? Number(v) : v))
+    .pipe(z.number().finite().nonnegative()),
+  compareAtPrice: z
+    .union([z.string(), z.number()])
+    .optional()
+    .transform((v) => (v === "" || v === undefined ? null : Number(v)))
+    .pipe(z.number().finite().nonnegative().nullable()),
+})
+
+export const storeSettingsSchema = z.object({
+  storeName: z.string().trim().min(1).max(120),
+  ownerNotificationEmail: z.string().trim().email().or(z.literal("")).optional().default(""),
+  customerSupportEmail: z.string().trim().email().or(z.literal("")).optional().default(""),
+  instagramUrl: z.string().trim().url().or(z.literal("")).optional().default(""),
+  facebookUrl: z.string().trim().url().or(z.literal("")).optional().default(""),
+  contactDetails: z.string().trim().max(2000).optional().default(""),
+  returnPolicyText: z.string().trim().max(8000).optional().default(""),
+  shippingPolicyText: z.string().trim().max(8000).optional().default(""),
+  footerLinks: z.string().trim().max(4000).optional().default(""),
+})
+
+export const homepageSettingsSchema = z.object({
+  heroImageUrl: z.string().trim().url().or(z.literal("")).optional().default(""),
+  heroLabel: z.string().trim().max(120).optional().default(""),
+  heroHeading: z.string().trim().max(200).optional().default(""),
+  heroDescription: z.string().trim().max(600).optional().default(""),
+  heroButtonText: z.string().trim().max(80).optional().default(""),
+  heroButtonLink: z.string().trim().max(200).optional().default(""),
+  announcementText: z.string().trim().max(200).optional().default(""),
+  announcementActive: z.boolean().optional().default(false),
+  featuredProductIds: z.array(z.string().min(1).max(160)).max(24).default([]),
+  featuredCollectionIds: z.array(z.string().min(1).max(160)).max(12).default([]),
+  homepageCategoryLinks: z.string().trim().max(4000).optional().default(""),
+})
+
+export const mediaAssetSchema = z.object({
+  url: httpImageUrl,
+  publicId: z.string().trim().max(300).optional().default(""),
+  alt: z.string().trim().max(300).optional().default(""),
+})
+
 export type ProductInput = z.infer<typeof productSchema>
 export type CollectionInput = z.infer<typeof collectionSchema>

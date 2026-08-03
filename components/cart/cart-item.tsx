@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { X } from "lucide-react"
+import { Trash2Icon } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { QuantityStepper } from "@/components/shared/quantity-stepper"
 import { LazyImage } from "@/components/shared/lazy-image"
@@ -44,10 +44,10 @@ export function CartItem({ line }: { line: CartLine }) {
           <button
             type="button"
             onClick={() => void removeItem(line.id)}
-            aria-label={`Remove ${line.name}`}
-            className="flex min-h-11 min-w-11 items-start justify-center pt-1 text-taupe/70 transition-colors hover:text-noir focus-visible:outline-2 focus-visible:outline-champagne"
+            aria-label={`Remove ${line.name} from bag`}
+            className="flex min-h-11 min-w-11 items-center justify-center text-taupe/70 transition-colors hover:text-destructive focus-visible:outline-2 focus-visible:outline-champagne"
           >
-            <X className="size-4" />
+            <Trash2Icon className="size-4" />
           </button>
         </div>
 

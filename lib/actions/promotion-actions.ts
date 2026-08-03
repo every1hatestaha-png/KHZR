@@ -124,3 +124,29 @@ export async function duplicatePromotionAction(input: unknown): Promise<Promotio
   revalidatePromotions()
   return { ok: true, id: copy.id, message: "Promotion duplicated." }
 }
+
+export async function deletePromotionAction(input: unknown): Promise<PromotionActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = promotionIdSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "Promotion could not be read." }
+
+  const promotion = await prisma.promotion.findUnique({
+    where: { id: parsed.data.id },
+    select: {
+      id: true,
+      _count: { select: { orders: true, redemptions: true } },
+    },
+  })
+  if (!promotion) return { ok: false, error: "Promotion not found." }
+  if (promotion._count.orders > 0 || promotion._count.redemptions > 0) {
+    return {
+      ok: false,
+      error: "This promotion has usage history. Disable it instead of deleting it.",
+    }
+  }
+
+  await prisma.promotion.delete({ where: { id: promotion.id } })
+  revalidatePromotions()
+  return { ok: true, message: "Promotion deleted." }
+}

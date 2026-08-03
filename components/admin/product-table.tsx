@@ -5,7 +5,9 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
+  ArchiveIcon,
   BoxesIcon,
+  CopyIcon,
   Loader2Icon,
   PencilIcon,
   StarIcon,
@@ -22,7 +24,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn, formatMoney } from "@/lib/utils"
 import type { AdminProductRow } from "@/lib/data-access/admin"
-import { deleteProductAction, toggleFeatureAction } from "@/lib/actions/admin-actions"
+import {
+  archiveProductAction,
+  bulkPriceUpdateAction,
+  bulkProductAction,
+  deleteProductAction,
+  duplicateProductAction,
+  toggleFeatureAction,
+} from "@/lib/actions/admin-actions"
 
 type ProductTableProps = {
   products: AdminProductRow[]
@@ -38,6 +47,37 @@ export function ProductTable({ products }: ProductTableProps) {
   const router = useRouter()
   const [busyId, setBusyId] = React.useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = React.useState<AdminProductRow | null>(null)
+  const [selected, setSelected] = React.useState<string[]>([])
+  const [bulkPrice, setBulkPrice] = React.useState("")
+
+  const allSelected = products.length > 0 && selected.length === products.length
+
+  function toggleSelected(id: string) {
+    setSelected((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id])
+  }
+
+  async function handleBulk(action: "feature" | "unfeature" | "archive" | "activate") {
+    if (selected.length === 0) return
+    if ((action === "archive" || action === "activate") && !window.confirm(`Apply ${action} to ${selected.length} product(s)?`)) return
+    const result = await bulkProductAction({ productIds: selected, action })
+    if (result.ok) {
+      toast.success(result.message)
+      setSelected([])
+      router.refresh()
+    } else toast.error(result.error)
+  }
+
+  async function handleBulkPrice() {
+    if (selected.length === 0 || !bulkPrice.trim()) return
+    if (!window.confirm(`Update price for ${selected.length} product(s)?`)) return
+    const result = await bulkPriceUpdateAction({ productIds: selected, price: bulkPrice })
+    if (result.ok) {
+      toast.success(result.message)
+      setBulkPrice("")
+      setSelected([])
+      router.refresh()
+    } else toast.error(result.error)
+  }
 
   async function handleFeature(p: AdminProductRow) {
     if (busyId) return
@@ -67,6 +107,33 @@ export function ProductTable({ products }: ProductTableProps) {
     }
   }
 
+  async function handleArchive(p: AdminProductRow) {
+    if (busyId) return
+    setBusyId(p.id)
+    const result = await archiveProductAction(p.id)
+    setBusyId(null)
+    if (result.ok) {
+      toast.success(result.message)
+      router.refresh()
+    } else {
+      toast.error(result.error)
+    }
+  }
+
+  async function handleDuplicate(p: AdminProductRow) {
+    if (busyId) return
+    setBusyId(p.id)
+    const result = await duplicateProductAction(p.id)
+    setBusyId(null)
+    if (result.ok) {
+      toast.success(result.message)
+      if (result.slug) router.push(`/admin/products/${result.slug}`)
+      else router.refresh()
+    } else {
+      toast.error(result.error)
+    }
+  }
+
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 border border-hairline bg-card px-6 py-20 text-center">
@@ -84,10 +151,20 @@ export function ProductTable({ products }: ProductTableProps) {
   return (
     <>
       <div className="overflow-x-auto border border-hairline">
+        <div className="flex flex-wrap items-center gap-2 border-b border-hairline bg-card p-3">
+          <span className="text-xs uppercase tracking-[0.2em] text-taupe">{selected.length} selected</span>
+          <Button type="button" variant="outline" size="sm" disabled={selected.length === 0} onClick={() => void handleBulk("feature")}>Bulk feature</Button>
+          <Button type="button" variant="outline" size="sm" disabled={selected.length === 0} onClick={() => void handleBulk("unfeature")}>Bulk unfeature</Button>
+          <Button type="button" variant="outline" size="sm" disabled={selected.length === 0} onClick={() => void handleBulk("activate")}>Bulk activate</Button>
+          <Button type="button" variant="destructive" size="sm" disabled={selected.length === 0} onClick={() => void handleBulk("archive")}>Bulk archive</Button>
+          <input value={bulkPrice} onChange={(e) => setBulkPrice(e.target.value)} placeholder="New price" className="h-9 w-28 border border-hairline bg-background px-2 text-sm" />
+          <Button type="button" variant="outline" size="sm" disabled={selected.length === 0 || !bulkPrice.trim()} onClick={() => void handleBulkPrice()}>Bulk price</Button>
+        </div>
         <table className="w-full min-w-[860px] text-left text-sm" role="table">
           <caption className="sr-only">Products</caption>
           <thead>
             <tr className="border-b border-hairline bg-ivory/60 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
+              <th scope="col" className="px-4 py-3 font-medium"><input type="checkbox" aria-label="Select all products" checked={allSelected} onChange={(e) => setSelected(e.target.checked ? products.map((p) => p.id) : [])} /></th>
               <th scope="col" className="px-4 py-3 font-medium">Product</th>
               <th scope="col" className="px-4 py-3 font-medium">Price</th>
               <th scope="col" className="px-4 py-3 font-medium">Stock</th>
@@ -102,7 +179,8 @@ export function ProductTable({ products }: ProductTableProps) {
                 key={p.id}
                 className="border-b border-hairline last:border-0 hover:bg-noir/[0.02]"
               >
-                <td className="px-4 py-3">
+                 <td className="px-4 py-3"><input type="checkbox" aria-label={`Select ${p.name}`} checked={selected.includes(p.id)} onChange={() => toggleSelected(p.id)} /></td>
+                 <td className="px-4 py-3">
                   <Link
                     href={`/admin/products/${p.slug}`}
                     className="flex items-center gap-3"
@@ -191,6 +269,28 @@ export function ProductTable({ products }: ProductTableProps) {
                       >
                         <PencilIcon aria-hidden />
                       </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Duplicate ${p.name}`}
+                      disabled={busyId === p.id}
+                      onClick={() => handleDuplicate(p)}
+                    >
+                      {busyId === p.id ? (
+                        <Loader2Icon className="animate-spin" aria-hidden />
+                      ) : (
+                        <CopyIcon aria-hidden />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={`Archive ${p.name}`}
+                      disabled={busyId === p.id || p.status === "ARCHIVED"}
+                      onClick={() => handleArchive(p)}
+                    >
+                      <ArchiveIcon aria-hidden />
                     </Button>
                     <Button
                       variant="ghost"

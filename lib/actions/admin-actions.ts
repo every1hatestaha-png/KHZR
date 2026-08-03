@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import {
+  bulkPriceUpdateSchema,
+  bulkProductActionSchema,
   collectionSchema,
+  homepageSettingsSchema,
   inventoryUpdateSchema,
+  mediaAssetSchema,
   productSchema,
+  storeSettingsSchema,
 } from "@/lib/validations/admin"
 import { uploadProductImage } from "@/lib/services/media-service"
 import {
@@ -18,7 +23,7 @@ import { requireAdminAccess } from "@/lib/services/admin-auth"
 import { rateLimit } from "@/lib/services/rate-limit"
 
 export type AdminActionResult =
-  | { ok: true; message?: string; productId?: string }
+  | { ok: true; message?: string; productId?: string; slug?: string }
   | { ok: false; error: string }
 
 export type ProductImportActionResult =
@@ -36,15 +41,28 @@ function revalidateAll() {
   revalidatePath("/", "layout")
 }
 
+function parseJsonText(value: string) {
+  if (!value.trim()) return null
+  return JSON.parse(value)
+}
+
 function slugTakenError() {
   return { ok: false as const, error: "A product with this slug already exists." }
+}
+
+function copySuffix() {
+  return Date.now().toString(36).toLowerCase()
+}
+
+function copyValue(value: string | null, suffix: string) {
+  return value ? `${value}-copy-${suffix}` : null
 }
 
 export async function createProductAction(input: unknown): Promise<AdminActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
-  const allowed = await rateLimit("admin:image-upload", 40, 60 * 60 * 1000)
-  if (!allowed) return { ok: false, error: "Too many image uploads. Please try again later." }
+  const allowed = await rateLimit("admin:product-create", 40, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many product creates. Please try again later." }
 
   const parsed = productSchema.safeParse(input)
   if (!parsed.success) {
@@ -264,6 +282,114 @@ export async function deleteProductAction(id: string): Promise<AdminActionResult
   }
 }
 
+export async function archiveProductAction(id: string): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Product could not be read." }
+
+  try {
+    const existing = await prisma.product.findUnique({
+      where: { id: parsed.data },
+      select: { id: true, status: true },
+    })
+    if (!existing) return { ok: false, error: "This product no longer exists." }
+    if (existing.status === "ARCHIVED") {
+      return { ok: true, message: "Product is already archived." }
+    }
+
+    await prisma.$transaction([
+      prisma.product.update({
+        where: { id: parsed.data },
+        data: { status: "ARCHIVED", isFeatured: false, stockStatus: "OUT_OF_STOCK" },
+      }),
+      prisma.productVariant.updateMany({
+        where: { productId: parsed.data },
+        data: { active: false },
+      }),
+    ])
+    revalidateAll()
+    return { ok: true, message: "Product archived." }
+  } catch {
+    return { ok: false, error: "The product could not be archived." }
+  }
+}
+
+export async function duplicateProductAction(id: string): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Product could not be read." }
+
+  try {
+    const source = await prisma.product.findUnique({
+      where: { id: parsed.data },
+      include: {
+        variants: { orderBy: [{ size: "asc" }, { color: "asc" }] },
+        media: { orderBy: { position: "asc" } },
+        collections: { orderBy: { position: "asc" } },
+      },
+    })
+    if (!source) return { ok: false, error: "This product no longer exists." }
+
+    const suffix = copySuffix()
+    const slug = `${source.slug}-copy-${suffix}`
+    const product = await prisma.product.create({
+      data: {
+        name: `${source.name} Copy`,
+        slug,
+        subtitle: source.subtitle,
+        description: source.description,
+        composition: source.composition,
+        care: source.care,
+        price: source.price,
+        compareAtPrice: source.compareAtPrice,
+        currency: source.currency,
+        status: "DRAFT",
+        stockStatus: source.stockStatus,
+        sku: copyValue(source.sku, suffix),
+        isNew: source.isNew,
+        isFeatured: false,
+        sortOrder: source.sortOrder,
+        seoTitle: source.seoTitle,
+        seoDescription: source.seoDescription,
+        variants: {
+          create: source.variants.map((variant) => ({
+            size: variant.size,
+            color: variant.color,
+            colorHex: variant.colorHex,
+            sku: `${variant.sku}-copy-${suffix}`,
+            priceOverride: variant.priceOverride,
+            stock: variant.stock,
+            lowStockAt: variant.lowStockAt,
+            active: variant.active,
+          })),
+        },
+        media: {
+          create: source.media.map((image) => ({
+            publicId: image.publicId,
+            url: image.url,
+            alt: image.alt,
+            kind: image.kind,
+            position: image.position,
+          })),
+        },
+        collections: {
+          create: source.collections.map((item) => ({
+            collectionId: item.collectionId,
+            position: item.position,
+          })),
+        },
+      },
+    })
+
+    revalidateAll()
+    return { ok: true, productId: product.id, slug, message: "Draft product copy created." }
+  } catch {
+    return { ok: false, error: "The product could not be duplicated." }
+  }
+}
+
 export async function toggleFeatureAction(id: string): Promise<AdminActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
@@ -288,6 +414,47 @@ export async function toggleFeatureAction(id: string): Promise<AdminActionResult
   } catch {
     return { ok: false, error: "The feature state could not be updated." }
   }
+}
+
+export async function bulkProductAction(input: unknown): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const allowed = await rateLimit("admin:bulk-products", 30, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many bulk actions. Please try again later." }
+  const parsed = bulkProductActionSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "Bulk action could not be read." }
+  const { productIds, action } = parsed.data
+
+  const data =
+    action === "feature"
+      ? { isFeatured: true }
+      : action === "unfeature"
+        ? { isFeatured: false }
+        : action === "archive"
+          ? { status: "ARCHIVED" as const, isFeatured: false, stockStatus: "OUT_OF_STOCK" as const }
+          : { status: "ACTIVE" as const }
+
+  await prisma.product.updateMany({ where: { id: { in: productIds } }, data })
+  if (action === "archive") {
+    await prisma.productVariant.updateMany({ where: { productId: { in: productIds } }, data: { active: false } })
+  }
+  revalidateAll()
+  return { ok: true, message: "Bulk product action applied." }
+}
+
+export async function bulkPriceUpdateAction(input: unknown): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const allowed = await rateLimit("admin:bulk-price", 20, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many bulk price updates. Please try again later." }
+  const parsed = bulkPriceUpdateSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: "Bulk price update could not be read." }
+  await prisma.product.updateMany({
+    where: { id: { in: parsed.data.productIds } },
+    data: { price: parsed.data.price, compareAtPrice: parsed.data.compareAtPrice },
+  })
+  revalidateAll()
+  return { ok: true, message: "Bulk prices updated." }
 }
 
 export async function updateInventoryAction(
@@ -435,11 +602,25 @@ export async function deleteCollectionAction(id: string): Promise<AdminActionRes
   }
 }
 
+export async function toggleCollectionPublishedAction(id: string): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Collection could not be read." }
+  const collection = await prisma.collection.findUnique({ where: { id: parsed.data }, select: { publishedAt: true } })
+  if (!collection) return { ok: false, error: "This collection no longer exists." }
+  await prisma.collection.update({ where: { id: parsed.data }, data: { publishedAt: collection.publishedAt ? null : new Date() } })
+  revalidateAll()
+  return { ok: true, message: collection.publishedAt ? "Collection hidden." : "Collection published." }
+}
+
 export async function uploadImageAction(
   formData: FormData
 ): Promise<{ ok: true; url: string; publicId: string } | { ok: false; error: string }> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const allowed = await rateLimit("admin:image-upload", 40, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many image uploads. Please try again later." }
 
   const file = formData.get("file")
   if (!(file instanceof File) || file.size === 0) {
@@ -470,7 +651,134 @@ export async function uploadImageAction(
         "Cloudinary is not configured. Paste an image URL instead, or set the Cloudinary keys in your environment.",
     }
   }
+  await prisma.mediaAsset.upsert({
+    where: { url: uploaded.url },
+    update: { publicId: uploaded.publicId, source: "cloudinary" },
+    create: { url: uploaded.url, publicId: uploaded.publicId, source: "cloudinary" },
+  })
   return { ok: true, url: uploaded.url, publicId: uploaded.publicId }
+}
+
+export async function saveMediaAssetAction(input: unknown): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = mediaAssetSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Image could not be read." }
+  await prisma.mediaAsset.upsert({
+    where: { url: parsed.data.url },
+    update: { alt: parsed.data.alt || null, publicId: parsed.data.publicId || null },
+    create: { url: parsed.data.url, alt: parsed.data.alt || null, publicId: parsed.data.publicId || null },
+  })
+  revalidatePath("/admin/media")
+  return { ok: true, message: "Image saved to media library." }
+}
+
+export async function deleteMediaAssetAction(id: string): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Image could not be read." }
+  const asset = await prisma.mediaAsset.findUnique({ where: { id: parsed.data }, select: { id: true, url: true } })
+  if (!asset) return { ok: false, error: "Image not found." }
+  const [products, collections, settings] = await Promise.all([
+    prisma.productMedia.count({ where: { url: asset.url } }),
+    prisma.collection.count({ where: { imageUrl: asset.url } }),
+    prisma.storeSettings.count({ where: { heroImageUrl: asset.url } }),
+  ])
+  if (products + collections + settings > 0) {
+    return { ok: false, error: "This image is in use. Remove it from products, collections or homepage first." }
+  }
+  await prisma.mediaAsset.delete({ where: { id: asset.id } })
+  revalidatePath("/admin/media")
+  return { ok: true, message: "Image deleted." }
+}
+
+export async function saveStoreSettingsAction(input: unknown): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = storeSettingsSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Settings could not be read." }
+  try {
+    await prisma.storeSettings.upsert({
+      where: { id: "store" },
+      update: {
+        ...parsed.data,
+        ownerNotificationEmail: parsed.data.ownerNotificationEmail || null,
+        customerSupportEmail: parsed.data.customerSupportEmail || null,
+        instagramUrl: parsed.data.instagramUrl || null,
+        facebookUrl: parsed.data.facebookUrl || null,
+        contactDetails: parsed.data.contactDetails || null,
+        returnPolicyText: parsed.data.returnPolicyText || null,
+        shippingPolicyText: parsed.data.shippingPolicyText || null,
+        footerLinks: parseJsonText(parsed.data.footerLinks),
+      },
+      create: {
+        id: "store",
+        ...parsed.data,
+        ownerNotificationEmail: parsed.data.ownerNotificationEmail || null,
+        customerSupportEmail: parsed.data.customerSupportEmail || null,
+        instagramUrl: parsed.data.instagramUrl || null,
+        facebookUrl: parsed.data.facebookUrl || null,
+        contactDetails: parsed.data.contactDetails || null,
+        returnPolicyText: parsed.data.returnPolicyText || null,
+        shippingPolicyText: parsed.data.shippingPolicyText || null,
+        footerLinks: parseJsonText(parsed.data.footerLinks),
+      },
+    })
+    revalidateAll()
+    return { ok: true, message: "Store settings saved." }
+  } catch {
+    return { ok: false, error: "Settings could not be saved. Check JSON fields." }
+  }
+}
+
+export async function saveHomepageSettingsAction(input: unknown): Promise<AdminActionResult> {
+  const denied = await requireAdmin()
+  if (denied) return { ok: false, error: denied }
+  const parsed = homepageSettingsSchema.safeParse(input)
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Homepage settings could not be read." }
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.storeSettings.upsert({
+        where: { id: "store" },
+        update: {
+          heroImageUrl: parsed.data.heroImageUrl || null,
+          heroLabel: parsed.data.heroLabel || null,
+          heroHeading: parsed.data.heroHeading || null,
+          heroDescription: parsed.data.heroDescription || null,
+          heroButtonText: parsed.data.heroButtonText || null,
+          heroButtonLink: parsed.data.heroButtonLink || null,
+          announcementText: parsed.data.announcementText || null,
+          announcementActive: parsed.data.announcementActive,
+          homepageCategoryLinks: parseJsonText(parsed.data.homepageCategoryLinks),
+        },
+        create: {
+          id: "store",
+          heroImageUrl: parsed.data.heroImageUrl || null,
+          heroLabel: parsed.data.heroLabel || null,
+          heroHeading: parsed.data.heroHeading || null,
+          heroDescription: parsed.data.heroDescription || null,
+          heroButtonText: parsed.data.heroButtonText || null,
+          heroButtonLink: parsed.data.heroButtonLink || null,
+          announcementText: parsed.data.announcementText || null,
+          announcementActive: parsed.data.announcementActive,
+          homepageCategoryLinks: parseJsonText(parsed.data.homepageCategoryLinks),
+        },
+      })
+      await tx.product.updateMany({ data: { isFeatured: false } })
+      if (parsed.data.featuredProductIds.length > 0) {
+        await tx.product.updateMany({ where: { id: { in: parsed.data.featuredProductIds } }, data: { isFeatured: true } })
+      }
+      await tx.collection.updateMany({ data: { isFeatured: false } })
+      if (parsed.data.featuredCollectionIds.length > 0) {
+        await tx.collection.updateMany({ where: { id: { in: parsed.data.featuredCollectionIds } }, data: { isFeatured: true } })
+      }
+    })
+    revalidateAll()
+    return { ok: true, message: "Homepage settings saved." }
+  } catch {
+    return { ok: false, error: "Homepage settings could not be saved. Check JSON fields." }
+  }
 }
 
 function csvFileFromFormData(formData: FormData) {

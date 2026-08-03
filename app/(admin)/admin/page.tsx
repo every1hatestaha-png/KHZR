@@ -79,16 +79,23 @@ export default async function AdminDashboardPage() {
       />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
-        <StatCard label="Products" value={summary.products} />
-        <StatCard label="Active" value={summary.activeProducts} />
-        <StatCard label="Featured" value={summary.featured} />
-        <StatCard label="Collections" value={summary.collections} />
-        <StatCard label="Variants" value={summary.variants} />
+        <StatCard label="Today's orders" value={summary.todayOrders} />
+        <StatCard label="Revenue" value={formatMoney(summary.revenue)} />
+        <StatCard label="Pending" value={summary.pendingOrders} />
+        <StatCard label="COD orders" value={summary.codOrders} />
+        <StatCard label="Paid orders" value={summary.paidOrders} />
         <StatCard
           label="Units in stock"
           value={summary.totalStock}
           hint={`${summary.lowStockCount} low · ${summary.outOfStockCount} out`}
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <StatCard label="Products" value={summary.products} hint={`${summary.activeProducts} active · ${summary.featured} featured`} />
+        <StatCard label="Collections" value={summary.collections} />
+        <StatCard label="Variants" value={summary.variants} />
+        <StatCard label="Out of stock" value={summary.outOfStockCount} />
       </div>
 
       <section className="flex flex-col gap-4">
@@ -224,10 +231,27 @@ export default async function AdminDashboardPage() {
         </Link>
       </section>
 
+      <section className="grid gap-6 xl:grid-cols-3">
+        <DashboardList title="Recent orders" rows={summary.recentOrders.map((order) => ({ href: `/admin/orders/${order.orderNumber}`, label: order.orderNumber, meta: `${order.email ?? order.phone ?? "No contact"} · ${formatMoney(order.total)}` }))} />
+        <DashboardList title="Recent customers" rows={summary.recentCustomers.map((customer) => ({ href: `/admin/customers/${customer.id}`, label: customer.email ?? customer.phone ?? "Customer", meta: `${customer.orderCount} orders · ${formatMoney(customer.totalSpend)}` }))} />
+        <DashboardList title="Best sellers" rows={summary.bestSellers.map((item) => ({ href: "/admin/products", label: item.name, meta: `${item.quantity} sold` }))} />
+      </section>
+
       <p className="flex items-center gap-2 text-[0.625rem] uppercase tracking-[0.24em] text-taupe">
         <SparklesIcon className="size-3.5" aria-hidden />
         The storefront renders live from this catalogue.
       </p>
     </>
+  )
+}
+
+function DashboardList({ title, rows }: { title: string; rows: { href: string; label: string; meta: string }[] }) {
+  return (
+    <div className="border border-hairline bg-card p-5">
+      <h2 className="font-display text-2xl font-light text-noir">{title}</h2>
+      <div className="mt-4 grid gap-3">
+        {rows.length === 0 ? <p className="text-sm text-taupe">No data yet.</p> : rows.map((row) => <Link key={`${title}-${row.label}`} href={row.href} className="border-b border-hairline pb-3 last:border-0"><span className="block truncate text-sm font-medium text-noir">{row.label}</span><span className="block truncate text-xs text-taupe">{row.meta}</span></Link>)}
+      </div>
+    </div>
   )
 }

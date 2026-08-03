@@ -145,9 +145,29 @@ function WishlistProviderCore({
     async (item: ProductSummary) => {
       const exists = items.some((i) => i.productSlug === item.productSlug)
       if (!exists) return
-      await toggle(item)
+      const previous = items
+      const next = items.filter((i) => i.productSlug !== item.productSlug)
+      setItems(next)
+      if (!signedIn) writeGuest(next)
+
+      if (signedIn) {
+        const res = await toggleWishlistAction({ productSlug: item.productSlug })
+        if (!res.ok) {
+          setItems(previous)
+          toast.error(res.error ?? "Could not remove this saved piece.")
+          return
+        }
+        setItems(res.items ?? [])
+      }
+      analytics.wishlist({
+        action: "remove",
+        item: productToAnalyticsItem(item),
+        value: item.unitPrice,
+        currency: "PKR",
+      })
+      toast.success(`${item.name} removed from your wishlist.`)
     },
-    [items, toggle]
+    [items, signedIn]
   )
 
   const clear = useCallback(async () => {

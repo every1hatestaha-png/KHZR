@@ -103,11 +103,107 @@ export type AdminSummaryDTO = {
   totalStock: number
   lowStockCount: number
   outOfStockCount: number
+  todayOrders: number
+  revenue: number
+  pendingOrders: number
+  codOrders: number
+  paidOrders: number
   recentProducts: AdminProductRow[]
+  recentCustomers: AdminCustomerRow[]
+  recentOrders: { orderNumber: string; email: string | null; phone: string | null; total: number; createdAt: Date }[]
+  bestSellers: { productId: string; name: string; quantity: number }[]
 }
 
 export type AdminInventoryRow = AdminProductRow & {
   variants: AdminVariantDTO[]
+}
+
+export type AdminCustomerRow = {
+  id: string
+  clerkId: string
+  email: string | null
+  firstName: string | null
+  lastName: string | null
+  phone: string | null
+  role: string
+  newsletter: boolean
+  createdAt: Date
+  updatedAt: Date
+  orderCount: number
+  addressCount: number
+  totalSpend: number
+  lastOrderAt: Date | null
+}
+
+export type AdminCustomerList = {
+  items: AdminCustomerRow[]
+  total: number
+  page: number
+  perPage: number
+  totalPages: number
+}
+
+export type AdminStoreSettings = {
+  storeName: string
+  ownerNotificationEmail: string
+  customerSupportEmail: string
+  instagramUrl: string
+  facebookUrl: string
+  contactDetails: string
+  returnPolicyText: string
+  shippingPolicyText: string
+  footerLinks: string
+  announcementText: string
+  announcementActive: boolean
+  heroImageUrl: string
+  heroLabel: string
+  heroHeading: string
+  heroDescription: string
+  heroButtonText: string
+  heroButtonLink: string
+  homepageCategoryLinks: string
+}
+
+export type AdminMediaAsset = {
+  id: string
+  url: string
+  publicId: string | null
+  alt: string | null
+  source: string
+  createdAt: Date
+}
+
+export type AdminCustomerAddress = {
+  id: string
+  type: string
+  firstName: string
+  lastName: string
+  phone: string | null
+  line1: string
+  line2: string | null
+  area: string | null
+  city: string
+  region: string | null
+  postalCode: string
+  country: string
+  deliveryNotes: string | null
+  isDefault: boolean
+}
+
+export type AdminCustomerOrder = {
+  orderNumber: string
+  createdAt: Date
+  status: string
+  paymentStatus: string
+  fulfillmentStatus: string
+  currency: string
+  total: number
+  itemCount: number
+}
+
+export type AdminCustomerDetail = AdminCustomerRow & {
+  addresses: AdminCustomerAddress[]
+  orders: AdminCustomerOrder[]
 }
 
 type ProductRowShape = Prisma.ProductGetPayload<{
@@ -303,6 +399,8 @@ export async function getAdminCollections(): Promise<AdminCollectionDTO[] | null
 
 export async function getAdminSummary(): Promise<AdminSummaryDTO | null> {
   try {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const [
       products,
       activeProducts,
@@ -312,6 +410,14 @@ export async function getAdminSummary(): Promise<AdminSummaryDTO | null> {
       lowStock,
       outOfStock,
       recent,
+      todayOrders,
+      revenue,
+      pendingOrders,
+      codOrders,
+      paidOrders,
+      recentCustomers,
+      recentOrders,
+      bestSellers,
     ] = await Promise.all([
       prisma.product.count(),
       prisma.product.count({ where: { status: "ACTIVE" } }),
@@ -325,6 +431,30 @@ export async function getAdminSummary(): Promise<AdminSummaryDTO | null> {
       prisma.product.findMany({
         include: productRowInclude,
         orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.order.count({ where: { createdAt: { gte: today } } }),
+      prisma.order.aggregate({ _sum: { total: true }, where: { status: { not: "CANCELLED" } } }),
+      prisma.order.count({ where: { status: "PENDING" } }),
+      prisma.order.count({ where: { paymentProvider: "cash_on_delivery" } }),
+      prisma.order.count({ where: { paymentStatus: "PAID" } }),
+      prisma.user.findMany({
+        include: {
+          _count: { select: { orders: true, addresses: true } },
+          orders: { select: { total: true, createdAt: true }, orderBy: { createdAt: "desc" } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.order.findMany({
+        select: { orderNumber: true, email: true, phone: true, total: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
+      prisma.orderItem.groupBy({
+        by: ["productId", "name"],
+        _sum: { quantity: true },
+        orderBy: { _sum: { quantity: "desc" } },
         take: 5,
       }),
     ])
@@ -343,11 +473,73 @@ export async function getAdminSummary(): Promise<AdminSummaryDTO | null> {
       totalStock: stockAgg._sum.stock ?? 0,
       lowStockCount: lowStock,
       outOfStockCount: outOfStock,
+      todayOrders,
+      revenue: revenue._sum.total ? toNumber(revenue._sum.total) : 0,
+      pendingOrders,
+      codOrders,
+      paidOrders,
       recentProducts: recent.map(productRow),
+      recentCustomers: recentCustomers.map(customerRow),
+      recentOrders: recentOrders.map((order) => ({
+        orderNumber: order.orderNumber,
+        email: order.email,
+        phone: order.phone,
+        total: toNumber(order.total),
+        createdAt: order.createdAt,
+      })),
+      bestSellers: bestSellers.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        quantity: item._sum.quantity ?? 0,
+      })),
     }
   } catch {
     return null
   }
+}
+
+function jsonText(value: unknown) {
+  return value == null ? "" : JSON.stringify(value, null, 2)
+}
+
+export async function getAdminStoreSettings(): Promise<AdminStoreSettings> {
+  const row = await prisma.storeSettings.findUnique({ where: { id: "store" } })
+  return {
+    storeName: row?.storeName ?? "KHZR",
+    ownerNotificationEmail: row?.ownerNotificationEmail ?? "",
+    customerSupportEmail: row?.customerSupportEmail ?? "",
+    instagramUrl: row?.instagramUrl ?? "",
+    facebookUrl: row?.facebookUrl ?? "",
+    contactDetails: row?.contactDetails ?? "",
+    returnPolicyText: row?.returnPolicyText ?? "",
+    shippingPolicyText: row?.shippingPolicyText ?? "",
+    footerLinks: jsonText(row?.footerLinks),
+    announcementText: row?.announcementText ?? "",
+    announcementActive: row?.announcementActive ?? false,
+    heroImageUrl: row?.heroImageUrl ?? "",
+    heroLabel: row?.heroLabel ?? "",
+    heroHeading: row?.heroHeading ?? "",
+    heroDescription: row?.heroDescription ?? "",
+    heroButtonText: row?.heroButtonText ?? "",
+    heroButtonLink: row?.heroButtonLink ?? "",
+    homepageCategoryLinks: jsonText(row?.homepageCategoryLinks),
+  }
+}
+
+export async function getAdminMediaAssets(q?: string): Promise<AdminMediaAsset[]> {
+  return prisma.mediaAsset.findMany({
+    where: q
+      ? {
+          OR: [
+            { url: { contains: q, mode: "insensitive" } },
+            { alt: { contains: q, mode: "insensitive" } },
+            { publicId: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {},
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  })
 }
 
 export async function getAdminInventory(): Promise<AdminInventoryRow[] | null> {
@@ -380,4 +572,139 @@ export async function getAdminInventory(): Promise<AdminInventoryRow[] | null> {
   } catch {
     return null
   }
+}
+
+function customerNameParts(customer: { firstName: string | null; lastName: string | null }) {
+  return [customer.firstName, customer.lastName].filter(Boolean).join(" ")
+}
+
+function customerRow(
+  row: Prisma.UserGetPayload<{
+    include: {
+      _count: { select: { orders: true; addresses: true } }
+      orders: { select: { total: true; createdAt: true } }
+    }
+  }>
+): AdminCustomerRow {
+  return {
+    id: row.id,
+    clerkId: row.clerkId,
+    email: row.email,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    phone: row.phone,
+    role: row.role,
+    newsletter: row.newsletter,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    orderCount: row._count.orders,
+    addressCount: row._count.addresses,
+    totalSpend: row.orders.reduce((sum, order) => sum + toNumber(order.total), 0),
+    lastOrderAt: row.orders[0]?.createdAt ?? null,
+  }
+}
+
+export async function getAdminCustomers(input: {
+  q?: string
+  newsletter?: "true" | "false"
+  page?: number
+  perPage?: number
+}): Promise<AdminCustomerList> {
+  const page = input.page && input.page > 0 ? input.page : 1
+  const perPage = input.perPage && input.perPage >= 5 ? input.perPage : 15
+  const q = input.q?.trim()
+  const where: Prisma.UserWhereInput = {
+    ...(input.newsletter === "true" ? { newsletter: true } : {}),
+    ...(input.newsletter === "false" ? { newsletter: false } : {}),
+    ...(q
+      ? {
+          OR: [
+            { email: { contains: q, mode: "insensitive" } },
+            { firstName: { contains: q, mode: "insensitive" } },
+            { lastName: { contains: q, mode: "insensitive" } },
+            { phone: { contains: q, mode: "insensitive" } },
+            { clerkId: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  }
+
+  const [items, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      include: {
+        _count: { select: { orders: true, addresses: true } },
+        orders: {
+          select: { total: true, createdAt: true },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.user.count({ where }),
+  ])
+
+  return {
+    items: items.map(customerRow),
+    total,
+    page,
+    perPage,
+    totalPages: Math.max(1, Math.ceil(total / perPage)),
+  }
+}
+
+export async function getAdminCustomerDetail(id: string): Promise<AdminCustomerDetail | null> {
+  const row = await prisma.user.findUnique({
+    where: { id },
+    include: {
+      _count: { select: { orders: true, addresses: true } },
+      addresses: { orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }] },
+      orders: {
+        include: { items: { select: { quantity: true } } },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      },
+    },
+  })
+  if (!row) return null
+
+  return {
+    ...customerRow({ ...row, orders: row.orders }),
+    addresses: row.addresses.map((address) => ({
+      id: address.id,
+      type: address.type,
+      firstName: address.firstName,
+      lastName: address.lastName,
+      phone: address.phone,
+      line1: address.line1,
+      line2: address.line2,
+      area: address.area,
+      city: address.city,
+      region: address.region,
+      postalCode: address.postalCode,
+      country: address.country,
+      deliveryNotes: address.deliveryNotes,
+      isDefault: address.isDefault,
+    })),
+    orders: row.orders.map((order) => ({
+      orderNumber: order.orderNumber,
+      createdAt: order.createdAt,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      fulfillmentStatus: order.fulfillmentStatus,
+      currency: order.currency,
+      total: toNumber(order.total),
+      itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0),
+    })),
+  }
+}
+
+export function adminCustomerDisplayName(customer: {
+  firstName: string | null
+  lastName: string | null
+  email: string | null
+}) {
+  return customerNameParts(customer) || customer.email || "Customer"
 }

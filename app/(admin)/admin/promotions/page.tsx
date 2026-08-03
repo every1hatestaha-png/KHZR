@@ -1,9 +1,9 @@
 import Link from "next/link"
-import { CopyIcon, PlusIcon, ToggleLeftIcon } from "lucide-react"
+import { CopyIcon, PlusIcon, ToggleLeftIcon, TrashIcon } from "lucide-react"
 import { AdminHeading } from "@/components/admin/admin-heading"
 import { PromotionForm } from "@/components/admin/promotion-form"
 import { Button } from "@/components/ui/button"
-import { disablePromotionAction, duplicatePromotionAction } from "@/lib/actions/promotion-actions"
+import { deletePromotionAction, disablePromotionAction, duplicatePromotionAction } from "@/lib/actions/promotion-actions"
 import { listAdminPromotions, promotionStats } from "@/lib/data-access/promotions"
 import { formatDate, formatMoney } from "@/lib/utils"
 
@@ -29,7 +29,7 @@ export default async function AdminPromotionsPage() {
                   <td className="px-4 py-3 text-stone">{promotion.discountType === "PERCENTAGE" ? `${promotion.percentage}%` : promotion.discountType === "FIXED_AMOUNT" ? formatMoney(Number(promotion.amount), "PKR") : "Free shipping"}</td>
                   <td className="px-4 py-3 text-stone">{promotion.startsAt ? formatDate(promotion.startsAt.toISOString()) : "Now"} - {promotion.endsAt ? formatDate(promotion.endsAt.toISOString()) : "Open"}</td>
                   <td className="px-4 py-3 text-stone">{promotion.usageCount}{promotion.maxUses ? ` / ${promotion.maxUses}` : ""}</td>
-                  <td className="px-4 py-3"><div className="flex gap-2"><ActionButton id={promotion.id} action="duplicate" /><ActionButton id={promotion.id} action="disable" /></div></td>
+                  <td className="px-4 py-3"><div className="flex gap-2"><ActionButton id={promotion.id} action="duplicate" /><ActionButton id={promotion.id} action="disable" /><ActionButton id={promotion.id} action="delete" /></div></td>
                 </tr>
               ))}
             </tbody>
@@ -44,11 +44,12 @@ export default async function AdminPromotionsPage() {
   )
 }
 
-function ActionButton({ id, action }: { id: string; action: "duplicate" | "disable" }) {
-  const fn = action === "duplicate" ? duplicatePromotionAction : disablePromotionAction
+function ActionButton({ id, action }: { id: string; action: "duplicate" | "disable" | "delete" }) {
+  const fn = action === "duplicate" ? duplicatePromotionAction : action === "disable" ? disablePromotionAction : deletePromotionAction
+  const Icon = action === "duplicate" ? CopyIcon : action === "disable" ? ToggleLeftIcon : TrashIcon
   return (
     <form action={async () => { "use server"; await fn({ id }) }}>
-      <Button type="submit" variant="outline" size="sm">{action === "duplicate" ? <CopyIcon /> : <ToggleLeftIcon />}{action === "duplicate" ? "Duplicate" : "Disable"}</Button>
+      <Button type="submit" variant={action === "delete" ? "destructive" : "outline"} size="sm"><Icon />{action === "duplicate" ? "Duplicate" : action === "disable" ? "Disable" : "Delete"}</Button>
     </form>
   )
 }

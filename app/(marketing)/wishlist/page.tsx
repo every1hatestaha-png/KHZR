@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Heart } from "lucide-react"
+import { Trash2Icon } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
 import { LazyImage } from "@/components/shared/lazy-image"
 import { Price } from "@/components/shared/price"
@@ -88,14 +88,10 @@ export default function WishlistPage() {
                   <button
                     type="button"
                     onClick={() => void remove(item)}
-                    aria-label={`Remove ${item.name} from your saved pieces`}
-                    aria-pressed={true}
+                    aria-label={`Remove ${item.name} from wishlist`}
                     className="absolute right-2 top-2 inline-flex size-11 items-center justify-center rounded-none bg-warm-white/78 backdrop-blur-sm transition-colors duration-300 ease-lux hover:bg-warm-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne sm:right-3 sm:top-3"
                   >
-                    <Heart
-                      aria-hidden
-                      className="size-4.5 fill-noir stroke-noir"
-                    />
+                    <Trash2Icon aria-hidden className="size-4.5 text-noir" />
                   </button>
                   {item.available > 0 ? (
                     <button
@@ -130,8 +126,8 @@ export default function WishlistPage() {
                     <p className="max-w-[18rem] text-xs leading-relaxed text-taupe">{item.subtitle}</p>
                   ) : null}
                   <p className="text-xs uppercase tracking-[0.18em] text-taupe">{stockLabel}</p>
-                  <button type="button" onClick={() => void remove(item)} className="w-fit text-xs uppercase tracking-[0.2em] text-taupe underline-offset-4 hover:text-noir hover:underline">
-                    Remove
+                  <button type="button" onClick={() => void remove(item)} aria-label={`Remove ${item.name} from wishlist`} className="inline-flex min-h-11 w-fit items-center gap-2 text-xs uppercase tracking-[0.2em] text-taupe underline-offset-4 hover:text-noir hover:underline">
+                    <Trash2Icon className="size-4" aria-hidden /> Remove
                   </button>
                 </div>
               </li>

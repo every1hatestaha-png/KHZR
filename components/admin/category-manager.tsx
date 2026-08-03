@@ -9,6 +9,8 @@ import {
   PencilIcon,
   PlusIcon,
   StarIcon,
+  EyeIcon,
+  EyeOffIcon,
   TrashIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -28,6 +30,7 @@ import type { AdminCollectionDTO } from "@/lib/data-access/admin"
 import {
   createCollectionAction,
   deleteCollectionAction,
+  toggleCollectionPublishedAction,
   updateCollectionAction,
 } from "@/lib/actions/admin-actions"
 import { slugify } from "@/lib/utils"
@@ -131,6 +134,16 @@ export function CategoryManager({
     }
   }
 
+  async function handlePublish(c: AdminCollectionDTO) {
+    setBusyId(c.id)
+    const result = await toggleCollectionPublishedAction(c.id)
+    setBusyId(null)
+    if (result.ok) {
+      toast.success(result.message)
+      router.refresh()
+    } else toast.error(result.error)
+  }
+
   return (
     <>
       <div className="flex items-center justify-between border-b border-hairline pb-5">
@@ -208,6 +221,15 @@ export function CategoryManager({
                   {c.productCount} product{c.productCount === 1 ? "" : "s"}
                 </span>
                 <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={c.publishedAt ? `Hide ${c.name}` : `Publish ${c.name}`}
+                    disabled={busyId === c.id}
+                    onClick={() => void handlePublish(c)}
+                  >
+                    {c.publishedAt ? <EyeOffIcon /> : <EyeIcon />}
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon-sm"

@@ -1,7 +1,9 @@
+import Link from "next/link"
 import { AdminHeading } from "@/components/admin/admin-heading"
 import { Pagination } from "@/components/admin/pagination"
 import { OrderFilters } from "@/components/admin/order-filters"
 import { OrderTable } from "@/components/admin/order-table"
+import { Button } from "@/components/ui/button"
 import { listAdminOrders } from "@/lib/data-access/orders"
 import { adminOrderListParamsSchema } from "@/lib/validations/checkout"
 
@@ -52,6 +54,7 @@ export default async function AdminOrdersPage({
         kicker="Commerce"
         title="Orders"
         description="Track, fulfil and refund every order in the maison."
+        actions={<Button asChild variant="outline"><Link href="/admin/orders/export">Export CSV</Link></Button>}
       />
 
       <OrderFilters

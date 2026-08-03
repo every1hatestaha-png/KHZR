@@ -6,12 +6,16 @@ import {
   ArrowLeftIcon,
   FolderIcon,
   LayoutDashboardIcon,
+  ImageIcon,
   PackageIcon,
   ReceiptTextIcon,
   MessageSquareIcon,
   TagsIcon,
   TruckIcon,
+  UserRoundIcon,
   WalletCardsIcon,
+  SettingsIcon,
+  HomeIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -19,11 +23,15 @@ const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboardIcon, exact: true },
   { href: "/admin/products", label: "Products", icon: PackageIcon, exact: false },
   { href: "/admin/categories", label: "Categories", icon: FolderIcon, exact: false },
+  { href: "/admin/homepage", label: "Homepage", icon: HomeIcon, exact: false },
+  { href: "/admin/media", label: "Media", icon: ImageIcon, exact: false },
   { href: "/admin/inventory", label: "Inventory", icon: WalletCardsIcon, exact: false },
   { href: "/admin/orders", label: "Orders", icon: ReceiptTextIcon, exact: false },
+  { href: "/admin/customers", label: "Customers", icon: UserRoundIcon, exact: false },
   { href: "/admin/reviews", label: "Reviews", icon: MessageSquareIcon, exact: false },
   { href: "/admin/promotions", label: "Promotions", icon: TagsIcon, exact: false },
   { href: "/admin/shipping", label: "Shipping", icon: TruckIcon, exact: false },
+  { href: "/admin/settings", label: "Settings", icon: SettingsIcon, exact: false },
 ]
 
 export function AdminNav() {

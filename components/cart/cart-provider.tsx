@@ -178,6 +178,7 @@ function CartProviderCore({
 
   const removeItem = useCallback(
     async (lineId: string) => {
+      const previous = cart
       const removed = cart.lines.find((l) => l.id === lineId)
       setCart((prev) => {
         const line = prev.lines.find((l) => l.id === lineId)
@@ -191,7 +192,10 @@ function CartProviderCore({
       })
 
       const res = await removeItemAction({ lineId })
-      if (!res.ok) toast.error(res.error ?? "Could not remove this item.")
+      if (!res.ok) {
+        setCart(previous)
+        toast.error(res.error ?? "Could not remove this item.")
+      }
       else {
         if (removed) {
           analytics.removeFromCart({
@@ -201,9 +205,10 @@ function CartProviderCore({
           })
         }
         applyServer(res.cart)
+        toast.success(removed ? `${removed.name} removed from your bag.` : "Item removed from your bag.")
       }
     },
-    [applyServer, cart.lines, cart.currency]
+    [applyServer, cart]
   )
 
   const clearCart = useCallback(async () => {

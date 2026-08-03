@@ -419,6 +419,34 @@ export async function getHomeCampaigns(): Promise<CampaignDTO[]> {
   }))
 }
 
+export async function getHomepageSettingsCampaign(): Promise<CampaignDTO | null> {
+  if (!isDatabaseConfigured()) return null
+  const row = await safeQuery(() => prisma.storeSettings.findUnique({ where: { id: "store" } }))
+  if (!row?.heroImageUrl && !row?.heroHeading) return null
+  return {
+    kicker: row.heroLabel,
+    title: row.heroHeading ?? "Eastern dresses, ready now.",
+    subtitle: row.heroDescription,
+    ctaLabel: row.heroButtonText,
+    ctaHref: row.heroButtonLink,
+    imageUrl: row.heroImageUrl ?? "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=2400&q=85",
+  }
+}
+
+export async function getAnnouncementSettings(): Promise<{ active: boolean; text: string }> {
+  if (!isDatabaseConfigured()) return { active: true, text: "Coming Soon" }
+  const row = await safeQuery(() =>
+    prisma.storeSettings.findUnique({
+      where: { id: "store" },
+      select: { announcementActive: true, announcementText: true },
+    })
+  )
+  return {
+    active: row?.announcementActive ?? true,
+    text: row?.announcementText || "Coming Soon",
+  }
+}
+
 export async function getFeaturedProducts(): Promise<ProductCardDTO[]> {
   const fallback = () =>
     FALLBACK_FEATURED.map((c) => fallbackCard(getFallbackProduct(c.slug)!))

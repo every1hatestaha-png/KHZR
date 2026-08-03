@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { AdminHeading } from "@/components/admin/admin-heading"
 import { OrderStatusControl } from "@/components/admin/order-status-control"
+import { OrderTools } from "@/components/admin/order-tools"
 import { OrderSummary } from "@/components/orders/order-summary"
 import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
@@ -109,6 +110,7 @@ export default async function AdminOrderDetailPage({
         </div>
         <div className="flex flex-col gap-6">
           <OrderStatusControl order={order} />
+          <OrderTools order={order} />
           <Button asChild variant="outline">
             <Link href="/admin/orders">
               <ArrowLeft />

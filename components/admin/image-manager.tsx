@@ -61,18 +61,21 @@ export function ImageManager({ value, onChange, disabled }: ImageManagerProps) {
   }
 
   async function handleUpload(files: FileList | null) {
-    const file = files?.[0]
-    if (!file) return
+    const selected = Array.from(files ?? [])
+    if (selected.length === 0) return
     setUploading(true)
-    const fd = new FormData()
-    fd.set("file", file)
-    const result = await uploadImageAction(fd)
+    const uploaded: ManagedImage[] = []
+    for (const file of selected) {
+      const fd = new FormData()
+      fd.set("file", file)
+      const result = await uploadImageAction(fd)
+      if (result.ok) uploaded.push({ url: result.url, alt: file.name })
+      else toast.error(`${file.name}: ${result.error}`)
+    }
     setUploading(false)
-    if (result.ok) {
-      onChange([...value, { url: result.url, alt: file.name }])
-      toast.success("Image uploaded.")
-    } else {
-      toast.error(result.error)
+    if (uploaded.length > 0) {
+      onChange([...value, ...uploaded])
+      toast.success(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded.`)
     }
     if (fileRef.current) fileRef.current.value = ""
   }
@@ -83,6 +86,7 @@ export function ImageManager({ value, onChange, disabled }: ImageManagerProps) {
         ref={fileRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(e) => void handleUpload(e.target.files)}
       />
