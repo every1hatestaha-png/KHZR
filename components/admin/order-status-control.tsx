@@ -348,8 +348,8 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
 
       <p className="text-xs leading-relaxed text-taupe">
         Moving an order to <em>Shipped</em> sends the customer their shipping
-        confirmation. Cancelling an order that has been paid refunds it through
-        Stripe and restores inventory.
+        confirmation. Cancelling an eligible order restores reserved inventory;
+        mark COD paid only after cash has been collected.
       </p>
     </div>
   )

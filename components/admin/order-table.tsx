@@ -70,6 +70,11 @@ export function OrderTable({ orders }: OrderTableProps) {
                   <span className="text-xs text-taupe">
                     {formatDate(order.createdAt)}
                   </span>
+                  {order.reviewFlagged ? (
+                    <span className="text-xs uppercase tracking-[0.18em] text-champagne">
+                      Admin review
+                    </span>
+                  ) : null}
                 </Link>
               </td>
               <td className="max-w-[220px] truncate px-4 py-3 text-taupe">
@@ -93,7 +98,7 @@ export function OrderTable({ orders }: OrderTableProps) {
                 {stageLabel(order.fulfillmentStage)}
               </td>
               <td className="px-4 py-3 text-right font-display text-lg text-noir">
-                {formatMoney(order.total)}
+                {formatMoney(order.total, order.currency)}
               </td>
             </tr>
           ))}

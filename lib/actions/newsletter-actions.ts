@@ -3,7 +3,7 @@
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { isDatabaseConfigured } from "@/lib/services/cart-service"
-import { rateLimit } from "@/lib/services/rate-limit"
+import { rateLimit, rateLimitKey } from "@/lib/services/rate-limit"
 
 const schema = z.object({
   email: z.string().trim().email(),
@@ -22,8 +22,9 @@ export async function subscribeNewsletter(
 
   const email = parsed.data.email.toLowerCase()
 
-  const allowed = await rateLimit("newsletter", 10, 60 * 60 * 1000)
-  if (!allowed) return { ok: false, error: "Please try again later." }
+  const allowed = await rateLimit("newsletter", 20, 60 * 60 * 1000)
+  const allowedEmail = await rateLimitKey("newsletter:email", email, 3, 60 * 60 * 1000)
+  if (!allowed || !allowedEmail) return { ok: false, error: "Please try again later." }
 
   if (isDatabaseConfigured()) {
     const existing = await prisma.user.findUnique({ where: { email } })

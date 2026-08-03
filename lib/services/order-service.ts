@@ -56,6 +56,7 @@ export type CreateOrderInput = {
   total: number
   shippingMethod: string
   customerNotes?: string | null
+  internalNotes?: string | null
   shippingAddress?: OrderAddressInput
   billingAddress?: OrderAddressInput
   providerSessionId: string
@@ -164,6 +165,7 @@ export async function createOrderRecord(
           shippingMethod: input.shippingMethod,
           cartToken: input.cartToken,
           customerNotes: input.customerNotes || null,
+          internalNotes: input.internalNotes || null,
           ...(shippingAddress ? { shippingAddressId: shippingAddress.id } : {}),
           ...(billingAddress ? { billingAddressId: billingAddress.id } : {}),
           providerSessionId: input.providerSessionId,
@@ -279,7 +281,10 @@ export async function createLocalOrderRecord(
   return prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${input.cartToken}))`
     const duplicate = await findDuplicateLocalOrder(tx, input)
-    if (duplicate) return duplicate
+    if (duplicate) {
+      console.info(JSON.stringify({ scope: "checkout", event: "duplicate_order_detected", orderNumber: duplicate.orderNumber }))
+      return duplicate
+    }
 
     const shippingAddress = await tx.address.create({
       data: {
@@ -333,6 +338,7 @@ export async function createLocalOrderRecord(
         shippingMethod: input.shippingMethod,
         cartToken: input.cartToken,
         customerNotes: input.customerNotes || null,
+        internalNotes: input.internalNotes || null,
         shippingAddressId: shippingAddress.id,
         billingAddressId: billingAddress.id,
         paymentProvider: input.paymentProvider ?? "cash_on_delivery",
@@ -590,20 +596,15 @@ export async function cancelOrder(orderNumber: string): Promise<Order> {
     include: { items: true },
   })
   if (!order) throw new Error("Order not found.")
+  if (order.status === "CANCELLED" || order.status === "REFUNDED") return order
+  if (order.status === "DELIVERED") throw new Error("Delivered orders cannot be cancelled.")
 
-  await prisma.$transaction([
-    ...(order.paymentStatus === "PAID"
-      ? await orderItemsToStock(order.items).then((entries) =>
-          entries.map(({ variantId, quantity }) =>
-            prisma.productVariant.updateMany({
-              where: { id: variantId },
-              data: { stock: { increment: quantity } },
-            })
-          )
-        )
-      : []),
-    prisma.order.update({
-      where: { orderNumber },
+  const shouldRestoreInventory =
+    order.paymentStatus === "PAID" || order.paymentProvider === "cash_on_delivery"
+
+  return prisma.$transaction(async (tx) => {
+    const cancelled = await tx.order.updateMany({
+      where: { id: order.id, status: { notIn: ["CANCELLED", "REFUNDED"] } },
       data: {
         status: "CANCELLED",
         fulfillmentStatus: "CANCELLED",
@@ -612,10 +613,21 @@ export async function cancelOrder(orderNumber: string): Promise<Order> {
           ? { paymentStatus: "REFUNDED" as PaymentStatus, refundedAt: new Date() }
           : {}),
       },
-    }),
-  ])
+    })
+    if (cancelled.count !== 1) return order
 
-  return prisma.order.findUniqueOrThrow({ where: { orderNumber } })
+    if (shouldRestoreInventory) {
+      const entries = await orderItemsToStock(order.items)
+      for (const { variantId, quantity } of entries) {
+        await tx.productVariant.updateMany({
+          where: { id: variantId },
+          data: { stock: { increment: quantity } },
+        })
+      }
+    }
+
+    return tx.order.findUniqueOrThrow({ where: { orderNumber } })
+  })
 }
 
 export async function transitionOrderStatus(

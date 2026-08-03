@@ -178,6 +178,9 @@ export async function updateFulfillmentStageAction(
   try {
     const order = await prisma.order.findUnique({ where: { orderNumber } })
     if (!order) return { ok: false, error: "Order not found." }
+    if (order.status === "CANCELLED" || order.status === "REFUNDED") {
+      return { ok: false, error: "Terminal orders cannot be changed." }
+    }
 
     if (fulfillmentStage === "cancelled") {
       await cancelOrder(orderNumber)
@@ -230,6 +233,12 @@ export async function markPaymentVerifiedAction(
   try {
     const order = await prisma.order.findUnique({ where: { orderNumber } })
     if (!order) return { ok: false, error: "Order not found." }
+    if (order.status === "CANCELLED" || order.status === "REFUNDED") {
+      return { ok: false, error: "Cancelled and refunded orders cannot be marked paid." }
+    }
+    if (!["cash_on_delivery", "easypaisa", "jazzcash", "stripe"].includes(order.paymentProvider)) {
+      return { ok: false, error: "Payment provider is not supported." }
+    }
 
     if (
       (order.paymentProvider === "easypaisa" || order.paymentProvider === "jazzcash") &&
@@ -239,6 +248,10 @@ export async function markPaymentVerifiedAction(
       if (!paid) return { ok: false, error: "Payment could not be verified." }
       revalidateOrder(orderNumber)
       return { ok: true, orderNumber, message: "Payment marked paid." }
+    }
+
+    if (order.paymentProvider !== "cash_on_delivery" && order.paymentProvider !== "stripe") {
+      return { ok: false, error: "Payment provider is not supported." }
     }
 
     await prisma.order.update({

@@ -1,6 +1,7 @@
 "use server"
 
 import { clearCart, getCartState, isDatabaseConfigured } from "@/lib/services/cart-service"
+import { toOrderEmailData } from "@/lib/data-access/orders"
 import { sessionToken } from "@/lib/services/session-service"
 import { resolveDbUser } from "@/lib/services/user-service"
 import {
@@ -8,11 +9,19 @@ import {
   nextOrderNumber,
 } from "@/lib/services/order-service"
 import { createCheckoutSchema } from "@/lib/validations/checkout"
-import { rateLimit, rateLimitKey } from "@/lib/services/rate-limit"
+import { getClientIp, rateLimit, rateLimitKey } from "@/lib/services/rate-limit"
 import { assertProductionEnvironment } from "@/lib/env"
 import { quoteShipping } from "@/lib/services/shipping-service"
 import { prisma } from "@/lib/prisma"
 import { quotePromotions, type PromotionQuote } from "@/lib/promotions"
+import { sendOrderConfirmationEmail } from "@/lib/services/email-service"
+import {
+  fingerprintValue,
+  logCheckoutEvent,
+  maskEmail,
+  maskPhone,
+  validateCheckoutAddress,
+} from "@/lib/checkout-safety"
 
 export type CheckoutActionResult = {
   ok: boolean
@@ -27,6 +36,62 @@ export type ShippingQuoteActionResult =
 export type CheckoutPromotionQuoteActionResult =
   | { ok: true; quote: PromotionQuote }
   | { ok: false; error: string }
+
+function addressFingerprint(input: {
+  province: string
+  city: string
+  area: string
+  streetAddress: string
+  houseApartment: string
+}) {
+  return [input.houseApartment, input.streetAddress, input.area, input.city, input.province]
+    .map((part) => part.trim().toLowerCase().replace(/\s+/g, " "))
+    .join("|")
+}
+
+async function suspiciousOrderNotes(input: {
+  phone: string
+  email: string
+  cartToken: string
+  addressKey: string
+  ip: string | null
+}) {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const ipMarker = input.ip ? `ip:${fingerprintValue(input.ip)}` : null
+  const recent = await prisma.order.findMany({
+    where: {
+      createdAt: { gte: since },
+      status: { notIn: ["CANCELLED", "REFUNDED"] },
+      OR: [
+        { phone: input.phone },
+        ...(input.email ? [{ email: input.email }] : []),
+        { cartToken: input.cartToken },
+        ...(ipMarker ? [{ internalNotes: { contains: ipMarker } }] : []),
+      ],
+    },
+    include: { shippingAddress: true },
+    take: 20,
+  })
+  const samePhone = recent.filter((order) => order.phone === input.phone).length
+  const sameEmail = input.email ? recent.filter((order) => order.email === input.email).length : 0
+  const sameAddress = recent.filter((order) => order.shippingAddress && addressFingerprint({
+    province: order.shippingAddress.region ?? "",
+    city: order.shippingAddress.city,
+    area: order.shippingAddress.area ?? "",
+    streetAddress: order.shippingAddress.line1,
+    houseApartment: order.shippingAddress.line2 ?? "",
+  }) === input.addressKey).length
+  const reasons = [
+    samePhone >= 3 ? "repeated phone" : null,
+    sameEmail >= 3 ? "repeated email" : null,
+    sameAddress >= 3 ? "repeated address" : null,
+  ].filter(Boolean)
+  return reasons.length > 0
+    ? `Admin review: ${reasons.join(", ")} in 24h${ipMarker ? `; ${ipMarker}` : ""}`
+    : ipMarker
+      ? ipMarker
+      : null
+}
 
 export async function quoteCheckoutShippingAction(input: {
   province: string
@@ -83,7 +148,7 @@ export async function createCheckoutSessionAction(
 ): Promise<CheckoutActionResult> {
   const parsed = createCheckoutSchema.safeParse(input)
   if (!parsed.success) {
-    return { ok: false, error: "Enter a valid email address to continue." }
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Check your checkout details and try again." }
   }
   const {
     firstName,
@@ -105,9 +170,19 @@ export async function createCheckoutSessionAction(
   try {
     assertProductionEnvironment()
   } catch (err) {
-    console.error("[checkout] invalid production environment:", err)
+    logCheckoutEvent("environment_invalid", { reason: err instanceof Error ? err.message : "unknown" })
     return { ok: false, error: "Checkout is unavailable right now." }
   }
+
+  const addressError = validateCheckoutAddress({
+    firstName,
+    lastName,
+    city,
+    area,
+    streetAddress,
+    houseApartment,
+  })
+  if (addressError) return { ok: false, error: addressError }
 
   const allowedByIp = await rateLimit("checkout", 10, 15 * 60 * 1000)
   const allowedByPhone = await rateLimitKey("checkout:phone", phone.replace(/\D/g, ""), 4, 60 * 60 * 1000)
@@ -115,6 +190,7 @@ export async function createCheckoutSessionAction(
     ? await rateLimitKey("checkout:email", email, 4, 60 * 60 * 1000)
     : true
   if (!allowedByIp || !allowedByPhone || !allowedByEmail) {
+    logCheckoutEvent("rate_limited", { phone: maskPhone(phone), email: maskEmail(email || null) })
     return { ok: false, error: "Too many checkout attempts. Please try again shortly." }
   }
 
@@ -136,6 +212,7 @@ export async function createCheckoutSessionAction(
     (line) => line.quantity > line.available
   )
   if (unavailable.length > 0) {
+    logCheckoutEvent("cart_unavailable", { variantId: unavailable[0].variantId, requested: unavailable[0].quantity, available: unavailable[0].available })
     return {
       ok: false,
       error: `${unavailable[0].name} in ${unavailable[0].size} — ${unavailable[0].color} is no longer available in that quantity.`,
@@ -160,6 +237,14 @@ export async function createCheckoutSessionAction(
   if (!promotionQuote.ok) return { ok: false, error: promotionQuote.error }
   const pricing = promotionQuote.quote
   const orderNumber = await nextOrderNumber()
+  const ip = await getClientIp()
+  const reviewNotes = await suspiciousOrderNotes({
+    phone,
+    email: email || "",
+    cartToken: token,
+    addressKey: addressFingerprint({ province, city, area, streetAddress, houseApartment }),
+    ip,
+  })
 
   const orderItems = cart.lines.map((line) => ({
     variantId: line.variantId,
@@ -220,6 +305,7 @@ export async function createCheckoutSessionAction(
         shippingMethod:
           pricing.shipping > 0 ? "Pakistan Standard Delivery" : "Complimentary Pakistan Delivery",
         customerNotes: notes,
+        internalNotes: reviewNotes,
         paymentProvider: paymentMethod,
         shippingAddress: {
           firstName,
@@ -233,15 +319,21 @@ export async function createCheckoutSessionAction(
         },
         items: orderItems,
       })
+      const created = order.orderNumber === orderNumber
       await clearCart(token)
+      if (created && order.email) {
+        const sent = await sendOrderConfirmationEmail(toOrderEmailData(order))
+        if (!sent) logCheckoutEvent("confirmation_email_failed", { orderNumber: order.orderNumber, email: maskEmail(order.email) })
+      }
       try {
         await saveCheckoutAddress()
       } catch (err) {
-        console.error("[checkout] failed to save checkout address:", err)
+        logCheckoutEvent("save_address_failed", { orderNumber: order.orderNumber, reason: err instanceof Error ? err.message : "unknown" })
       }
+      logCheckoutEvent(created ? "order_created" : "duplicate_order_returned", { orderNumber: order.orderNumber, phone: maskPhone(phone), email: maskEmail(email || null) })
       return { ok: true, url: `/checkout/success?order=${order.orderNumber}` }
     } catch (err) {
-      console.error("[checkout] failed to place Pakistan order:", err)
+      logCheckoutEvent("order_failed", { reason: err instanceof Error ? err.message : "unknown", phone: maskPhone(phone), email: maskEmail(email || null) })
       return { ok: false, error: "Checkout could not be completed." }
     }
   }

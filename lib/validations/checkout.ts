@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { normalizePakistanMobile } from "@/lib/checkout-safety"
 
 export const ORDER_STATUSES = [
   "PENDING",
@@ -48,7 +49,19 @@ export const FULFILLMENT_STAGES = [
 export const createCheckoutSchema = z.object({
   firstName: z.string().trim().min(1, "Enter your first name.").max(80),
   lastName: z.string().trim().min(1, "Enter your last name.").max(80),
-  phone: z.string().trim().min(7, "Enter a valid phone number.").max(30),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Enter a valid Pakistan mobile number.")
+    .max(30)
+    .transform((value, ctx) => {
+      const normalized = normalizePakistanMobile(value)
+      if (!normalized) {
+        ctx.addIssue({ code: "custom", message: "Enter a valid Pakistan mobile number." })
+        return z.NEVER
+      }
+      return normalized
+    }),
   email: z
     .string()
     .trim()

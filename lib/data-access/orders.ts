@@ -55,6 +55,7 @@ export type OrderSummaryDTO = {
   total: number
   createdAt: string
   itemCount: number
+  reviewFlagged: boolean
 }
 
 export type OrderDetailDTO = OrderSummaryDTO & {
@@ -142,6 +143,7 @@ export function toOrderSummaryDTO(order: Order & { items: OrderItem[] }): OrderS
     total: toMoney(order.total),
     createdAt: order.createdAt.toISOString(),
     itemCount: order.items.reduce((n, item) => n + item.quantity, 0),
+    reviewFlagged: order.internalNotes?.startsWith("Admin review:") ?? false,
   }
 }
 

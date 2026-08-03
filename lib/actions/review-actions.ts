@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { requireAdmin } from "@/lib/actions/admin-actions"
 import { recalculateProductRating, sanitizeReviewText } from "@/lib/data-access/reviews"
+import { rateLimit, rateLimitKey } from "@/lib/services/rate-limit"
 import { resolveDbUser } from "@/lib/services/user-service"
 import { reviewIdSchema, reviewReplySchema, reviewSubmitSchema } from "@/lib/validations/reviews"
 
@@ -14,6 +15,9 @@ export type ReviewActionResult =
 export async function submitReviewAction(input: unknown): Promise<ReviewActionResult> {
   const user = await resolveDbUser()
   if (!user) return { ok: false, error: "Sign in to review purchased products." }
+  const allowed = await rateLimit("review", 10, 60 * 60 * 1000)
+  const allowedUser = await rateLimitKey("review:user", user.id, 5, 60 * 60 * 1000)
+  if (!allowed || !allowedUser) return { ok: false, error: "Too many review attempts. Please try again later." }
   const parsed = reviewSubmitSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Review could not be read." }
   const data = parsed.data

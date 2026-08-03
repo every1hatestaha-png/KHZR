@@ -1,5 +1,6 @@
 import "server-only"
 
+import { createHash } from "node:crypto"
 import { headers } from "next/headers"
 
 type Bucket = { windowStart: number; count: number }
@@ -8,6 +9,10 @@ const buckets = new Map<string, Bucket>()
 
 const MAX_BUCKETS = 10_000
 const SWEEP_WINDOW_MS = 60 * 60 * 1000
+
+function hashKey(value: string): string {
+  return createHash("sha256").update(value).digest("hex").slice(0, 32)
+}
 
 function sweep(now: number) {
   if (buckets.size < MAX_BUCKETS) return
@@ -29,6 +34,50 @@ function hitBucket(key: string, max: number, windowMs: number): boolean {
   return true
 }
 
+async function hitSharedBucket(key: string, max: number, windowMs: number): Promise<boolean | null> {
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return null
+
+  const expiresInSeconds = Math.max(1, Math.ceil(windowMs / 1000))
+  try {
+    const response = await fetch(`${url.replace(/\/$/, "")}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([
+        ["INCR", key],
+        ["EXPIRE", key, expiresInSeconds, "NX"],
+      ]),
+      cache: "no-store",
+    })
+    if (!response.ok) return null
+    const data = await response.json() as Array<{ result?: unknown }>
+    const count = Number(data[0]?.result ?? 0)
+    if (!Number.isFinite(count) || count <= 0) return null
+    return count <= max
+  } catch (err) {
+    console.error("[rate-limit] shared store unavailable:", err instanceof Error ? err.message : "unknown")
+    return null
+  }
+}
+
+async function hitRateLimit(scope: string, identity: string, max: number, windowMs: number): Promise<boolean> {
+  const key = `rl:${scope}:${hashKey(identity)}`
+  const shared = await hitSharedBucket(key, max, windowMs)
+  if (shared !== null) return shared
+  return hitBucket(key, max, windowMs)
+}
+
+export async function getClientIp(): Promise<string | null> {
+  const store = await headers()
+  return store.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    store.get("x-real-ip")?.trim() ??
+    null
+}
+
 /**
  * Lightweight, per-IP, in-memory rate limit for server actions. Returns true
  * when the request is allowed. Falls open (no limit) when the caller's IP
@@ -40,14 +89,9 @@ export async function rateLimit(
   max: number,
   windowMs = SWEEP_WINDOW_MS
 ): Promise<boolean> {
-  const store = await headers()
-  const ip =
-    store.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    store.get("x-real-ip")?.trim()
+  const ip = await getClientIp()
   if (!ip) return true
-
-  const key = `${scope}:${ip}`
-  return hitBucket(key, max, windowMs)
+  return hitRateLimit(scope, ip, max, windowMs)
 }
 
 export async function rateLimitKey(
@@ -58,5 +102,5 @@ export async function rateLimitKey(
 ): Promise<boolean> {
   const normalized = key.trim().toLowerCase()
   if (!normalized) return true
-  return hitBucket(`${scope}:${normalized}`, max, windowMs)
+  return hitRateLimit(scope, normalized, max, windowMs)
 }
