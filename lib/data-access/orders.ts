@@ -321,6 +321,7 @@ export function toOrderEmailData(
     tax: toMoney(order.taxTotal),
     total: toMoney(order.total),
     currency: order.currency,
+    paymentProvider: order.paymentProvider,
     lines: order.items.map((item) => ({
       name: item.name,
       size: item.size,

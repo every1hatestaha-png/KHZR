@@ -14,6 +14,7 @@ import type {
 } from "@prisma/client"
 
 export type OrderWithItems = Order & { items: OrderItem[] }
+export type FulfillmentStage = "pending" | "confirmed" | "packed" | "shipped" | "delivered" | "completed" | "cancelled"
 
 export type OrderAddressInput = {
   firstName: string
@@ -105,12 +106,48 @@ export async function nextOrderNumber(): Promise<string> {
 
 export const allowedStatusTransitions: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ["CONFIRMED", "CANCELLED"],
-  CONFIRMED: ["FULFILLED", "CANCELLED", "REFUNDED"],
-  FULFILLED: ["SHIPPED", "CANCELLED"],
+  CONFIRMED: ["FULFILLED", "SHIPPED", "CANCELLED", "REFUNDED"],
+  FULFILLED: ["SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"],
   SHIPPED: ["DELIVERED"],
   DELIVERED: [],
   CANCELLED: [],
   REFUNDED: [],
+}
+
+export const allowedFulfillmentStages: Record<FulfillmentStage, FulfillmentStage[]> = {
+  pending: ["confirmed", "cancelled"],
+  confirmed: ["packed", "cancelled"],
+  packed: ["shipped", "cancelled"],
+  shipped: ["delivered"],
+  delivered: ["completed"],
+  completed: [],
+  cancelled: [],
+}
+
+const allowedFulfillmentStatusTransitions: Record<FulfillmentStatus, FulfillmentStatus[]> = {
+  UNFULFILLED: ["PARTIALLY_FULFILLED", "FULFILLED"],
+  PARTIALLY_FULFILLED: ["FULFILLED"],
+  FULFILLED: [],
+  CANCELLED: [],
+}
+
+function logOrderEvent(event: string, data: Record<string, unknown>) {
+  console.info(JSON.stringify({ scope: "order", event, ...data }))
+}
+
+function isFulfillmentStage(value: string): value is FulfillmentStage {
+  return Object.prototype.hasOwnProperty.call(allowedFulfillmentStages, value)
+}
+
+function assertActiveOrder(order: Order) {
+  if (order.status === "CANCELLED" || order.status === "REFUNDED") {
+    throw new Error("Terminal orders cannot be changed.")
+  }
+}
+
+function canFulfillWithPayment(order: Order) {
+  if (order.paymentProvider === "cash_on_delivery") return order.paymentStatus === "PENDING" || order.paymentStatus === "PAID"
+  return order.paymentStatus === "PAID"
 }
 
 /** Builds a unique, collision-safe order number and persists the order atomically. */
@@ -590,7 +627,7 @@ export async function markOrderFailedIfPending(
   return result.count === 1
 }
 
-export async function cancelOrder(orderNumber: string): Promise<Order> {
+export async function cancelOrder(orderNumber: string, reason?: string | null): Promise<Order> {
   const order = await prisma.order.findUnique({
     where: { orderNumber },
     include: { items: true },
@@ -598,6 +635,7 @@ export async function cancelOrder(orderNumber: string): Promise<Order> {
   if (!order) throw new Error("Order not found.")
   if (order.status === "CANCELLED" || order.status === "REFUNDED") return order
   if (order.status === "DELIVERED") throw new Error("Delivered orders cannot be cancelled.")
+  if (!allowedStatusTransitions[order.status].includes("CANCELLED")) throw new Error("Order cannot be cancelled from this state.")
 
   const shouldRestoreInventory =
     order.paymentStatus === "PAID" || order.paymentProvider === "cash_on_delivery"
@@ -608,7 +646,9 @@ export async function cancelOrder(orderNumber: string): Promise<Order> {
       data: {
         status: "CANCELLED",
         fulfillmentStatus: "CANCELLED",
+        fulfillmentStage: "cancelled",
         cancelledAt: new Date(),
+        internalNotes: [order.internalNotes, reason ? `Cancellation reason: ${reason}` : null].filter(Boolean).join("\n") || null,
         ...(order.paymentStatus === "PAID"
           ? { paymentStatus: "REFUNDED" as PaymentStatus, refundedAt: new Date() }
           : {}),
@@ -626,7 +666,9 @@ export async function cancelOrder(orderNumber: string): Promise<Order> {
       }
     }
 
-    return tx.order.findUniqueOrThrow({ where: { orderNumber } })
+    const updated = await tx.order.findUniqueOrThrow({ where: { orderNumber } })
+    logOrderEvent("cancelled", { orderNumber, previousStatus: order.status, newStatus: updated.status, result: "success" })
+    return updated
   })
 }
 
@@ -634,6 +676,7 @@ export async function transitionOrderStatus(
   order: Order,
   nextStatus: OrderStatus
 ): Promise<Order> {
+  if (order.status === nextStatus) return order
   if (!allowedStatusTransitions[order.status].includes(nextStatus)) {
     throw new Error(
       `Cannot move an order from ${order.status} to ${nextStatus}.`
@@ -641,6 +684,9 @@ export async function transitionOrderStatus(
   }
 
   const data: Partial<Order> = { status: nextStatus }
+  if (["FULFILLED", "SHIPPED", "DELIVERED"].includes(nextStatus) && !canFulfillWithPayment(order)) {
+    throw new Error("Payment must be collected before this fulfillment transition.")
+  }
   if (nextStatus === "CANCELLED") {
     data.cancelledAt = new Date()
     data.fulfillmentStatus = "CANCELLED"
@@ -651,22 +697,95 @@ export async function transitionOrderStatus(
   }
   if (nextStatus === "FULFILLED") {
     data.fulfillmentStatus = "FULFILLED"
+    data.fulfillmentStage = "completed"
+  }
+  if (nextStatus === "SHIPPED") {
+    data.fulfillmentStatus = "FULFILLED"
+    data.fulfillmentStage = "shipped"
+  }
+  if (nextStatus === "DELIVERED") {
+    data.fulfillmentStatus = "FULFILLED"
+    data.fulfillmentStage = "delivered"
   }
   if (nextStatus === "REFUNDED") {
+    if (order.paymentStatus !== "PAID") throw new Error("Only paid orders can be refunded.")
     data.paymentStatus = "REFUNDED"
     data.refundedAt = new Date()
   }
 
-  return prisma.order.update({ where: { id: order.id }, data })
+  const updated = await prisma.order.update({ where: { id: order.id }, data })
+  logOrderEvent("status_changed", { orderNumber: order.orderNumber, previousStatus: order.status, newStatus: updated.status, result: "success" })
+  return updated
 }
 
 export async function setFulfillmentStatus(
   order: Order,
   fulfillmentStatus: FulfillmentStatus
 ): Promise<Order> {
-  return prisma.order.update({
+  assertActiveOrder(order)
+  if (order.fulfillmentStatus === fulfillmentStatus) return order
+  if (fulfillmentStatus === "CANCELLED") throw new Error("Cancel the order instead of only cancelling fulfillment.")
+  if (order.status === "DELIVERED") throw new Error("Delivered orders cannot move backward in fulfillment.")
+  if (!allowedFulfillmentStatusTransitions[order.fulfillmentStatus].includes(fulfillmentStatus)) {
+    throw new Error(`Cannot move fulfillment from ${order.fulfillmentStatus} to ${fulfillmentStatus}.`)
+  }
+  if (fulfillmentStatus !== "UNFULFILLED" && !canFulfillWithPayment(order)) {
+    throw new Error("Payment must be collected before this fulfillment update.")
+  }
+  const updated = await prisma.order.update({
     where: { id: order.id },
     data: { fulfillmentStatus },
+  })
+  logOrderEvent("fulfillment_status_changed", { orderNumber: order.orderNumber, previousStatus: order.fulfillmentStatus, newStatus: updated.fulfillmentStatus, result: "success" })
+  return updated
+}
+
+export async function transitionFulfillmentStage(order: Order, nextStage: FulfillmentStage): Promise<Order> {
+  assertActiveOrder(order)
+  if (!isFulfillmentStage(order.fulfillmentStage)) throw new Error("Current fulfillment stage is invalid.")
+  if (order.fulfillmentStage === nextStage) return order
+  if (!allowedFulfillmentStages[order.fulfillmentStage].includes(nextStage)) {
+    throw new Error(`Cannot move fulfillment from ${order.fulfillmentStage} to ${nextStage}.`)
+  }
+  if (["packed", "shipped", "delivered", "completed"].includes(nextStage) && !canFulfillWithPayment(order)) {
+    throw new Error("Payment must be collected before this fulfillment transition.")
+  }
+
+  const data: Prisma.OrderUpdateInput = { fulfillmentStage: nextStage }
+  if (nextStage === "confirmed") data.status = "CONFIRMED"
+  if (nextStage === "packed") data.fulfillmentStatus = "PARTIALLY_FULFILLED"
+  if (nextStage === "shipped") {
+    data.status = "SHIPPED"
+    data.fulfillmentStatus = "FULFILLED"
+  }
+  if (nextStage === "delivered") {
+    data.status = "DELIVERED"
+    data.fulfillmentStatus = "FULFILLED"
+  }
+  if (nextStage === "completed") {
+    data.fulfillmentStatus = "FULFILLED"
+  }
+
+  const updated = await prisma.order.update({ where: { id: order.id }, data })
+  logOrderEvent("fulfillment_stage_changed", { orderNumber: order.orderNumber, previousStatus: order.fulfillmentStage, newStatus: updated.fulfillmentStage, result: "success" })
+  return updated
+}
+
+export async function markCodPaymentCollected(orderNumber: string): Promise<Order | null> {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({ where: { orderNumber } })
+    if (!order) return null
+    assertActiveOrder(order)
+    if (order.paymentProvider !== "cash_on_delivery") throw new Error("Only COD payment collection is supported here.")
+    if (order.paymentStatus === "PAID") return order
+    if (order.paymentStatus !== "PENDING") throw new Error("Payment cannot be collected from this state.")
+
+    const updated = await tx.order.update({
+      where: { id: order.id },
+      data: { paymentStatus: "PAID", paymentVerifiedAt: new Date() },
+    })
+    logOrderEvent("payment_collected", { orderNumber, previousStatus: order.paymentStatus, newStatus: updated.paymentStatus, result: "success" })
+    return updated
   })
 }
 

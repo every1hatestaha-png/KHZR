@@ -95,7 +95,7 @@ export default async function AccountOrdersPage() {
                     <StatusBadge value={order.paymentStatus} />
                     <StatusBadge value={order.fulfillmentStatus} />
                     <span className="ml-2 font-display text-lg text-noir">
-                      {formatMoney(order.total)}
+                      {formatMoney(order.total, order.currency)}
                     </span>
                   </div>
                 </Link>

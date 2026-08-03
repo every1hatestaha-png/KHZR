@@ -106,7 +106,11 @@ export default async function AccountOrderDetailPage({
           <div>
             <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Payment</p>
             <p className="mt-2 font-display text-xl text-noir">{paymentMethodLabel(order.paymentProvider)}</p>
-            {order.providerReference ? <p className="mt-1 break-all text-sm text-stone">Reference: {order.providerReference}</p> : null}
+            <p className="mt-1 text-sm text-stone">
+              {order.paymentProvider === "cash_on_delivery"
+                ? order.paymentStatus === "PAID" ? "Cash collected" : "Cash due on delivery"
+                : `Payment is ${order.paymentStatus.toLowerCase()}`}
+            </p>
           </div>
           <div>
             <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Delivery</p>

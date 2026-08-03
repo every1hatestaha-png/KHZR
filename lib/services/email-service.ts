@@ -34,6 +34,7 @@ export type OrderEmailData = {
   tax: number
   total: number
   currency: string
+  paymentProvider: string
   lines: OrderEmailLine[]
   shippingAddress?: OrderEmailAddress | null
   status?: string
@@ -168,8 +169,12 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
 export async function sendOrderConfirmationEmail(
   data: OrderEmailData
 ): Promise<boolean> {
+  const paymentCopy = data.paymentProvider === "cash_on_delivery"
+    ? "Cash on Delivery is selected; payment is due when your order is delivered."
+    : "We will update you as your payment and order are processed."
   const body = [
     `<div style="font-size:14px;line-height:1.7;color:#5C5248">Thank you for your order. We are preparing your pieces and will email you again once they ship.</div>`,
+    `<div style="font-size:13px;line-height:1.7;color:#5C5248;margin-top:12px">${esc(paymentCopy)}</div>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px"><tr><td style="padding-bottom:4px;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">Order ${esc(data.orderNumber)}</td><td style="padding-bottom:4px;text-align:right;font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C">${esc(formatDate(data.createdAt))}</td></tr></table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px">${itemsHtml(data.lines, data.currency)}</table>`,
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">${totalsHtml(data)}</table>`,

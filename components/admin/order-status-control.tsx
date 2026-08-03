@@ -86,6 +86,7 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
 
   async function changeStatus(value: string) {
     if (statusBusy || value === order.status) return
+    if ((value === "CANCELLED" || value === "REFUNDED") && !window.confirm("This order action cannot be undone. Continue?")) return
     setStatusBusy(true)
     const res = await updateOrderStatusAction({
       orderNumber: order.orderNumber,
@@ -130,6 +131,7 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
 
   async function changeStage(value: string) {
     if (stageBusy || value === order.fulfillmentStage) return
+    if (value === "cancelled" && !window.confirm("Cancel this order and restore reserved inventory if eligible?")) return
     setStageBusy(true)
     const res = await updateFulfillmentStageAction({
       orderNumber: order.orderNumber,
@@ -146,6 +148,7 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
 
   async function verifyPayment() {
     if (paymentBusy || order.paymentStatus === "PAID") return
+    if (order.paymentProvider === "cash_on_delivery" && !window.confirm("Mark COD cash as collected for this order?")) return
     setPaymentBusy(true)
     const res = await markPaymentVerifiedAction({ orderNumber: order.orderNumber })
     setPaymentBusy(false)
@@ -300,7 +303,7 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
           </div>
           <Button variant="outline" disabled={paymentBusy || order.paymentStatus === "PAID"} onClick={() => void verifyPayment()}>
             {paymentBusy ? <Loader2Icon className="size-4 animate-spin" aria-hidden /> : null}
-            {walletPayment ? "Mark Payment Verified" : "Mark Paid"}
+            {order.paymentProvider === "cash_on_delivery" ? "Mark COD Collected" : walletPayment ? "Mark Payment Verified" : "Mark Paid"}
           </Button>
         </div>
       </section>
