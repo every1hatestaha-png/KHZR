@@ -449,3 +449,53 @@ export async function getFeaturedProducts(): Promise<ProductCardDTO[]> {
   }
   return rows.map((p) => cardDTO(p))
 }
+
+export async function getRecentlyViewedProducts(
+  slugs: string[],
+  excludeSlug?: string
+): Promise<ProductCardDTO[]> {
+  const unique = [...new Set(slugs)]
+    .filter((slug) => slug && slug !== excludeSlug)
+    .slice(0, 10)
+  if (unique.length === 0) return []
+
+  const fallback = () => {
+    const cards = unique
+      .map((slug) => getFallbackProduct(slug))
+      .filter((product): product is FallbackProduct => Boolean(product))
+      .filter((product) => product.variants.some((variant) => variant.stock > 0))
+      .map((product) => fallbackCard(product))
+    return unique
+      .map((slug) => cards.find((product) => product.slug === slug))
+      .filter((product): product is ProductCardDTO => Boolean(product))
+  }
+
+  if (!isDatabaseConfigured()) return fallback()
+
+  const rows = await safeQuery(() =>
+    prisma.product.findMany({
+      where: {
+        slug: { in: unique },
+        status: "ACTIVE",
+        variants: { some: { active: true, stock: { gt: 0 } } },
+      },
+      include: {
+        media: { orderBy: { position: "asc" }, take: 1 },
+        collections: { take: 1, include: { collection: { select: { slug: true, name: true } } } },
+        variants: {
+          where: { active: true, stock: { gt: 0 } },
+          select: { id: true, size: true, color: true, colorHex: true, stock: true },
+          orderBy: { size: "asc" },
+          take: 3,
+        },
+      },
+      take: unique.length,
+    })
+  )
+
+  if (!rows) return fallback()
+  const cards = rows.map((product) => cardDTO(product))
+  return unique
+    .map((slug) => cards.find((product) => product.slug === slug))
+    .filter((product): product is ProductCardDTO => Boolean(product))
+}

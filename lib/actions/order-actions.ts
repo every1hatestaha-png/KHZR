@@ -130,7 +130,7 @@ export async function updateOrderStatusAction(
       message: `Order moved to ${STATUS_LABELS[status] ?? status}.`,
     }
   } catch (err) {
-    console.error("[admin] order status failed:", err)
+    console.error("[admin] order status failed:", err instanceof Error ? err.message : "unknown")
     return {
       ok: false,
       error:
@@ -212,7 +212,7 @@ export async function updateFulfillmentStageAction(
       message: `Fulfillment moved to ${FULFILLMENT_STAGE_LABELS[fulfillmentStage]}.`,
     }
   } catch (err) {
-    console.error("[admin] fulfillment stage failed:", err)
+    console.error("[admin] fulfillment stage failed:", err instanceof Error ? err.message : "unknown")
     return { ok: false, error: "Fulfillment could not be updated." }
   }
 }

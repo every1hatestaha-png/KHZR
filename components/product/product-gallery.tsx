@@ -26,7 +26,7 @@ export function ProductGallery({
 
   return (
     <div className="flex flex-col gap-5" role="region" aria-label="Product gallery">
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-ivory lg:aspect-[5/6]">
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-ivory lg:aspect-auto lg:h-[72vh] lg:min-h-[560px] lg:max-h-[760px]">
         <AnimatePresence initial={false} mode="popLayout">
           <motion.div
             key={current}
@@ -40,7 +40,7 @@ export function ProductGallery({
               src={current}
               alt={currentAlt}
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
+              className="object-cover lg:object-contain lg:object-[center_top]"
             />
           </motion.div>
         </AnimatePresence>

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { ORDER_NUMBER_PREFIX } from "@/lib/constants"
 import type {
   FulfillmentStatus,
+  Address,
   Order,
   OrderItem,
   OrderStatus,
@@ -13,18 +14,25 @@ import type {
   Prisma,
 } from "@prisma/client"
 
-export type OrderWithItems = Order & { items: OrderItem[] }
+export type OrderWithItems = Order & {
+  items: OrderItem[]
+  shippingAddress?: Address | null
+  billingAddress?: Address | null
+}
 export type FulfillmentStage = "pending" | "confirmed" | "packed" | "shipped" | "delivered" | "completed" | "cancelled"
 
 export type OrderAddressInput = {
   firstName: string
   lastName: string
+  phone?: string | null
   line1: string
   line2?: string | null
+  area?: string | null
   city: string
   region?: string | null
   postalCode: string
   country: string
+  deliveryNotes?: string | null
 }
 
 export type OrderLineInput = {
@@ -276,7 +284,7 @@ export async function createLocalOrderRecord(
           })),
         },
       },
-      include: { items: true },
+      include: { items: true, shippingAddress: true, billingAddress: true },
     }).then(async (order) => {
       if (input.promotionId && input.discountTotal > 0) {
         const promotion = await tx.promotion.findUnique({

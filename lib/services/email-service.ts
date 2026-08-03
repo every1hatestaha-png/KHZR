@@ -16,17 +16,21 @@ export type OrderEmailLine = {
 export type OrderEmailAddress = {
   firstName: string
   lastName: string
+  phone?: string | null
   line1: string
   line2?: string | null
+  area?: string | null
   city: string
   region?: string | null
   postalCode: string
   country: string
+  deliveryNotes?: string | null
 }
 
 export type OrderEmailData = {
   orderNumber: string
   email: string
+  phone?: string | null
   createdAt: Date
   subtotal: number
   discount: number
@@ -35,6 +39,7 @@ export type OrderEmailData = {
   total: number
   currency: string
   paymentProvider: string
+  paymentStatus?: string
   lines: OrderEmailLine[]
   shippingAddress?: OrderEmailAddress | null
   status?: string
@@ -54,12 +59,23 @@ function formatAddress(address?: OrderEmailAddress | null): string {
   if (!address) return ""
   const lines = [
     `${esc(address.firstName)} ${esc(address.lastName)}`,
+    address.phone ? esc(address.phone) : "",
     esc(address.line1),
     address.line2 ? esc(address.line2) : "",
+    address.area ? esc(address.area) : "",
     `${esc(address.city)}${address.region ? `, ${esc(address.region)}` : ""} ${esc(address.postalCode)}`,
     esc(address.country),
+    address.deliveryNotes ? `Notes: ${esc(address.deliveryNotes)}` : "",
   ].filter((line) => line.length > 0)
   return lines.map((line) => `<div>${line}</div>`).join("")
+}
+
+function formatDateTime(value: Date): string {
+  return new Intl.DateTimeFormat("en-PK", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Karachi",
+  }).format(value)
 }
 
 function itemsHtml(lines: OrderEmailLine[], currency: string): string {
@@ -161,9 +177,52 @@ async function sendEmail(to: string, subject: string, html: string): Promise<boo
     }
     return true
   } catch (err) {
-    console.error("[email] send threw:", err)
+    console.error("[email] send threw:", err instanceof Error ? err.message : "unknown")
     return false
   }
+}
+
+export async function sendOwnerOrderNotificationEmail(
+  data: OrderEmailData
+): Promise<boolean> {
+  const to = process.env.KHZR_ORDER_NOTIFICATION_EMAIL
+  if (!to) return false
+
+  const address = data.shippingAddress
+  const adminHref = `${SITE.url}/admin/orders/${encodeURIComponent(data.orderNumber)}`
+  const infoRows: Array<[string, string]> = [
+    ["Order number", data.orderNumber],
+    ["Date and time", formatDateTime(data.createdAt)],
+    ["Customer", `${address?.firstName ?? ""} ${address?.lastName ?? ""}`.trim()],
+    ["Phone", data.phone || address?.phone || "Not provided"],
+    ["Email", data.email || "Not provided"],
+    ["Province", address?.region || "Not provided"],
+    ["City", address?.city || "Not provided"],
+    ["Area", address?.area || "Not provided"],
+    ["Payment method", data.paymentProvider],
+    ["Payment status", data.paymentStatus || "PENDING"],
+  ]
+  const row = ([label, value]: [string, string]) =>
+    `<tr><td style="padding:7px 12px 7px 0;border-bottom:1px solid #E4DCCD;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#8A7B6C;vertical-align:top">${esc(label)}</td><td style="padding:7px 0;border-bottom:1px solid #E4DCCD;font-size:13px;color:#121110;vertical-align:top">${esc(value)}</td></tr>`
+  const body = [
+    `<div style="font-size:14px;line-height:1.7;color:#5C5248">A new order has been placed on ${esc(SITE.name)}.</div>`,
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px">${infoRows.map(row).join("")}</table>`,
+    address
+      ? `<div style="margin-top:24px"><div style="font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:#8A7B6C;margin-bottom:8px">Complete delivery address</div><div style="font-size:13px;line-height:1.7;color:#121110">${formatAddress(address)}</div></div>`
+      : "",
+    data.notes
+      ? `<div style="margin-top:18px;font-size:13px;color:#5C5248;line-height:1.6"><span style="letter-spacing:0.16em;text-transform:uppercase;font-size:10px;color:#8A7B6C">Delivery notes</span><br />${esc(data.notes)}</div>`
+      : "",
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px">${itemsHtml(data.lines, data.currency)}</table>`,
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px">${totalsHtml(data)}</table>`,
+    `<div style="margin-top:28px"><a href="${esc(adminHref)}" style="display:inline-block;background:#121110;color:#FAF7F2;text-decoration:none;padding:12px 18px;font-size:11px;letter-spacing:0.18em;text-transform:uppercase">View admin order</a></div>`,
+  ].join("")
+
+  return sendEmail(
+    to,
+    `New order ${data.orderNumber}`,
+    shell({ kicker: "New order", title: `Order ${data.orderNumber}`, body })
+  )
 }
 
 export async function sendOrderConfirmationEmail(

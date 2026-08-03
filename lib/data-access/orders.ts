@@ -293,12 +293,15 @@ export function toOrderEmailData(
     shippingAddress?: {
       firstName: string
       lastName: string
+      phone?: string | null
       line1: string
       line2: string | null
+      area?: string | null
       city: string
       region: string | null
       postalCode: string
       country: string
+      deliveryNotes?: string | null
     } | null
   }
 ): import("@/lib/services/email-service").OrderEmailData {
@@ -306,6 +309,7 @@ export function toOrderEmailData(
   return {
     orderNumber: order.orderNumber,
     email: order.email ?? "",
+    phone: order.phone,
     createdAt: order.createdAt,
     subtotal: toMoney(order.subtotal),
     discount: toMoney(order.discountTotal),
@@ -314,6 +318,7 @@ export function toOrderEmailData(
     total: toMoney(order.total),
     currency: order.currency,
     paymentProvider: order.paymentProvider,
+    paymentStatus: order.paymentStatus,
     lines: order.items.map((item) => ({
       name: item.name,
       size: item.size,
@@ -326,12 +331,15 @@ export function toOrderEmailData(
       ? {
           firstName: shipping.firstName,
           lastName: shipping.lastName,
+          phone: shipping.phone,
           line1: shipping.line1,
           line2: shipping.line2,
+          area: shipping.area,
           city: shipping.city,
           region: shipping.region,
           postalCode: shipping.postalCode,
           country: shipping.country,
+          deliveryNotes: shipping.deliveryNotes,
         }
       : null,
     notes: order.customerNotes,

@@ -49,7 +49,7 @@ export async function updateProfileAction(input: unknown): Promise<AccountAction
     revalidatePath("/account/settings")
     return { ok: true, message: "Profile updated." }
   } catch (err) {
-    console.error("[account] profile update failed:", err)
+    console.error("[account] profile update failed:", err instanceof Error ? err.message : "unknown")
     return { ok: false, error: "Profile could not be updated." }
   }
 }
@@ -102,7 +102,7 @@ export async function saveAddressAction(input: unknown): Promise<AccountActionRe
     revalidatePath("/account/addresses")
     return { ok: true, message: address.id ? "Address updated." : "Address saved." }
   } catch (err) {
-    console.error("[account] address save failed:", err)
+    console.error("[account] address save failed:", err instanceof Error ? err.message : "unknown")
     return { ok: false, error: "Address could not be saved." }
   }
 }

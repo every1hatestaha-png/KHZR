@@ -62,7 +62,7 @@ export async function savePromotionAction(input: unknown): Promise<PromotionActi
     revalidatePromotions()
     return { ok: true, id: promotion.id, message: data.id ? "Promotion updated." : "Promotion created." }
   } catch (err) {
-    console.error("[admin] promotion save failed:", err)
+    console.error("[admin] promotion save failed:", err instanceof Error ? err.message : "unknown")
     return { ok: false, error: "Promotion could not be saved. Check the code is unique." }
   }
 }

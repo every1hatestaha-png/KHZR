@@ -14,7 +14,7 @@ import { assertProductionEnvironment } from "@/lib/env"
 import { quoteShipping } from "@/lib/services/shipping-service"
 import { prisma } from "@/lib/prisma"
 import { quotePromotions, type PromotionQuote } from "@/lib/promotions"
-import { sendOrderConfirmationEmail } from "@/lib/services/email-service"
+import { sendOrderConfirmationEmail, sendOwnerOrderNotificationEmail } from "@/lib/services/email-service"
 import {
   fingerprintValue,
   logCheckoutEvent,
@@ -310,17 +310,24 @@ export async function createCheckoutSessionAction(
         shippingAddress: {
           firstName,
           lastName,
+          phone,
           line1: streetAddress,
           line2: `${houseApartment}, ${area}`,
+          area,
           city,
           region: province,
           postalCode: postalCode || "",
           country: "PK",
+          deliveryNotes: notes || null,
         },
         items: orderItems,
       })
       const created = order.orderNumber === orderNumber
       await clearCart(token)
+      if (created) {
+        const sent = await sendOwnerOrderNotificationEmail(toOrderEmailData(order))
+        if (!sent && process.env.KHZR_ORDER_NOTIFICATION_EMAIL) logCheckoutEvent("owner_notification_failed", { orderNumber: order.orderNumber })
+      }
       if (created && order.email) {
         const sent = await sendOrderConfirmationEmail(toOrderEmailData(order))
         if (!sent) logCheckoutEvent("confirmation_email_failed", { orderNumber: order.orderNumber, email: maskEmail(order.email) })

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { ProductBuybox } from "@/components/product/product-buybox"
 import { ProductCard } from "@/components/product/product-card"
 import { ProductGallery } from "@/components/product/product-gallery"
+import { RecentlyViewedProducts } from "@/components/product/recently-viewed-products"
 import { ProductReviews } from "@/components/reviews/product-reviews"
 import { Reveal } from "@/components/shared/reveal"
 import { SectionHeading } from "@/components/shared/section-heading"
@@ -115,6 +116,8 @@ export default async function ProductPage({
         productSlug={product.slug}
         eligibility={reviewEligibility}
       />
+
+      <RecentlyViewedProducts currentSlug={product.slug} />
 
       {related.length > 0 ? (
         <section className="border-t border-hairline bg-ivory/30">
