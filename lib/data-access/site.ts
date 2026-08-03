@@ -32,6 +32,8 @@ export type ProductCardDTO = {
   averageRating: number
   reviewCount: number
   badge: "NEW" | "LOW_STOCK" | "OUT_OF_STOCK" | null
+  collectionSlug: string
+  collectionName: string
   defaultVariant: {
     variantId: string
     size: string
@@ -69,6 +71,8 @@ function fallbackCard(p: FallbackProduct): ProductCardDTO {
         : p.stockStatus === "LOW_STOCK"
           ? "LOW_STOCK"
           : null,
+    collectionSlug: p.collectionSlug,
+    collectionName: p.collectionName,
     defaultVariant: {
       variantId: variant?.id ?? "",
       size: variant?.size ?? "One Size",
@@ -92,9 +96,11 @@ function cardDTO(product: {
   stockStatus: string
   media: { url: string }[]
   variants: { id: string; size: string; color: string; colorHex: string | null; stock: number }[]
+  collections?: { collection: { slug: string; name: string } }[]
 }): ProductCardDTO {
   const variant =
     product.variants.find((v) => v.stock > 0) ?? product.variants[0]
+  const collection = product.collections?.[0]?.collection
   return {
     slug: product.slug,
     name: product.name,
@@ -109,6 +115,8 @@ function cardDTO(product: {
     averageRating: Number(product.averageRating.toString()),
     reviewCount: product.reviewCount,
     badge: product.stockStatus as ProductCardDTO["badge"],
+    collectionSlug: collection?.slug ?? "",
+    collectionName: collection?.name ?? "",
     defaultVariant: {
       variantId: variant?.id ?? "",
       size: variant?.size ?? "One Size",
@@ -303,6 +311,7 @@ export async function getRelatedProducts(
       },
       include: {
         media: { orderBy: { position: "asc" }, take: 1 },
+        collections: { take: 1, include: { collection: { select: { slug: true, name: true } } } },
         variants: {
           where: { active: true },
           select: { id: true, size: true, color: true, colorHex: true, stock: true },
@@ -328,6 +337,7 @@ export async function getRelatedProducts(
         },
         include: {
           media: { orderBy: { position: "asc" }, take: 1 },
+          collections: { take: 1, include: { collection: { select: { slug: true, name: true } } } },
           variants: {
             where: { active: true },
             select: { id: true, size: true, color: true, colorHex: true, stock: true },
@@ -347,6 +357,41 @@ export async function getRelatedProducts(
   }
 
   return selected.map((p) => cardDTO(p))
+}
+
+export async function getProductsByCollection(slug: string, limit = 24): Promise<ProductCardDTO[]> {
+  const fallback = () => {
+    const products = slug === "new-arrivals"
+      ? FALLBACK_PRODUCTS.filter((p) => p.isNew)
+      : FALLBACK_PRODUCTS.filter((p) => p.collectionSlug === slug)
+    return products.slice(0, limit).map((p) => fallbackCard(p))
+  }
+
+  if (!isDatabaseConfigured()) return fallback()
+
+  const where = slug === "new-arrivals"
+    ? { status: "ACTIVE" as const, isNew: true }
+    : { status: "ACTIVE" as const, collections: { some: { collection: { slug } } } }
+
+  const products = await safeQuery(() =>
+    prisma.product.findMany({
+      where,
+      include: {
+        media: { orderBy: { position: "asc" }, take: 1 },
+        collections: { take: 1, include: { collection: { select: { slug: true, name: true } } } },
+        variants: {
+          where: { active: true },
+          select: { id: true, size: true, color: true, colorHex: true, stock: true },
+          orderBy: { size: "asc" },
+          take: 3,
+        },
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+      take: limit,
+    })
+  )
+
+  return products && products.length > 0 ? products.map((p) => cardDTO(p)) : fallback()
 }
 
 export async function getHomeCampaigns(): Promise<CampaignDTO[]> {

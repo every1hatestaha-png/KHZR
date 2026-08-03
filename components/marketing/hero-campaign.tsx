@@ -50,8 +50,8 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
               size="lg"
               className="min-h-12 border-warm-white/45 px-8 text-warm-white hover:border-warm-white hover:bg-warm-white hover:text-noir"
             >
-              <Link href="/collections?sort=newest">
-                Shop New In
+              <Link href="/collection/new-arrivals">
+                Shop New Arrivals
                 <ArrowRight className="ml-3 size-3.5" aria-hidden />
               </Link>
             </Button>

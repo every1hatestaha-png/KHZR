@@ -4,7 +4,7 @@ import { buildMetadata } from "@/lib/seo"
 
 export const metadata = buildMetadata({
   title: "Search",
-  description: "Search the KHZR catalogue.",
+  description: "Search KHZR ready-to-wear eastern dresses.",
   path: "/search",
   noindex: true,
 })
@@ -17,7 +17,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <PageIntro
         kicker="Search"
         title="Find a piece."
-        description="Search by name, colour, fabric, or collection."
+        description="Search by product name, color, fabric, work type, or ready-to-wear collection."
       />
       <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
         <div className="h-px w-16 bg-champagne" aria-hidden />
@@ -27,7 +27,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       </section>
       <section className="mx-auto max-w-[1400px] px-5 py-16 lg:px-10" aria-live="polite" aria-atomic="true">
         <p className="text-center text-sm leading-relaxed text-stone">
-          Until then, use Collections to browse the current edit.
+          Until then, use Ready to Wear to browse the launch edit.
         </p>
       </section>
     </>

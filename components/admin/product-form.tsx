@@ -28,6 +28,7 @@ import {
   createProductAction,
   updateProductAction,
 } from "@/lib/actions/admin-actions"
+import { formatProductMerchandising, parseProductMerchandising } from "@/lib/product-merchandising"
 import { slugify } from "@/lib/utils"
 
 type VariantDraft = {
@@ -42,7 +43,7 @@ type VariantDraft = {
   active: boolean
 }
 
-const SIZES = ["XS", "S", "M", "L", "XL", "35", "36", "37", "38", "39", "40"]
+const SIZES = ["S", "M", "L"]
 
 const COLORWAYS: Record<string, string> = {
   Noir: "#121110",
@@ -75,12 +76,19 @@ type ProductFormProps = {
 export function ProductForm({ mode, initial, collections }: ProductFormProps) {
   const router = useRouter()
   const [saving, setSaving] = React.useState(false)
+  const initialMerchandising = parseProductMerchandising(initial?.description)
 
   const [name, setName] = React.useState(initial?.name ?? "")
   const [slug, setSlug] = React.useState(initial?.slug ?? "")
   const [slugTouched, setSlugTouched] = React.useState(Boolean(initial?.slug))
   const [subtitle, setSubtitle] = React.useState(initial?.subtitle ?? "")
-  const [description, setDescription] = React.useState(initial?.description ?? "")
+  const [description, setDescription] = React.useState(initialMerchandising.body)
+  const [workType, setWorkType] = React.useState(initialMerchandising.workType)
+  const [piecesIncluded, setPiecesIncluded] = React.useState(initialMerchandising.piecesIncluded)
+  const [sleeveStyle, setSleeveStyle] = React.useState(initialMerchandising.sleeveStyle)
+  const [neckline, setNeckline] = React.useState(initialMerchandising.neckline)
+  const [season, setSeason] = React.useState(initialMerchandising.season)
+  const [sizeGuideNotes, setSizeGuideNotes] = React.useState(initialMerchandising.sizeGuideNotes)
   const [composition, setComposition] = React.useState(initial?.composition ?? "")
   const [care, setCare] = React.useState(initial?.care ?? "")
   const [price, setPrice] = React.useState(initial ? String(initial.price) : "")
@@ -119,6 +127,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
   const [images, setImages] = React.useState<ManagedImage[]>(
     initial?.media.map((m) => ({ url: m.url, alt: m.alt })) ?? []
   )
+  const sizeOptions = Array.from(new Set([...SIZES, ...variants.map((variant) => variant.size)]))
 
   function updateVariant(index: number, patch: Partial<VariantDraft>) {
     setVariants((prev) =>
@@ -147,7 +156,15 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
       name,
       slug,
       subtitle,
-      description,
+      description: formatProductMerchandising({
+        body: description,
+        workType,
+        piecesIncluded,
+        sleeveStyle,
+        neckline,
+        season,
+        sizeGuideNotes,
+      }),
       composition,
       care,
       price,
@@ -196,15 +213,15 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-8">
-      {/* ── Essentials ─────────────────────────────────────────── */}
+      {/* ── Product basics ─────────────────────────────────────── */}
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-2xl font-light text-noir">Essentials</h2>
+        <h2 className="font-display text-2xl font-light text-noir">Product Basics</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Name" required>
             <Input
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="The Slate Wool Overcoat"
+              placeholder="Ivory Printed Pret Kurta"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
@@ -215,7 +232,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
                 setSlugTouched(true)
                 setSlug(e.target.value)
               }}
-              placeholder="slate-wool-overcoat"
+              placeholder="ivory-printed-pret-kurta"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
@@ -223,7 +240,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
             <Input
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Fulling-needle wool, cut long and clean"
+              placeholder="Printed lawn shirt with trouser"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
@@ -231,7 +248,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
             <Input
               value={sku}
               onChange={(e) => setSku(e.target.value)}
-              placeholder="KHZR-COAT-SLATE"
+              placeholder="KHZR-IVORY-KURTA"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
@@ -240,7 +257,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              placeholder="The story of the piece…"
+              placeholder="A concise product description. Do not add unconfirmed fabric or work details."
               className="rounded-none border-hairline"
             />
           </Field>
@@ -248,7 +265,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
             <Input
               value={composition}
               onChange={(e) => setComposition(e.target.value)}
-              placeholder="100% virgin wool · horn buttons"
+              placeholder="Fabric, e.g. lawn, cambric, chiffon"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
@@ -259,6 +276,41 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
               placeholder="Dry clean only."
               className="h-10 rounded-none border-hairline"
             />
+          </Field>
+        </div>
+      </section>
+
+      {/* ── Launch details ──────────────────────────────────────── */}
+      <section className="flex flex-col gap-4">
+        <h2 className="font-display text-2xl font-light text-noir">Launch Details</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Field label="Work type">
+            <Select value={workType || "none"} onValueChange={(value) => setWorkType(value === "none" ? "" : value)}>
+              <SelectTrigger className="h-10 w-full rounded-none border-hairline">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Not specified</SelectItem>
+                <SelectItem value="Printed">Printed</SelectItem>
+                <SelectItem value="Embroidered">Embroidered</SelectItem>
+                <SelectItem value="Digital Print">Digital Print</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="Pieces included">
+            <Input value={piecesIncluded} onChange={(e) => setPiecesIncluded(e.target.value)} placeholder="Shirt, Trouser, Dupatta" className="h-10 rounded-none border-hairline" />
+          </Field>
+          <Field label="Sleeve style">
+            <Input value={sleeveStyle} onChange={(e) => setSleeveStyle(e.target.value)} placeholder="Full sleeve" className="h-10 rounded-none border-hairline" />
+          </Field>
+          <Field label="Neckline">
+            <Input value={neckline} onChange={(e) => setNeckline(e.target.value)} placeholder="Round neck" className="h-10 rounded-none border-hairline" />
+          </Field>
+          <Field label="Season">
+            <Input value={season} onChange={(e) => setSeason(e.target.value)} placeholder="Summer" className="h-10 rounded-none border-hairline" />
+          </Field>
+          <Field label="Size guide notes">
+            <Input value={sizeGuideNotes} onChange={(e) => setSizeGuideNotes(e.target.value)} placeholder="Model wears S. Relaxed fit." className="h-10 rounded-none border-hairline" />
           </Field>
         </div>
       </section>
@@ -274,7 +326,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               inputMode="decimal"
-              placeholder="1850.00"
+              placeholder="5500.00"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
@@ -415,7 +467,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {SIZES.map((s) => (
+                    {sizeOptions.map((s) => (
                       <SelectItem key={s} value={s}>
                         {s}
                       </SelectItem>
@@ -467,7 +519,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
                 <Input
                   value={variant.sku}
                   onChange={(e) => updateVariant(index, { sku: e.target.value })}
-                  placeholder={`${sku || "KHZR"}-NOIR-M`}
+                  placeholder={`${sku || "KHZR"}-M`}
                   className="h-9 rounded-none border-hairline"
                 />
               </Field>

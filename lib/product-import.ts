@@ -1,6 +1,7 @@
 import "server-only"
 
 import { prisma } from "@/lib/prisma"
+import { formatProductMerchandising } from "@/lib/product-merchandising"
 
 const MAX_CSV_BYTES = 512 * 1024
 const MAX_ROWS = 50
@@ -28,10 +29,13 @@ export const PRODUCT_IMPORT_HEADERS = [
   "Featured",
   "Fabric",
   "Color",
-  "What is included",
-  "Embroidery details",
-  "Care instructions",
+  "Work type",
+  "Pieces included",
+  "Sleeve style",
+  "Neckline",
+  "Season",
   "Size guide notes",
+  "Care instructions",
   "Collection",
   "Image URLs",
   "SEO title",
@@ -59,10 +63,13 @@ export const PRODUCT_IMPORT_SAMPLE_ROWS = [
     "yes",
     "Printed lawn",
     "Ivory",
-    "1 shirt",
-    "Light thread embroidery on neckline",
-    "Gentle hand wash separately.",
+    "Printed",
+    "Shirt, Trouser, Dupatta",
+    "Full sleeve",
+    "Round neck",
+    "Summer",
     "Relaxed fit. Model wears S.",
+    "Gentle hand wash separately.",
     "Ready to Wear|Printed Pret|New Arrivals",
     "https://example.com/images/ivory-kurta-1.jpg|https://example.com/images/ivory-kurta-2.jpg",
     "Ivory Printed Pret Kurta - KHZR",
@@ -321,9 +328,12 @@ async function analyzeCsv(file: File) {
       else seenSlugs.set(slug, rowNumber)
     }
 
-    for (const value of [name, cell(row, "Subtitle"), cell(row, "Description"), color, cell(row, "SEO title"), cell(row, "SEO description")]) {
+    for (const value of [name, cell(row, "Subtitle"), cell(row, "Description"), color, cell(row, "SEO title"), cell(row, "SEO description"), cell(row, "Work type"), cell(row, "Pieces included"), cell(row, "Sleeve style"), cell(row, "Neckline"), cell(row, "Season"), cell(row, "Size guide notes")]) {
       addError(errors, Boolean(value) && unsafeText(value), "Text fields cannot begin with =, +, -, or @.")
     }
+
+    const workType = cell(row, "Work type")
+    addError(errors, Boolean(workType) && !["Printed", "Embroidered", "Digital Print"].includes(workType), "Work type must be Printed, Embroidered, or Digital Print when provided.")
 
     for (const url of imageUrls) {
       try {
@@ -362,19 +372,20 @@ async function analyzeCsv(file: File) {
     results.push(result)
 
     if (errors.length === 0 && price !== null && STATUSES.has(status)) {
-      const detailSections = [
-        ["What is included", cell(row, "What is included")],
-        ["Embroidery details", cell(row, "Embroidery details")],
-        ["Size guide notes", cell(row, "Size guide notes")],
-      ]
-        .filter(([, value]) => value)
-        .map(([label, value]) => `${label}: ${value}`)
       prepared.push({
         row: rowNumber,
         name,
         slug,
         subtitle: cell(row, "Subtitle"),
-        description: [cell(row, "Description"), ...detailSections].filter(Boolean).join("\n\n"),
+        description: formatProductMerchandising({
+          body: cell(row, "Description"),
+          workType,
+          piecesIncluded: cell(row, "Pieces included") || cell(row, "What is included"),
+          sleeveStyle: cell(row, "Sleeve style"),
+          neckline: cell(row, "Neckline"),
+          season: cell(row, "Season"),
+          sizeGuideNotes: cell(row, "Size guide notes"),
+        }),
         price,
         compareAtPrice,
         status: status as PreparedProduct["status"],

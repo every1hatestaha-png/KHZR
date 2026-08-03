@@ -21,10 +21,10 @@ export default async function HomePage() {
 
   const [hero, second] = campaigns
   const heroCampaign = {
-    kicker: "New In",
-    title: "Shape, softened.",
+    kicker: "Ready to Wear",
+    title: "Eastern dresses, ready now.",
     subtitle:
-      "Womenswear in warm neutrals, cut for long days and late plans.",
+      "Printed Pret and Embroidered Pret for women in Pakistan, priced in PKR for launch.",
     ctaLabel: null,
     ctaHref: null,
     imageUrl:
@@ -32,11 +32,11 @@ export default async function HomePage() {
       "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=2000&q=80",
   }
   const signatureStory = {
-    kicker: "Fit Notes",
-    title: "Shoulder, waist, line.",
+    kicker: "Launch Edit",
+    title: "Shirts, trousers, dupattas.",
     subtitle:
-      "The read is immediate: close enough to frame, loose enough to move.",
-    ctaLabel: "Shop the Edit",
+      "Each product page lists fabric, work, included pieces, care, and size notes when provided.",
+    ctaLabel: "Shop Ready to Wear",
     ctaHref: "/collections",
     imageUrl: second?.imageUrl ?? products[0]?.imageUrl ?? heroCampaign.imageUrl,
   }
@@ -46,8 +46,8 @@ export default async function HomePage() {
       <HeroCampaign campaign={heroCampaign} />
       <ProductRail
         products={products}
-        actionHref="/collections"
-        actionLabel="View All"
+        actionHref="/collection/new-arrivals"
+        actionLabel="View New Arrivals"
       />
       <CategoryGrid images={products.map((product) => product.imageUrl)} />
       <BrandStatement />

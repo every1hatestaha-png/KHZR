@@ -1,11 +1,13 @@
+import Link from "next/link"
 import { PageIntro } from "@/components/shared/page-intro"
+import { Button } from "@/components/ui/button"
 import { buildMetadata } from "@/lib/seo"
 
 export const metadata = buildMetadata({
-  title: "The Journal",
-  description:
-    "Notes from KHZR on silhouette, colour, fabric and getting dressed.",
+  title: "Journal",
+  description: "KHZR launch shopping now focuses on ready-to-wear eastern dresses.",
   path: "/journal",
+  noindex: true,
 })
 
 export default function JournalPage() {
@@ -13,18 +15,20 @@ export default function JournalPage() {
     <>
       <PageIntro
         kicker="Writing"
-        title="The Journal"
-        description="Short notes on clothes, colour, and how a piece earns its place."
+        title="Journal is paused for launch."
+        description="KHZR launch discovery is focused on ready-to-wear eastern dresses."
       />
       <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
         <div className="h-px w-16 bg-champagne" aria-hidden />
         <p className="font-display text-3xl font-light text-noir lg:text-4xl">
-          First notes soon.
+          Shop the launch edit.
         </p>
         <p className="max-w-md text-sm leading-relaxed text-stone">
-          Expect practical writing: what changes a shoulder, how neutrals work,
-          and why the right hem matters.
+          Browse New Arrivals, Ready to Wear, Printed Pret, and Embroidered Pret.
         </p>
+        <Button asChild variant="luxury-link" className="mt-2">
+          <Link href="/collections">Shop Ready to Wear</Link>
+        </Button>
       </section>
     </>
   )

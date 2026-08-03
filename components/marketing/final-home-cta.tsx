@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { SITE } from "@/lib/constants"
 
 export function FinalHomeCta() {
   return (
@@ -15,11 +14,11 @@ export function FinalHomeCta() {
             See what just arrived.
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-stone">
-            {SITE.shippingNote}. Cash on Delivery available.
+            Lahore delivery target: 2 to 3 business days. Cash on Delivery available.
           </p>
         </div>
         <Button asChild size="lg" className="min-h-11 shrink-0">
-          <Link href="/collections?sort=newest">
+          <Link href="/collection/new-arrivals">
             Shop New Arrivals
             <ArrowRight className="ml-3 size-3.5" aria-hidden />
           </Link>

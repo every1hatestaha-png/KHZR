@@ -9,9 +9,9 @@ import type { ProductCardDTO } from "@/lib/data-access/site"
 export function ProductRail({
   products,
   kicker = "New Arrivals",
-  title = "The Current Edit",
-  actionHref = "/collections",
-  actionLabel = "View All",
+  title = "Ready-to-wear eastern dresses",
+  actionHref = "/collection/new-arrivals",
+  actionLabel = "View New Arrivals",
 }: {
   products: ProductCardDTO[]
   kicker?: string

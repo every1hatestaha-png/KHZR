@@ -207,7 +207,7 @@ export default async function AdminDashboardPage() {
             Categories
           </span>
           <span className="text-xs leading-relaxed text-stone">
-            The rooms of the maison — tailoring, essentials, evening, archive.
+            Launch collections — New Arrivals, Ready to Wear, Printed Pret, Embroidered Pret, Sale.
           </span>
         </Link>
         <Link

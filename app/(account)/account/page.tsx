@@ -120,7 +120,7 @@ export default async function AccountPage() {
               No orders yet
             </p>
             <Button asChild variant="luxury-link">
-              <Link href="/collections">Begin with a single piece</Link>
+              <Link href="/collections">Shop Ready to Wear</Link>
             </Button>
           </section>
         )}

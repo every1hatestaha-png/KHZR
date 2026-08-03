@@ -19,6 +19,9 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
   const { addItem } = useCart()
   const inStock = product.defaultVariant.stock > 0
   const summary = React.useMemo(() => cardToSummary(product), [product])
+  const launchLabel = ["Printed Pret", "Embroidered Pret"].includes(product.collectionName)
+    ? product.collectionName
+    : null
 
   function quickAdd() {
     if (!inStock) return
@@ -82,6 +85,9 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
         </div>
         {product.subtitle ? (
           <p className="max-w-[18rem] text-xs leading-relaxed text-taupe">{product.subtitle}</p>
+        ) : null}
+        {launchLabel ? (
+          <p className="text-[0.625rem] font-medium uppercase tracking-[0.22em] text-taupe">{launchLabel}</p>
         ) : null}
       </div>
     </article>

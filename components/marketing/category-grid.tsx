@@ -4,26 +4,26 @@ import { Reveal } from "@/components/shared/reveal"
 
 const CATEGORIES = [
   {
-    label: "Dresses",
-    href: "/collections",
+    label: "New Arrivals",
+    href: "/collection/new-arrivals",
     imageUrl:
       "https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    label: "Sets",
-    href: "/collections",
+    label: "Ready to Wear",
+    href: "/collection/ready-to-wear",
     imageUrl:
       "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    label: "Evening",
-    href: "/collection/evening",
+    label: "Printed Pret",
+    href: "/collection/printed-pret",
     imageUrl:
       "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    label: "Essentials",
-    href: "/collection/essentials",
+    label: "Embroidered Pret",
+    href: "/collection/embroidered-pret",
     imageUrl:
       "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1400&q=80",
   },
@@ -35,10 +35,10 @@ export function CategoryGrid({ images = [] }: { images?: string[] }) {
       <div className="mx-auto max-w-[1400px] px-5 py-16 lg:px-10 lg:py-24">
         <div className="flex flex-col gap-3 lg:max-w-xl">
           <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
-            Shop by Shape
+            Shop Ready to Wear
           </p>
           <h2 className="font-display text-4xl font-light leading-[1.06] tracking-tight text-noir lg:text-5xl">
-            Start with the silhouette.
+            Choose the launch edit.
           </h2>
         </div>
 

@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/button"
 import { WishlistToggle } from "@/components/wishlist/wishlist-toggle"
 import { analytics } from "@/lib/analytics"
 import { detailToSummary } from "@/lib/product-summary"
+import { parseProductMerchandising, productMerchandisingRows } from "@/lib/product-merchandising"
 import type { ProductDetailDTO } from "@/lib/data-access/site"
 import { cn } from "@/lib/utils"
 
 export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   const { addItem } = useCart()
+  const merchandising = parseProductMerchandising(product.description)
 
   React.useEffect(() => {
     const first = product.variants.find((variant) => variant.stock > 0) ?? product.variants[0]
@@ -117,6 +119,9 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
           <h1 className="font-display text-4xl font-light leading-[1.05] tracking-tight text-noir [overflow-wrap:anywhere] lg:text-5xl">
             {product.name}
           </h1>
+          <p className="text-[0.6875rem] font-medium uppercase tracking-[0.28em] text-taupe">
+            Ready to Wear
+          </p>
 
           <Price value={product.price} compareAt={product.compareAtPrice} size="lg" />
 
@@ -266,11 +271,11 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
           </div>
 
           <p className="text-center text-[0.6875rem] uppercase tracking-[0.18em] text-taupe">
-            Pakistan delivery. Cash on Delivery available.
+            Lahore delivery: 2 to 3 business days. Cash on Delivery available.
           </p>
         </div>
 
-        <FitFabricCareSummary product={product} />
+        <FitFabricCareSummary product={product} merchandising={merchandising} />
       </div>
 
       <div className="mt-10">
@@ -299,15 +304,26 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
   )
 }
 
-function FitFabricCareSummary({ product }: { product: ProductDetailDTO }) {
+function FitFabricCareSummary({ product, merchandising }: { product: ProductDetailDTO; merchandising: ReturnType<typeof parseProductMerchandising> }) {
+  const sizes = ["S", "M", "L"].filter((size) => product.variants.some((variant) => variant.size === size))
+  const colors = Array.from(new Set(product.variants.map((variant) => variant.color))).join(", ")
   const items = [
     {
-      label: "Fit",
-      value: product.subtitle ?? "A clean fit with room to move.",
+      label: "Category",
+      value: "Ready to Wear",
     },
     {
       label: "Fabric",
       value: product.composition || "Fabric details will appear here.",
+    },
+    {
+      label: "Color",
+      value: colors || "Color details will appear here.",
+    },
+    ...productMerchandisingRows(merchandising).map((item) => ({ label: item.label, value: item.value })),
+    {
+      label: "Sizes",
+      value: sizes.length > 0 ? sizes.join(", ") : "S, M, L",
     },
     {
       label: "Care",
@@ -318,7 +334,7 @@ function FitFabricCareSummary({ product }: { product: ProductDetailDTO }) {
   return (
     <dl className="grid gap-0 border-y border-hairline text-sm leading-relaxed text-stone">
       {items.map((item) => (
-        <div key={item.label} className="grid grid-cols-[5rem_1fr] gap-4 border-b border-hairline py-4 last:border-b-0">
+        <div key={item.label} className="grid grid-cols-[7.5rem_1fr] gap-4 border-b border-hairline py-4 last:border-b-0">
           <dt className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
             {item.label}
           </dt>

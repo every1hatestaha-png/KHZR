@@ -66,7 +66,7 @@ export default async function ProductPage({
     aggregateRating: product.reviewCount > 0 ? { rating: product.averageRating, count: product.reviewCount } : undefined,
   })
   const breadcrumbLd = jsonLdBreadcrumbs([
-    { name: "Collections", url: "/collections" },
+    { name: "Ready to Wear", url: "/collections" },
     { name: product.collectionName || "Collection", url: `/collection/${product.collectionSlug}` },
     { name: product.name, url: `/product/${product.slug}` },
   ])
@@ -81,7 +81,7 @@ export default async function ProductPage({
                 href="/collections"
                 className="transition-colors hover:text-noir focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
               >
-                Collections
+                Ready to Wear
               </Link>
             </li>
             <li aria-hidden>·</li>
@@ -121,8 +121,8 @@ export default async function ProductPage({
           <div className="mx-auto max-w-[1400px] px-5 py-20 lg:px-10 lg:py-28">
             <SectionHeading
               kicker="Continue"
-              title="Complete the Edit"
-              description="Related pieces with the same attention to line, fabric, and proportion."
+              title="More Ready to Wear"
+              description="Related eastern dresses from the current KHZR launch edit."
             />
             <ul className="mt-12 grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
               {related.map((p, i) => (

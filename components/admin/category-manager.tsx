@@ -156,8 +156,8 @@ export function CategoryManager({
             No categories yet.
           </p>
           <p className="max-w-sm text-sm leading-relaxed text-stone">
-            Create the first collection — tailoring, essentials, evening or
-            archive — to begin organising the catalogue.
+            Create the first launch collection — New Arrivals, Ready to Wear,
+            Printed Pret, Embroidered Pret, or Sale — to begin organising the catalogue.
           </p>
         </div>
       ) : (
@@ -245,7 +245,7 @@ export function CategoryManager({
               {draft?.id ? "Edit category" : "New category"}
             </DialogTitle>
             <DialogDescription>
-              A collection in the maison. The slug is used for its storefront URL.
+              A launch collection. The slug is used for its storefront URL.
             </DialogDescription>
           </DialogHeader>
 
@@ -263,7 +263,7 @@ export function CategoryManager({
                       patch({ name: value })
                       if (!slugTouched) patch({ slug: slugify(value) })
                     }}
-                    placeholder="The Tailoring Room"
+                    placeholder="Ready to Wear"
                     className="h-10 rounded-none border-hairline"
                   />
                 </div>
@@ -277,7 +277,7 @@ export function CategoryManager({
                       setSlugTouched(true)
                       patch({ slug: e.target.value })
                     }}
-                    placeholder="tailoring"
+                    placeholder="ready-to-wear"
                     className="h-10 rounded-none border-hairline"
                   />
                 </div>

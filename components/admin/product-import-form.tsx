@@ -144,8 +144,9 @@ export function ProductImportForm({ sampleCsv }: ProductImportFormProps) {
         <div className="space-y-3 text-sm leading-relaxed text-stone">
           <p>Collections must already exist. Accepted launch labels include New Arrivals, Ready to Wear, Printed Pret, Embroidered Pret, and Sale when those collections exist.</p>
           <p>Separate multiple collection labels and image URLs with <code className="bg-background px-1">|</code>.</p>
+          <p>Launch merchandising columns include Fabric, Work type, Pieces included, Sleeve style, Neckline, Season, Size guide notes, and Care instructions.</p>
           <p>Variant columns are <code className="bg-background px-1">S SKU</code>, <code className="bg-background px-1">S Stock</code>, <code className="bg-background px-1">S Active</code>, repeated for M and L.</p>
-          <p>Active values accept yes/no, true/false, 1/0. Status must be DRAFT, ACTIVE, or ARCHIVED.</p>
+          <p>Work type accepts Printed, Embroidered, or Digital Print. Active values accept yes/no, true/false, 1/0. Status must be DRAFT, ACTIVE, or ARCHIVED.</p>
         </div>
         <pre className="max-h-80 overflow-auto border border-hairline bg-background p-3 text-xs text-stone">
           {sampleCsv}

@@ -1,12 +1,12 @@
 import { Marquee } from "@/components/shared/marquee"
 
 const WORDS = [
-  "Hand-Finished",
-  "Made to Be Kept",
-  "Double-Faced Wool",
-  "Bias-Cut Silk",
-  "Evening Lines",
-  "Couture Patterning",
+  "New Arrivals",
+  "Ready to Wear",
+  "Printed Pret",
+  "Embroidered Pret",
+  "S M L",
+  "PKR 4,000 to 6,000",
 ]
 
 export function MarqueeStrip() {

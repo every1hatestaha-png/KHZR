@@ -60,7 +60,7 @@ export default function WishlistPage() {
           </div>
           <Button asChild variant="luxury-link">
             <Link href="/collections">
-              Explore the Collections
+              Shop Ready to Wear
             </Link>
           </Button>
         </div>

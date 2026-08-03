@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { ProductCard } from "@/components/product/product-card"
 import { PageIntro } from "@/components/shared/page-intro"
 import { Button } from "@/components/ui/button"
 import { CollectionTracker } from "@/components/analytics/event-trackers"
@@ -9,47 +10,11 @@ import {
   jsonLdCollection,
   jsonLdScript,
 } from "@/lib/seo"
-
-const COLLECTIONS: Record<
-  string,
-  { name: string; note: string; description: string; imageUrl: string }
-> = {
-  tailoring: {
-    name: "Tailoring",
-    note: "Coats · Suits · Trousers",
-    description:
-      "Sharp jackets, clean trousers, and outer layers with a defined line.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1537832816519-689ad163238b?auto=format&fit=crop&w=1600&q=80",
-  },
-  essentials: {
-    name: "Essentials",
-    note: "Cashmere · Silk · Leather",
-    description:
-      "Shirting, knits, and simple layers for repeat wear.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1600&q=80",
-  },
-  evening: {
-    name: "Evening",
-    note: "Gowns in Silk",
-    description:
-      "Longer lines, fluid fabric, and pieces made for late rooms.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80",
-  },
-  archive: {
-    name: "Archive",
-    note: "Past Shapes",
-    description:
-      "Selected shapes from past releases, returned in small runs.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1600&q=80",
-  },
-}
+import { getLaunchCollection, ALL_COLLECTIONS } from "@/lib/launch-collections"
+import { getProductsByCollection } from "@/lib/data-access/site"
 
 export function generateStaticParams() {
-  return Object.keys(COLLECTIONS).map((slug) => ({ slug }))
+  return ALL_COLLECTIONS.map((collection) => ({ slug: collection.slug }))
 }
 
 export async function generateMetadata({
@@ -58,7 +23,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const collection = COLLECTIONS[slug]
+  const collection = getLaunchCollection(slug)
   if (!collection) return {}
   return buildMetadata({
     title: collection.name,
@@ -77,11 +42,12 @@ export default async function CollectionPage({
 }) {
   const { slug } = await params
   const query = await searchParams
-  const collection = COLLECTIONS[slug]
+  const collection = getLaunchCollection(slug)
   if (!collection) notFound()
+  const products = await getProductsByCollection(slug)
 
   const breadcrumbLd = jsonLdBreadcrumbs([
-    { name: "Collections", url: "/collections" },
+    { name: "Ready to Wear", url: "/collections" },
     { name: collection.name, url: `/collection/${slug}` },
   ])
   const collectionLd = jsonLdCollection({
@@ -108,22 +74,35 @@ export default async function CollectionPage({
         description={collection.description}
       >
         <Button asChild variant="luxury-link" className="mt-2 self-start">
-          <Link href="/collections">All Collections</Link>
+          <Link href="/collections">All Ready to Wear</Link>
         </Button>
       </PageIntro>
 
-      <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
-        <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">
-          Coming soon
-        </p>
-        <p className="font-display text-3xl font-light leading-tight text-noir lg:text-5xl">
-          This edit is not open yet.
-        </p>
-        <p className="max-w-md text-sm leading-relaxed text-stone">
-          {collection.name} will open here with product imagery, available
-          sizes, and simple filters when the pieces are ready.
-        </p>
-      </section>
+      {collection.legacy ? (
+        <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
+          <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">Legacy link</p>
+          <p className="font-display text-3xl font-light leading-tight text-noir lg:text-5xl">Our launch shop is Ready to Wear.</p>
+          <Button asChild>
+            <Link href="/collections">Shop Ready to Wear</Link>
+          </Button>
+        </section>
+      ) : products.length > 0 ? (
+        <section className="mx-auto max-w-[1400px] border-t border-hairline px-5 py-16 lg:px-10 lg:py-24">
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-12 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
+            {products.map((product) => (
+              <li key={product.slug}>
+                <ProductCard product={product} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <section className="mx-auto flex max-w-[1400px] flex-col items-center gap-6 border-t border-hairline bg-ivory/35 px-5 py-20 text-center lg:px-10 lg:py-28">
+          <p className="text-[0.6875rem] font-medium uppercase tracking-[0.32em] text-taupe">Coming soon</p>
+          <p className="font-display text-3xl font-light leading-tight text-noir lg:text-5xl">This ready-to-wear edit is being prepared.</p>
+          <p className="max-w-md text-sm leading-relaxed text-stone">Products will appear here after launch catalog import and collection assignment.</p>
+        </section>
+      )}
     </>
   )
 }

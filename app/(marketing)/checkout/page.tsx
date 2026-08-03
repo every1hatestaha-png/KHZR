@@ -287,7 +287,7 @@ export default function CheckoutPage() {
           </div>
           <Button asChild variant="luxury-link">
             <Link href="/collections">
-              Explore the Collections
+              Shop Ready to Wear
             </Link>
           </Button>
         </div>
@@ -426,7 +426,7 @@ export default function CheckoutPage() {
                 <p className="text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
                   Returns
                 </p>
-                <p className="mt-2">Accepted within thirty days, unworn and tagged.</p>
+                <p className="mt-2">Accepted within 7 days after delivery when unused, unwashed, in original condition, with tags attached.</p>
               </div>
             </section>
 

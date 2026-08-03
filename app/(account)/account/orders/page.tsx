@@ -69,7 +69,7 @@ export default async function AccountOrdersPage() {
               Your purchases will appear here — begin with a single piece.
             </p>
             <Button asChild variant="luxury-link">
-              <Link href="/collections">Explore the Collections</Link>
+              <Link href="/collections">Shop Ready to Wear</Link>
             </Button>
           </div>
         ) : (

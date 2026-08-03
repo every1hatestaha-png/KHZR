@@ -39,7 +39,7 @@ export default async function CheckoutSuccessPage({
         />
         <section className="flex items-center justify-center border-t border-hairline px-5 py-16">
           <Button asChild size="lg">
-            <Link href="/collections">Explore the Collections</Link>
+            <Link href="/collections">Shop Ready to Wear</Link>
           </Button>
         </section>
       </>

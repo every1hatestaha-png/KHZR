@@ -3,7 +3,7 @@ export const SITE = {
   legalName: "KHZR Studio",
   tagline: "Womenswear with a clear line.",
   description:
-    "KHZR is a womenswear label for sharp silhouettes, warm neutrals, and clothes that move from day to evening.",
+    "KHZR makes ready-to-wear eastern dresses for women in Pakistan, priced for everyday launch shopping in PKR.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://khzr.example.com",
   locale: "en_PK",
   email: "care@khzr.example.com",
@@ -26,11 +26,10 @@ export const SITE = {
 } as const
 
 export const NAV_LINKS = [
-  { label: "New In", href: "/collections?sort=newest" },
-  { label: "Shop", href: "/collections" },
-  { label: "Collections", href: "/collections" },
-  { label: "Occasion", href: "/collection/evening" },
-  { label: "Essentials", href: "/collection/essentials" },
+  { label: "New Arrivals", href: "/collection/new-arrivals" },
+  { label: "Ready to Wear", href: "/collection/ready-to-wear" },
+  { label: "Printed Pret", href: "/collection/printed-pret" },
+  { label: "Embroidered Pret", href: "/collection/embroidered-pret" },
 ] as const
 
 export const FOOTER_LINKS = {
@@ -42,6 +41,12 @@ export const FOOTER_LINKS = {
     { label: "Shipping & Returns", href: "/shipping-returns" },
     { label: "Size & Fit", href: "/size-fit" },
     { label: "Care", href: "/fabric-care" },
+  ],
+  shop: [
+    { label: "New Arrivals", href: "/collection/new-arrivals" },
+    { label: "Ready to Wear", href: "/collection/ready-to-wear" },
+    { label: "Printed Pret", href: "/collection/printed-pret" },
+    { label: "Embroidered Pret", href: "/collection/embroidered-pret" },
   ],
 } as const
 

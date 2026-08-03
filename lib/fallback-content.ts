@@ -50,21 +50,21 @@ export type FallbackProduct = {
 
 export const FALLBACK_CAMPAIGNS: FallbackCampaign[] = [
   {
-    kicker: "New Season",
-    title: "Light, cut sharp.",
+    kicker: "Ready to Wear",
+    title: "Eastern dresses for launch.",
     subtitle:
-      "Printed lawn, clean tailoring, and pieces that hold their line in the heat.",
-    ctaLabel: "Shop New In",
-    ctaHref: "/collections",
+      "Printed Pret and Embroidered Pret for women in Pakistan, priced in PKR.",
+    ctaLabel: "Shop New Arrivals",
+    ctaHref: "/collection/new-arrivals",
     imageUrl: img("1515886657613-9f3515b0c78f", 2400),
   },
   {
-    kicker: "Evening",
-    title: "Soft shine after dark.",
+    kicker: "Embroidered Pret",
+    title: "Detail work, ready to wear.",
     subtitle:
-      "Fluid fabric, longer lines, and a quiet flash of champagne.",
-    ctaLabel: "Shop Evening",
-    ctaHref: "/collection/evening",
+      "Product pages show fabric, work type, included pieces, care, and size notes when provided.",
+    ctaLabel: "Shop Embroidered Pret",
+    ctaHref: "/collection/embroidered-pret",
     imageUrl: img("1469334031218-e382a71b716b", 2000),
   },
 ]
@@ -348,10 +348,10 @@ const PRODUCTS: Array<{
 ]
 
 const COLLECTION_NAMES: Record<string, string> = {
-  tailoring: "Tailoring",
-  essentials: "Essentials",
-  evening: "Evening",
-  archive: "Archive",
+  tailoring: "Ready to Wear",
+  essentials: "Printed Pret",
+  evening: "Embroidered Pret",
+  archive: "Sale",
 }
 
 export const FALLBACK_PRODUCTS: FallbackProduct[] = PRODUCTS.map((p) => ({

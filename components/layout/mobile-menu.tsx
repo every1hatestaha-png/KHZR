@@ -65,7 +65,7 @@ export function MobileMenu({
 
         <div className="border-t border-hairline px-5 py-5 sm:px-7 sm:py-6">
           <p className="max-w-xs text-sm leading-relaxed text-stone">
-            Womenswear in warm neutrals, precise cuts, and easy movement.
+            Ready-to-wear eastern dresses for women in Pakistan.
           </p>
         </div>
       </SheetContent>

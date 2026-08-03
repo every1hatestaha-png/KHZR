@@ -61,12 +61,12 @@ export function CartDrawer() {
                 Your bag is empty
               </p>
               <p className="text-sm leading-relaxed text-taupe">
-                Start with New In or browse by collection.
+                Start with New Arrivals or browse Ready to Wear.
               </p>
             </div>
             <Button asChild variant="luxury-link">
               <Link href="/collections" onClick={closeCart}>
-                Explore the Collections
+                Shop Ready to Wear
               </Link>
             </Button>
           </div>

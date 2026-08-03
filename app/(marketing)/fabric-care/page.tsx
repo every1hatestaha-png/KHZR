@@ -3,7 +3,7 @@ import { buildMetadata } from "@/lib/seo"
 
 export const metadata = buildMetadata({
   title: "Care",
-  description: "Care guidance for KHZR garments.",
+  description: "Care guidance for KHZR ready-to-wear eastern dresses.",
   path: "/fabric-care",
 })
 
@@ -25,13 +25,13 @@ export default function FabricCarePage() {
         <div>
           <h2 className="font-display text-3xl font-light text-noir">Between wears</h2>
           <p className="mt-4 text-sm leading-relaxed text-stone">
-            Hang structured pieces properly, air garments before storage, and avoid prolonged direct sun.
+            Air garments before storage, avoid prolonged direct sun, and keep the red KHZR tag attached if you may need a return.
           </p>
         </div>
         <div>
-          <h2 className="font-display text-3xl font-light text-noir">Owner review</h2>
+          <h2 className="font-display text-3xl font-light text-noir">Returns</h2>
           <p className="mt-4 text-sm leading-relaxed text-stone">
-            Confirm final care rules for each fabric category before launch.
+            Return items must be unused, unwashed, in original condition, with tags attached.
           </p>
         </div>
       </section>
