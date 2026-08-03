@@ -4,7 +4,6 @@ import * as React from "react"
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import { Menu } from "lucide-react"
-import { Nav } from "@/components/layout/nav"
 import { HeaderActions } from "@/components/layout/header-actions"
 import { useScrollPosition } from "@/hooks/use-scroll-position"
 import { cn } from "@/lib/utils"
@@ -29,16 +28,16 @@ export function Header() {
         )}
       >
         <div className="relative mx-auto flex h-14 max-w-[1400px] items-center justify-between px-3 sm:px-5 lg:h-[4.5rem] lg:px-8 xl:px-10">
-          <div className="flex items-center lg:w-[36%] xl:w-[35%]">
+          <div className="flex items-center">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
-              className="inline-flex size-11 items-center justify-center rounded-none lg:hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
+              aria-expanded={menuOpen}
+              className="inline-flex size-11 items-center justify-center rounded-none text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
             >
               <Menu className="size-5 stroke-[1.4] text-noir" />
             </button>
-            <Nav className="hidden lg:flex" />
           </div>
 
           <Link
@@ -51,7 +50,7 @@ export function Header() {
             </span>
           </Link>
 
-          <div className="flex items-center justify-end lg:w-[30%] xl:w-[31%]">
+          <div className="flex items-center justify-end">
             <HeaderActions />
           </div>
         </div>

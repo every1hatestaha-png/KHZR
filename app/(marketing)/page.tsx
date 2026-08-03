@@ -19,7 +19,7 @@ export default async function HomePage() {
     getFeaturedProducts(),
   ])
 
-  const [hero, second] = campaigns
+  const [, second] = campaigns
   const heroCampaign = {
     kicker: "Ready to Wear",
     title: "Eastern dresses, ready now.",
@@ -28,8 +28,7 @@ export default async function HomePage() {
     ctaLabel: null,
     ctaHref: null,
     imageUrl:
-      hero?.imageUrl ??
-      "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=2000&q=80",
+      "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=2400&q=85",
   }
   const signatureStory = {
     kicker: "Launch Edit",
@@ -47,7 +46,7 @@ export default async function HomePage() {
       <ProductRail
         products={products}
         actionHref="/collection/new-arrivals"
-        actionLabel="View New Arrivals"
+        actionLabel="VIEW ALL"
       />
       <CategoryGrid images={products.map((product) => product.imageUrl)} />
       <BrandStatement />
