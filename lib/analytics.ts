@@ -74,8 +74,8 @@ export const analytics = {
   collectionViewed(input: { slug: string; name: string }) {
     gaEvent("view_item_list", { item_list_id: input.slug, item_list_name: input.name })
   },
-  search(input: { term: string }) {
-    gaEvent("search", { search_term: input.term })
+  search(input: { term: string; resultCount?: number }) {
+    gaEvent("search", { search_term: input.term, result_count: input.resultCount })
   },
   addToCart(input: { item: AnalyticsItem; value: number; currency: string }) {
     gaEvent("add_to_cart", { currency: input.currency, value: input.value, items: [input.item] })

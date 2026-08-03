@@ -499,3 +499,81 @@ export async function getRecentlyViewedProducts(
     .map((slug) => cards.find((product) => product.slug === slug))
     .filter((product): product is ProductCardDTO => Boolean(product))
 }
+
+export type ProductSearchResult = {
+  query: string
+  products: ProductCardDTO[]
+  error: boolean
+}
+
+export function normalizeSearchQuery(value: string | string[] | undefined): string {
+  const raw = Array.isArray(value) ? value[0] : value
+  return (raw ?? "").replace(/\s+/g, " ").trim().slice(0, 80)
+}
+
+export async function searchProducts(
+  value: string | string[] | undefined,
+  limit = 24
+): Promise<ProductSearchResult> {
+  const query = normalizeSearchQuery(value)
+  if (!query) return { query, products: [], error: false }
+
+  const fallback = () => {
+    const term = query.toLowerCase()
+    const matches = FALLBACK_PRODUCTS.filter((product) => {
+      const haystack = [
+        product.name,
+        product.subtitle,
+        product.description,
+        product.slug,
+        product.composition,
+        product.collectionName,
+        product.collectionSlug,
+        product.sku,
+        ...product.variants.flatMap((variant) => [variant.color, variant.size, variant.id]),
+      ].join(" ").toLowerCase()
+      return haystack.includes(term) && product.variants.some((variant) => variant.stock > 0)
+    })
+    return matches.slice(0, limit).map((product) => fallbackCard(product))
+  }
+
+  if (!isDatabaseConfigured()) {
+    return { query, products: fallback(), error: false }
+  }
+
+  const rows = await safeQuery(() =>
+    prisma.product.findMany({
+      where: {
+        status: "ACTIVE",
+        variants: { some: { active: true, stock: { gt: 0 } } },
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { subtitle: { contains: query, mode: "insensitive" } },
+          { description: { contains: query, mode: "insensitive" } },
+          { slug: { contains: query, mode: "insensitive" } },
+          { composition: { contains: query, mode: "insensitive" } },
+          { sku: { contains: query, mode: "insensitive" } },
+          { variants: { some: { active: true, color: { contains: query, mode: "insensitive" } } } },
+          { variants: { some: { active: true, sku: { contains: query, mode: "insensitive" } } } },
+          { collections: { some: { collection: { name: { contains: query, mode: "insensitive" } } } } },
+          { collections: { some: { collection: { slug: { contains: query, mode: "insensitive" } } } } },
+        ],
+      },
+      include: {
+        media: { orderBy: { position: "asc" }, take: 1 },
+        collections: { take: 1, include: { collection: { select: { slug: true, name: true } } } },
+        variants: {
+          where: { active: true, stock: { gt: 0 } },
+          select: { id: true, size: true, color: true, colorHex: true, stock: true },
+          orderBy: { size: "asc" },
+          take: 3,
+        },
+      },
+      orderBy: [{ isNew: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+      take: limit,
+    })
+  )
+
+  if (!rows) return { query, products: fallback(), error: true }
+  return { query, products: rows.map((product) => cardDTO(product)), error: false }
+}

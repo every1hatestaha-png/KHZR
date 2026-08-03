@@ -16,10 +16,10 @@ export function CollectionTracker({ slug, name, sort, filter }: { slug: string; 
   return null
 }
 
-export function SearchTracker({ term }: { term?: string | null }) {
+export function SearchTracker({ term, resultCount }: { term?: string | null; resultCount?: number }) {
   React.useEffect(() => {
-    if (term) analytics.search({ term })
-  }, [term])
+    if (term) analytics.search({ term, resultCount })
+  }, [term, resultCount])
   return null
 }
 
