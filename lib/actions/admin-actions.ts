@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import {
   collectionSchema,
@@ -14,6 +15,7 @@ import {
   productImportSampleCsv,
 } from "@/lib/product-import"
 import { requireAdminAccess } from "@/lib/services/admin-auth"
+import { rateLimit } from "@/lib/services/rate-limit"
 
 export type AdminActionResult =
   | { ok: true; message?: string; productId?: string }
@@ -22,6 +24,8 @@ export type AdminActionResult =
 export type ProductImportActionResult =
   | { ok: true; result: Awaited<ReturnType<typeof previewProductImport>> | Awaited<ReturnType<typeof importProductsFromCsv>> }
   | { ok: false; error: string }
+
+const adminIdSchema = z.string().min(1).max(160)
 
 /** Returns an error string when the caller is not an admin, else null. */
 export async function requireAdmin(): Promise<string | null> {
@@ -39,6 +43,8 @@ function slugTakenError() {
 export async function createProductAction(input: unknown): Promise<AdminActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const allowed = await rateLimit("admin:image-upload", 40, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many image uploads. Please try again later." }
 
   const parsed = productSchema.safeParse(input)
   if (!parsed.success) {
@@ -237,14 +243,16 @@ export async function updateProductAction(input: unknown): Promise<AdminActionRe
 export async function deleteProductAction(id: string): Promise<AdminActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Product could not be read." }
 
   try {
     const existing = await prisma.product.findUnique({
-      where: { id },
+      where: { id: parsed.data },
       select: { id: true },
     })
     if (!existing) return { ok: false, error: "This product no longer exists." }
-    await prisma.product.delete({ where: { id } })
+    await prisma.product.delete({ where: { id: parsed.data } })
     revalidateAll()
     return { ok: true, message: "Product deleted." }
   } catch {
@@ -259,15 +267,17 @@ export async function deleteProductAction(id: string): Promise<AdminActionResult
 export async function toggleFeatureAction(id: string): Promise<AdminActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Product could not be read." }
 
   try {
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: parsed.data },
       select: { id: true, isFeatured: true },
     })
     if (!product) return { ok: false, error: "This product no longer exists." }
     await prisma.product.update({
-      where: { id },
+      where: { id: parsed.data },
       data: { isFeatured: !product.isFeatured },
     })
     revalidateAll()
@@ -402,10 +412,12 @@ export async function updateCollectionAction(
 export async function deleteCollectionAction(id: string): Promise<AdminActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const parsed = adminIdSchema.safeParse(id)
+  if (!parsed.success) return { ok: false, error: "Collection could not be read." }
 
   try {
     const existing = await prisma.collection.findUnique({
-      where: { id },
+      where: { id: parsed.data },
       select: { _count: { select: { products: true } } },
     })
     if (!existing) return { ok: false, error: "This collection no longer exists." }
@@ -415,7 +427,7 @@ export async function deleteCollectionAction(id: string): Promise<AdminActionRes
         error: `This collection contains ${existing._count.products} product(s). Remove them first.`,
       }
     }
-    await prisma.collection.delete({ where: { id } })
+    await prisma.collection.delete({ where: { id: parsed.data } })
     revalidateAll()
     return { ok: true, message: "Collection deleted." }
   } catch {
@@ -470,6 +482,8 @@ function csvFileFromFormData(formData: FormData) {
 export async function previewProductImportAction(formData: FormData): Promise<ProductImportActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const allowed = await rateLimit("admin:product-import-preview", 30, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many import previews. Please try again later." }
   try {
     return { ok: true, result: await previewProductImport(csvFileFromFormData(formData)) }
   } catch (error) {
@@ -480,6 +494,8 @@ export async function previewProductImportAction(formData: FormData): Promise<Pr
 export async function importProductCsvAction(formData: FormData): Promise<ProductImportActionResult> {
   const denied = await requireAdmin()
   if (denied) return { ok: false, error: denied }
+  const allowed = await rateLimit("admin:product-import", 10, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Too many import attempts. Please try again later." }
   try {
     const result = await importProductsFromCsv({
       file: csvFileFromFormData(formData),

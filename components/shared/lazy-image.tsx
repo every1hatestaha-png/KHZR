@@ -22,7 +22,7 @@ export function LazyImage({
   fill = true,
   ...props
 }: LazyImageProps) {
-  const [loaded, setLoaded] = React.useState(false)
+  const [loaded, setLoaded] = React.useState(eager)
 
   return (
     <Image

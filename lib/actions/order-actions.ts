@@ -303,7 +303,7 @@ export async function resendOrderConfirmationAction(
     if (!sent) {
       return {
         ok: false,
-        error: "Email could not be sent — check RESEND_API_KEY.",
+        error: "Email could not be sent. Check the email service configuration.",
       }
     }
     return { ok: true, orderNumber, message: "Confirmation email sent." }
