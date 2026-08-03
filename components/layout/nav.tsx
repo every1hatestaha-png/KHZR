@@ -19,7 +19,7 @@ function NavLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative inline-flex items-center py-2 text-[0.6875rem] font-medium uppercase tracking-[0.26em] text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne",
+        "group relative inline-flex items-center whitespace-nowrap py-2 text-[0.6875rem] font-medium uppercase tracking-[0.2em] text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne xl:tracking-[0.22em]",
         active && "text-noir"
       )}
     >
@@ -47,7 +47,7 @@ export function Nav({ className }: { className?: string }) {
       aria-label="Primary"
       className={cn("flex items-center", className)}
     >
-      <ul className="flex items-center gap-8">
+      <ul className="flex items-center gap-4 xl:gap-6">
         {NAV_LINKS.map((link) => (
           <li key={`${link.label}-${link.href}`}>
             <NavLink

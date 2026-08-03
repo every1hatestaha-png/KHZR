@@ -28,8 +28,8 @@ export function Header() {
             : "border-b border-transparent bg-background/60 backdrop-blur-sm"
         )}
       >
-        <div className="relative mx-auto flex h-14 max-w-[1400px] items-center justify-between px-3 sm:px-5 lg:h-[4.5rem] lg:px-10">
-          <div className="flex items-center lg:w-[30%]">
+        <div className="relative mx-auto flex h-14 max-w-[1400px] items-center justify-between px-3 sm:px-5 lg:h-[4.5rem] lg:px-8 xl:px-10">
+          <div className="flex items-center lg:w-[39%] xl:w-[38%]">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
@@ -46,12 +46,12 @@ export function Header() {
             aria-label="KHZR — home"
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne"
           >
-            <span className="font-display text-[1.45rem] font-normal tracking-[0.34em] text-noir sm:text-[1.75rem] sm:tracking-[0.42em] lg:text-[2rem]">
+            <span className="font-display text-[1.55rem] font-normal tracking-[0.34em] text-noir sm:text-[1.88rem] sm:tracking-[0.42em] lg:text-[2.15rem]">
               KHZR
             </span>
           </Link>
 
-          <div className="flex items-center justify-end lg:w-[30%]">
+          <div className="flex items-center justify-end lg:w-[30%] xl:w-[31%]">
             <HeaderActions />
           </div>
         </div>

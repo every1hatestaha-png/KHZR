@@ -8,7 +8,7 @@ import type { CampaignDTO } from "@/lib/data-access/site"
 export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
   return (
     <section
-      className="relative flex min-h-[76svh] items-end overflow-hidden bg-noir sm:min-h-[82svh] lg:min-h-[88svh]"
+      className="relative flex min-h-[76svh] items-end overflow-hidden bg-noir sm:min-h-[82svh] lg:min-h-[86svh]"
       aria-label={campaign.title}
     >
       <Parallax offset={80} className="absolute inset-0">
@@ -19,12 +19,12 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover object-[50%_34%] sm:object-[50%_38%] lg:object-[58%_42%]"
         />
       </Parallax>
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-t from-noir/68 via-noir/24 to-noir/8"
+        className="absolute inset-0 bg-gradient-to-t from-noir/74 via-noir/28 to-noir/10"
       />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 pb-10 sm:px-5 sm:pb-14 lg:px-10 lg:pb-24">
