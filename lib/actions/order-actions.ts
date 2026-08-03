@@ -12,7 +12,6 @@ import {
   transitionOrderStatus,
   type FulfillmentStage,
 } from "@/lib/services/order-service"
-import { refundPayment } from "@/lib/services/stripe-service"
 import { toOrderEmailData } from "@/lib/data-access/orders"
 import {
   sendOrderConfirmationEmail,
@@ -98,9 +97,6 @@ export async function updateOrderStatusAction(
 
     if (status === "CANCELLED") {
       await cancelOrder(orderNumber, "Admin status cancellation")
-      if (order.providerPaymentId && order.paymentStatus === "PAID") {
-        await refundPayment(order.providerPaymentId)
-      }
       await sendStatusEmailNonFatal(orderNumber, "Cancelled")
       revalidateOrder(orderNumber)
       logAdminOrderEvent("status_changed", { orderNumber, previousStatus: order.status, newStatus: "CANCELLED", result: "success" })
@@ -109,9 +105,6 @@ export async function updateOrderStatusAction(
 
     if (status === "REFUNDED") {
       await transitionOrderStatus(order, "REFUNDED")
-      if (order.providerPaymentId && order.paymentStatus === "PAID") {
-        await refundPayment(order.providerPaymentId)
-      }
       await sendStatusEmailNonFatal(orderNumber, "Refunded")
       revalidateOrder(orderNumber)
       logAdminOrderEvent("status_changed", { orderNumber, previousStatus: order.status, newStatus: "REFUNDED", result: "success" })

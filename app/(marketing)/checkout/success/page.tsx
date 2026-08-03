@@ -5,14 +5,8 @@ import { PurchaseTracker } from "@/components/analytics/purchase-tracker"
 import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
 import { buildMetadata } from "@/lib/seo"
-import {
-  getOrderByOrderNumber,
-  getOrderByProviderSessionId,
-} from "@/lib/data-access/orders"
-import {
-  checkoutOrderLookupSchema,
-  checkoutSessionIdSchema,
-} from "@/lib/validations/checkout"
+import { getOrderByOrderNumber } from "@/lib/data-access/orders"
+import { checkoutOrderLookupSchema } from "@/lib/validations/checkout"
 
 export const metadata = buildMetadata({
   title: "Order Confirmed",
@@ -30,12 +24,9 @@ export default async function CheckoutSuccessPage({
 }) {
   const raw = await searchParams
   const parsedOrder = checkoutOrderLookupSchema.safeParse(raw)
-  const parsedSession = checkoutSessionIdSchema.safeParse(raw)
   const order = parsedOrder.success
     ? await getOrderByOrderNumber(parsedOrder.data.order)
-    : parsedSession.success
-      ? await getOrderByProviderSessionId(parsedSession.data.sessionId)
-      : null
+    : null
 
   if (!order) {
     return (
@@ -68,7 +59,7 @@ export default async function CheckoutSuccessPage({
         description={
           paid || cod
             ? `Order ${order.orderNumber} is confirmed. We will contact you at ${contact}.`
-            : "Your order has been created and will confirm after the payment provider verifies the transaction."
+            : "Your order has been created and is waiting for confirmation."
         }
         align="center"
       >

@@ -29,9 +29,6 @@ export const FULFILLMENT_STATUSES = [
 
 export const PAKISTAN_PAYMENT_METHODS = [
   "cash_on_delivery",
-  "easypaisa",
-  "jazzcash",
-  "stripe",
 ] as const
 
 export const CHECKOUT_PAYMENT_METHODS = ["cash_on_delivery"] as const
@@ -108,10 +105,6 @@ export const adminOrderListParamsSchema = z.object({
   to: z.string().trim().max(20).optional(),
   page: z.coerce.number().int().min(1).default(1),
   perPage: z.coerce.number().int().min(5).max(100).default(15),
-})
-
-export const checkoutSessionIdSchema = z.object({
-  sessionId: z.string().min(1).max(300),
 })
 
 export const checkoutOrderLookupSchema = z.object({

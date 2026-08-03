@@ -20,6 +20,7 @@ import {
   removeItemSchema,
   updateQuantitySchema,
 } from "@/lib/validations/cart"
+import { rateLimit } from "@/lib/services/rate-limit"
 import type { CartActionResult } from "@/types"
 
 export async function getCartAction(): Promise<CartActionResult> {
@@ -35,6 +36,8 @@ export async function addItemAction(
   if (!parsed.success) {
     return { ok: false, error: "Your request could not be read.", cart: null }
   }
+  const allowed = await rateLimit("cart:add", 120, 15 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please slow down and try again shortly.", cart: null }
 
   const { variantId, quantity } = parsed.data
   const clerkId = await resolveClerkId()
@@ -70,6 +73,8 @@ export async function updateQuantityAction(
   if (!parsed.success) {
     return { ok: false, error: "Your request could not be read.", cart: null }
   }
+  const allowed = await rateLimit("cart:update", 180, 15 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please slow down and try again shortly.", cart: null }
 
   const token = await sessionToken()
   if (!token) return { ok: true, cart: null }
@@ -86,6 +91,8 @@ export async function removeItemAction(
   if (!parsed.success) {
     return { ok: false, error: "Your request could not be read.", cart: null }
   }
+  const allowed = await rateLimit("cart:remove", 180, 15 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please slow down and try again shortly.", cart: null }
 
   const token = await sessionToken()
   if (!token) return { ok: true, cart: null }
@@ -96,6 +103,8 @@ export async function removeItemAction(
 }
 
 export async function clearCartAction(): Promise<CartActionResult> {
+  const allowed = await rateLimit("cart:clear", 60, 15 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please slow down and try again shortly.", cart: null }
   const token = await sessionToken()
   if (!token) return { ok: true, cart: null }
   await clearCart(token)

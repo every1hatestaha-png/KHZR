@@ -40,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           select: { slug: true, updatedAt: true },
         }),
         prisma.collection.findMany({
+          where: { publishedAt: { not: null } },
           select: { slug: true, updatedAt: true },
         }),
       ])

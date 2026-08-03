@@ -56,8 +56,6 @@ const STAGE_OPTIONS = [
 
 function paymentMethodLabel(value: string): string {
   if (value === "cash_on_delivery") return "Cash on Delivery"
-  if (value === "easypaisa") return "Easypaisa"
-  if (value === "jazzcash") return "JazzCash"
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
@@ -196,8 +194,7 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
   }
 
   const terminal = order.status === "CANCELLED" || order.status === "REFUNDED"
-  const walletPayment = order.paymentProvider === "easypaisa" || order.paymentProvider === "jazzcash"
-  const paymentLabel = order.paymentProvider === "cash_on_delivery" ? "Pending COD" : walletPayment ? "Awaiting Payment" : "Pending"
+  const paymentLabel = order.paymentProvider === "cash_on_delivery" ? "Pending COD" : "Pending"
 
   return (
     <div className="flex flex-col gap-6 border border-hairline bg-card p-6">
@@ -299,11 +296,11 @@ export function OrderStatusControl({ order }: { order: OrderDetailDTO }) {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-sm text-stone">
           <div>
             <p className="font-display text-xl text-noir">{paymentMethodLabel(order.paymentProvider)}</p>
-            <p>{order.paymentStatus === "PAID" ? (walletPayment ? "Payment Verified" : "Paid") : paymentLabel}</p>
+            <p>{order.paymentStatus === "PAID" ? "Payment collected" : paymentLabel}</p>
           </div>
           <Button variant="outline" disabled={paymentBusy || order.paymentStatus === "PAID"} onClick={() => void verifyPayment()}>
             {paymentBusy ? <Loader2Icon className="size-4 animate-spin" aria-hidden /> : null}
-            {order.paymentProvider === "cash_on_delivery" ? "Mark COD Collected" : walletPayment ? "Mark Payment Verified" : "Mark Paid"}
+            {order.paymentProvider === "cash_on_delivery" ? "Mark COD Collected" : "Mark Paid"}
           </Button>
         </div>
       </section>

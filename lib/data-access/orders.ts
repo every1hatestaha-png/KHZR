@@ -268,14 +268,6 @@ export async function getAdminOrderDetail(orderNumber: string) {
   return order ? toOrderDetailDTO(order) : null
 }
 
-export async function getOrderByProviderSessionId(sessionId: string) {
-  const order = await prisma.order.findUnique({
-    where: { providerSessionId: sessionId },
-    include: { items: true, shippingAddress: true, billingAddress: true },
-  })
-  return order ? toOrderDetailDTO(order) : null
-}
-
 export async function getOrderByOrderNumber(orderNumber: string) {
   const order = await prisma.order.findUnique({
     where: { orderNumber },

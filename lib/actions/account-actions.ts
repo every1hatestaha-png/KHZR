@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getAccountProfile, listAccountAddresses } from "@/lib/data-access/account"
 import { resolveDbUser } from "@/lib/services/user-service"
+import { rateLimitKey } from "@/lib/services/rate-limit"
 import {
   addressIdSchema,
   pakistanAddressSchema,
@@ -27,6 +28,8 @@ export async function getCheckoutAccountAction() {
 export async function updateProfileAction(input: unknown): Promise<AccountActionResult> {
   const user = await resolveDbUser()
   if (!user) return { ok: false, error: "Sign in to update your profile." }
+  const allowed = await rateLimitKey("account:profile", user.id, 20, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please try again later." }
 
   const parsed = profileSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Profile could not be read." }
@@ -54,6 +57,8 @@ export async function updateProfileAction(input: unknown): Promise<AccountAction
 export async function saveAddressAction(input: unknown): Promise<AccountActionResult> {
   const user = await resolveDbUser()
   if (!user) return { ok: false, error: "Sign in to save addresses." }
+  const allowed = await rateLimitKey("account:address:save", user.id, 30, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please try again later." }
 
   const parsed = pakistanAddressSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Address could not be read." }
@@ -105,6 +110,8 @@ export async function saveAddressAction(input: unknown): Promise<AccountActionRe
 export async function deleteAddressAction(input: unknown): Promise<AccountActionResult> {
   const user = await resolveDbUser()
   if (!user) return { ok: false, error: "Sign in to delete addresses." }
+  const allowed = await rateLimitKey("account:address:delete", user.id, 20, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please try again later." }
 
   const parsed = addressIdSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: "Address could not be read." }
@@ -127,6 +134,8 @@ export async function deleteAddressAction(input: unknown): Promise<AccountAction
 export async function setDefaultAddressAction(input: unknown): Promise<AccountActionResult> {
   const user = await resolveDbUser()
   if (!user) return { ok: false, error: "Sign in to update addresses." }
+  const allowed = await rateLimitKey("account:address:default", user.id, 30, 60 * 60 * 1000)
+  if (!allowed) return { ok: false, error: "Please try again later." }
 
   const parsed = addressIdSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: "Address could not be read." }

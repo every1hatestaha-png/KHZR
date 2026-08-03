@@ -140,9 +140,6 @@ export function OrderFilters({
           <SelectContent>
             <SelectItem value="all">All methods</SelectItem>
             <SelectItem value="cash_on_delivery">Cash on Delivery</SelectItem>
-            <SelectItem value="easypaisa">Easypaisa</SelectItem>
-            <SelectItem value="jazzcash">JazzCash</SelectItem>
-            <SelectItem value="stripe">Stripe</SelectItem>
           </SelectContent>
         </Select>
 

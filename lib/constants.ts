@@ -66,7 +66,7 @@ export const SHIPPING = {
 export const TAX_RATE = 0
 export const TAX_LABEL = "Duties & Taxes"
 
-/** Countries offered for checkout shipping (ISO 3166-1 alpha-2, Stripe-compatible). */
+/** Legacy country allow-list retained for non-checkout address integrations. */
 export const CHECKOUT_COUNTRIES = [
   "US",
   "CA",

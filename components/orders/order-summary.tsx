@@ -37,8 +37,6 @@ function AddressBlock({
 
 function paymentMethodLabel(value: string): string {
   if (value === "cash_on_delivery") return "Cash on Delivery"
-  if (value === "easypaisa") return "Easypaisa"
-  if (value === "jazzcash") return "JazzCash"
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
