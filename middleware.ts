@@ -16,14 +16,7 @@ const withAuth = clerkMiddleware(async (auth, req) => {
     return session.redirectToSignIn({ returnBackUrl: req.url })
   }
 
-  if (isAdminRoute(req)) {
-    const role = (
-      session.sessionClaims?.metadata as { role?: string } | undefined
-    )?.role
-    if (role !== "admin") {
-      return NextResponse.redirect(new URL("/", req.url))
-    }
-  }
+  if (isAdminRoute(req)) return NextResponse.next()
 })
 
 export default clerkConfigured
@@ -31,7 +24,7 @@ export default clerkConfigured
   : (req: NextRequest) => {
       // Fail closed in production: never expose the admin area without auth.
       if (process.env.NODE_ENV === "production" && isAdminRoute(req)) {
-        return NextResponse.redirect(new URL("/", req.url))
+        return NextResponse.redirect(new URL("/sign-in", req.url))
       }
       return NextResponse.next()
     }

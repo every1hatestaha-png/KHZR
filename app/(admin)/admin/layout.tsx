@@ -1,6 +1,8 @@
 import { AdminNav } from "@/components/admin/admin-nav"
 import { SITE } from "@/lib/constants"
+import { getAdminAccess } from "@/lib/services/admin-auth"
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 
 export const metadata: Metadata = {
   title: {
@@ -12,11 +14,33 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic"
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const access = await getAdminAccess()
+
+  if (!access.ok) {
+    if (access.reason === "signed_out") {
+      redirect("/sign-in?redirect_url=/admin")
+    }
+
+    return (
+      <main className="mx-auto flex min-h-screen max-w-[42rem] flex-col items-center justify-center px-5 py-20 text-center">
+        <p className="text-[0.6875rem] font-medium uppercase tracking-[0.34em] text-taupe">
+          KHZR Studio
+        </p>
+        <h1 className="mt-5 font-display text-5xl font-light leading-tight text-noir">
+          Administrator access required.
+        </h1>
+        <p className="mt-5 text-sm leading-relaxed text-stone">
+          This account is signed in, but it is not authorized to manage KHZR. Ask the owner to set Clerk admin metadata or configure KHZR_ADMIN_EMAIL for the verified owner email.
+        </p>
+      </main>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background lg:flex">
       <AdminNav />

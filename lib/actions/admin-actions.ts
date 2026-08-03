@@ -13,6 +13,7 @@ import {
   previewProductImport,
   productImportSampleCsv,
 } from "@/lib/product-import"
+import { requireAdminAccess } from "@/lib/services/admin-auth"
 
 export type AdminActionResult =
   | { ok: true; message?: string; productId?: string }
@@ -22,31 +23,9 @@ export type ProductImportActionResult =
   | { ok: true; result: Awaited<ReturnType<typeof previewProductImport>> | Awaited<ReturnType<typeof importProductsFromCsv>> }
   | { ok: false; error: string }
 
-function clerkConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
-  )
-}
-
 /** Returns an error string when the caller is not an admin, else null. */
 export async function requireAdmin(): Promise<string | null> {
-  if (!clerkConfigured()) {
-    // Fail closed in production: never allow admin actions without auth.
-    return process.env.NODE_ENV === "production"
-      ? "Authentication is not configured."
-      : null
-  }
-  try {
-    const { auth } = await import("@clerk/nextjs/server")
-    const session = await auth()
-    const role = (
-      session.sessionClaims?.metadata as { role?: string } | undefined
-    )?.role
-    if (role === "admin") return null
-  } catch {
-    return "Authentication could not be verified."
-  }
-  return "You must be signed in as an administrator."
+  return requireAdminAccess()
 }
 
 function revalidateAll() {
