@@ -1,10 +1,12 @@
 import Link from "next/link"
-import { ArrowRight, Heart, MapPin, Package, Settings, UserRound } from "lucide-react"
+import { ArrowRight, Heart, LayoutDashboard, MapPin, Package, Settings, UserRound } from "lucide-react"
 import { PageIntro } from "@/components/shared/page-intro"
 import { StatusBadge } from "@/components/orders/order-status"
 import { Button } from "@/components/ui/button"
 import { buildMetadata } from "@/lib/seo"
 import { resolveDbUser } from "@/lib/services/user-service"
+import { isStoreOwner } from "@/lib/services/admin-auth"
+import { OwnerBadge } from "@/components/account/owner-badge"
 import { listAccountOrders } from "@/lib/data-access/orders"
 import { formatDate, formatMoney } from "@/lib/utils"
 
@@ -18,7 +20,7 @@ export const metadata = buildMetadata({
 export const dynamic = "force-dynamic"
 
 export default async function AccountPage() {
-  const user = await resolveDbUser()
+  const [user, isOwner] = await Promise.all([resolveDbUser(), isStoreOwner()])
 
   if (!user) {
     return (
@@ -48,6 +50,9 @@ export default async function AccountPage() {
     { href: "/account/addresses", icon: MapPin, title: "Saved Addresses", description: "Delivery address book" },
     { href: "/wishlist", icon: Heart, title: "Wishlist", description: "Saved pieces" },
     { href: "/account/settings", icon: Settings, title: "Account Settings", description: "Sign-in and preferences" },
+    ...(isOwner
+      ? [{ href: "/admin", icon: LayoutDashboard, title: "Admin Dashboard", description: "Manage the KHZR store" }]
+      : []),
   ]
 
   return (
@@ -59,6 +64,7 @@ export default async function AccountPage() {
       />
 
       <section className="mx-auto flex max-w-[1400px] flex-col gap-10 border-t border-hairline px-5 py-16 lg:px-10">
+        {isOwner ? <OwnerBadge /> : null}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => {
             const Icon = card.icon

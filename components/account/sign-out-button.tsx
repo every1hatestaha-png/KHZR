@@ -26,9 +26,14 @@ function SignOutButtonInner({ variant }: { variant: React.ComponentProps<typeof 
   const { signOut } = useClerk()
 
   async function handleSignOut() {
-    window.sessionStorage.setItem(SIGN_OUT_TOAST_KEY, "1")
-    await signOut({ redirectUrl: "/" })
+    try {
+      window.sessionStorage.setItem(SIGN_OUT_TOAST_KEY, "1")
+      await signOut({ redirectUrl: "/" })
+    } catch {
+      window.sessionStorage.removeItem(SIGN_OUT_TOAST_KEY)
+      toast.error("We could not sign you out. Please try again.")
+    }
   }
 
-  return <Button type="button" variant={variant} onClick={() => void handleSignOut()}><LogOutIcon />Sign Out</Button>
+  return <Button type="button" variant={variant} className="min-h-11" onClick={() => void handleSignOut()}><LogOutIcon />Sign Out</Button>
 }

@@ -10,6 +10,7 @@ export type AccountProfileDTO = {
   email: string
   clerkManagedEmail: boolean
   imageUrl: string
+  hasImage: boolean
 }
 
 export type AccountAddressDTO = {
@@ -59,9 +60,22 @@ function toAddressDTO(address: {
 
 export async function getAccountProfile(userId: string): Promise<AccountProfileDTO> {
   const [user, identity] = await Promise.all([
-    prisma.user.findUniqueOrThrow({ where: { id: userId } }),
+    prisma.user.findUnique({ where: { id: userId } }),
     resolveVerifiedClerkIdentity(),
   ])
+  if (!user) {
+    // The row may have been deleted or the database briefly unavailable. Never
+    // crash the account page for missing optional data.
+    return {
+      firstName: identity?.firstName ?? "",
+      lastName: identity?.lastName ?? "",
+      phone: "",
+      email: identity?.email ?? "",
+      clerkManagedEmail: Boolean(identity?.clerkId),
+      imageUrl: identity?.imageUrl ?? "",
+      hasImage: identity?.hasImage ?? false,
+    }
+  }
   return {
     firstName: identity?.firstName ?? user.firstName ?? "",
     lastName: identity?.lastName ?? user.lastName ?? "",
@@ -69,6 +83,7 @@ export async function getAccountProfile(userId: string): Promise<AccountProfileD
     email: identity?.email ?? (user.email?.endsWith("@local.invalid") ? "" : user.email ?? ""),
     clerkManagedEmail: Boolean(user.clerkId),
     imageUrl: identity?.imageUrl ?? "",
+    hasImage: identity?.hasImage ?? false,
   }
 }
 

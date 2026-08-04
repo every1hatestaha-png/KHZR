@@ -15,9 +15,12 @@ export const pakistanAddressSchema = z.object({
   isDefault: z.coerce.boolean().optional().default(false),
 })
 
+// Clerk owns the name fields, so they are read-only in the UI and optional
+// here — otherwise an account with no name set in Clerk could never save its
+// phone number.
 export const profileSchema = z.object({
-  firstName: z.string().trim().min(1, "Enter your first name.").max(80),
-  lastName: z.string().trim().min(1, "Enter your last name.").max(80),
+  firstName: z.string().trim().max(80).optional().default(""),
+  lastName: z.string().trim().max(80).optional().default(""),
   phone: z.string().trim().max(30).optional().default(""),
 })
 

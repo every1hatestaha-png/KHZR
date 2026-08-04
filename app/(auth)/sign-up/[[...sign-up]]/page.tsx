@@ -23,20 +23,12 @@ export default function SignUpPage() {
         Create an account.
       </h1>
       {clerkConfigured ? (
-        <SignUp
-          appearance={{
-            elements: {
-              card: "!shadow-none !border !border-hairline !rounded-none",
-              formButtonPrimary:
-                "!bg-noir !text-warm-white !rounded-none hover:!bg-stone",
-              footerActionLink: "!text-champagne",
-            },
-          }}
-        />
+        // Theme comes from ClerkClientProvider in (auth)/layout.tsx.
+        <SignUp signInUrl="/sign-in" fallbackRedirectUrl="/account" />
       ) : (
         <p className="max-w-md text-center text-sm leading-relaxed text-taupe">
-          Account access arrives with Clerk authentication (Phase 5). The
-          storefront, catalogue and bag work without signing in.
+          Account creation is temporarily unavailable. The storefront,
+          catalogue and bag work without signing in.
         </p>
       )}
     </main>

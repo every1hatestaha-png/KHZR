@@ -1,5 +1,29 @@
 import type { NextConfig } from "next"
 
+/**
+ * Production auth-critical environment audit. Runs only during `next build`
+ * (NODE_ENV === "production") and only warns, so a build never fails on a
+ * missing owner/admin variable — but the Vercel build log will name exactly
+ * which variables must be set for the owner to receive admin access.
+ */
+function auditAuthEnvironment() {
+  if (process.env.NODE_ENV !== "production") return
+  const required = [
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "CLERK_SECRET_KEY",
+    "KHZR_ADMIN_EMAIL",
+  ] as const
+  const missing = required.filter((key) => !process.env[key])
+  if (missing.length === 0) return
+  console.warn(
+    `[env] KHZR auth env is incomplete in this build. Missing: ${missing.join(", ")}. ` +
+      "Until NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY and KHZR_ADMIN_EMAIL " +
+      "are all set in the Vercel environment for this scope, admin access is denied."
+  )
+}
+
+auditAuthEnvironment()
+
 // Content-Security-Policy for production. Applied only when built for
 // production so local development (HMR, eval-based tooling) is unaffected.
 // Allow-lists Clerk (auth) and Cloudinary/Unsplash (images). Stays permissive

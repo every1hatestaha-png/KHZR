@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { getAccountProfile, listAccountAddresses } from "@/lib/data-access/account"
-import { resolveDbUser, resolveVerifiedClerkIdentity } from "@/lib/services/user-service"
-import { requireAdminAccess } from "@/lib/services/admin-auth"
+import { getSessionUserId, resolveDbUser, resolveVerifiedClerkIdentity } from "@/lib/services/user-service"
+import { adminNoteForMenu, getAdminAccess } from "@/lib/services/admin-auth"
 import { rateLimitKey } from "@/lib/services/rate-limit"
 import {
   addressIdSchema,
@@ -17,19 +17,29 @@ export type AccountActionResult =
   | { ok: false; error: string }
 
 export async function getAccountMenuAction() {
-  const identity = await resolveVerifiedClerkIdentity()
-  if (!identity) return { ok: true as const, signedIn: false as const }
-  const adminDenied = await requireAdminAccess()
+  // Session state comes from the session token alone. Profile enrichment is
+  // best-effort: a Clerk Backend API hiccup must not render a signed-in owner
+  // as signed out (which also hid the Admin Dashboard entry).
+  const userId = await getSessionUserId()
+  if (!userId) return { ok: true as const, signedIn: false as const }
+
+  const [identity, access] = await Promise.all([
+    resolveVerifiedClerkIdentity(),
+    getAdminAccess(),
+  ])
+
   return {
     ok: true as const,
     signedIn: true as const,
     profile: {
-      firstName: identity.firstName ?? "",
-      lastName: identity.lastName ?? "",
-      email: identity.email ?? "",
-      imageUrl: identity.imageUrl ?? "",
+      firstName: identity?.firstName ?? "",
+      lastName: identity?.lastName ?? "",
+      email: identity?.email ?? "",
+      imageUrl: identity?.imageUrl ?? "",
+      hasImage: identity?.hasImage ?? false,
     },
-    isAdmin: !adminDenied,
+    isAdmin: access.ok,
+    adminNote: access.ok ? null : adminNoteForMenu(access.reason),
   }
 }
 
@@ -57,8 +67,9 @@ export async function updateProfileAction(input: unknown): Promise<AccountAction
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        firstName: identity?.firstName ?? parsed.data.firstName,
-        lastName: identity?.lastName ?? parsed.data.lastName,
+        // Clerk stays authoritative for identity; never blank a stored name.
+        firstName: identity?.firstName ?? (parsed.data.firstName || undefined),
+        lastName: identity?.lastName ?? (parsed.data.lastName || undefined),
         phone: parsed.data.phone || null,
         email: identity?.email ?? undefined,
       },
@@ -67,9 +78,9 @@ export async function updateProfileAction(input: unknown): Promise<AccountAction
     revalidatePath("/account/profile")
     revalidatePath("/account/settings")
     return { ok: true, message: "Profile updated." }
-  } catch (err) {
-    console.error("[account] profile update failed:", err instanceof Error ? err.message : "unknown")
-    return { ok: false, error: "Profile could not be updated." }
+  } catch {
+    console.error("[account] profile update failed")
+    return { ok: false, error: "We could not update your profile." }
   }
 }
 
@@ -120,8 +131,8 @@ export async function saveAddressAction(input: unknown): Promise<AccountActionRe
     revalidatePath("/account")
     revalidatePath("/account/addresses")
     return { ok: true, message: address.id ? "Address updated." : "Address saved." }
-  } catch (err) {
-    console.error("[account] address save failed:", err instanceof Error ? err.message : "unknown")
+  } catch {
+    console.error("[account] address save failed")
     return { ok: false, error: "Address could not be saved." }
   }
 }

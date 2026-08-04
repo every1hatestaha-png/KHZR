@@ -26,7 +26,8 @@ function ProfileFormInner({ profile, user = null }: { profile: AccountProfileDTO
   const [pending, startTransition] = React.useTransition()
   const [imagePending, setImagePending] = React.useState(false)
   const fileRef = React.useRef<HTMLInputElement>(null)
-  const initials = `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}` || "KH"
+  const initials = `${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.trim().toUpperCase()
+  const imageUrl = user?.hasImage ? user.imageUrl : profile.hasImage ? profile.imageUrl : ""
 
   function submit(formData: FormData) {
     startTransition(async () => {
@@ -53,7 +54,7 @@ function ProfileFormInner({ profile, user = null }: { profile: AccountProfileDTO
       await user.reload()
       toast.success("Profile picture updated.")
     } catch {
-      toast.error("Profile picture could not be updated.")
+      toast.error("We could not update your profile picture.")
     } finally {
       setImagePending(false)
       if (fileRef.current) fileRef.current.value = ""
@@ -68,35 +69,35 @@ function ProfileFormInner({ profile, user = null }: { profile: AccountProfileDTO
       await user.reload()
       toast.success("Profile picture removed.")
     } catch {
-      toast.error("Profile picture could not be removed.")
+      toast.error("We could not remove your profile picture.")
     } finally {
       setImagePending(false)
     }
   }
 
   return (
-    <form action={submit} className="grid gap-5 border border-hairline bg-card p-6">
-      <div className="flex flex-wrap items-center gap-4 border-b border-hairline pb-5">
+    <form action={submit} className="grid gap-5 border border-hairline bg-card p-4 sm:p-6">
+      <div className="flex flex-col items-start gap-4 border-b border-hairline pb-5 sm:flex-row sm:items-center">
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void uploadPicture(e.target.files)} />
-        {user?.imageUrl || profile.imageUrl ? (
+        {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={user?.imageUrl ?? profile.imageUrl} alt="" className="size-20 rounded-full object-cover" />
+          <img src={imageUrl} alt="Profile picture" className="size-20 rounded-full border border-hairline object-cover" />
         ) : (
-          <span className="flex size-20 items-center justify-center rounded-full bg-noir text-lg uppercase text-warm-white">{initials || <UserRoundIcon />}</span>
+          <span className="flex size-20 items-center justify-center rounded-full border border-hairline bg-ivory text-lg uppercase text-noir">{initials || <UserRoundIcon />}</span>
         )}
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" disabled={imagePending} onClick={() => fileRef.current?.click()}><UploadIcon />Upload picture</Button>
-          <Button type="button" variant="ghost" disabled={imagePending || !user?.imageUrl} onClick={() => void removePicture()}><XIcon />Remove custom picture</Button>
+          <Button type="button" variant="outline" disabled={imagePending} className="min-h-11" onClick={() => fileRef.current?.click()}><UploadIcon />{imagePending ? "Updating..." : "Upload picture"}</Button>
+          <Button type="button" variant="ghost" disabled={imagePending || !user?.hasImage} className="min-h-11" onClick={() => void removePicture()}><XIcon />Remove custom picture</Button>
         </div>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <label className="grid gap-2">
           <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">First Name</span>
-          <input name="firstName" required readOnly defaultValue={profile.firstName} className={`${inputClass} bg-ivory/60`} />
+          <input name="firstName" readOnly aria-readonly defaultValue={profile.firstName} className={`${inputClass} bg-ivory/60`} />
         </label>
         <label className="grid gap-2">
           <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Last Name</span>
-          <input name="lastName" required readOnly defaultValue={profile.lastName} className={`${inputClass} bg-ivory/60`} />
+          <input name="lastName" readOnly aria-readonly defaultValue={profile.lastName} className={`${inputClass} bg-ivory/60`} />
         </label>
       </div>
       <label className="grid gap-2">

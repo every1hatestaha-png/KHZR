@@ -35,7 +35,7 @@ export default async function AdminLayout({
           Administrator access required.
         </h1>
         <p className="mt-5 text-sm leading-relaxed text-stone">
-          This account is signed in, but it is not authorized to manage KHZR. Ask the owner to set Clerk admin metadata or configure KHZR_ADMIN_EMAIL for the verified owner email.
+          This account is signed in, but it is not authorized to manage KHZR. Ask the store owner to grant administrator access for a verified email.
         </p>
       </main>
     )
