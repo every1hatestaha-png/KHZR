@@ -18,6 +18,7 @@ import {
   HomeIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { AdminSignOut } from "@/components/admin/admin-sign-out"
 
 const NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboardIcon, exact: true },
@@ -73,6 +74,7 @@ export function AdminNav() {
             </Link>
           )
         })}
+        <AdminSignOut className="text-taupe hover:bg-noir/[0.05] hover:text-noir disabled:opacity-50" />
       </nav>
 
       <Link

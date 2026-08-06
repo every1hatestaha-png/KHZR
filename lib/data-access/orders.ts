@@ -174,20 +174,6 @@ export function toOrderDetailDTO(
   }
 }
 
-export async function listAccountOrders(userId: string): Promise<OrderDetailDTO[]> {
-  const orders = await prisma.order.findMany({
-    where: { userId },
-    orderBy: { createdAt: "desc" },
-    include: {
-      items: true,
-      shippingAddress: true,
-      billingAddress: true,
-    },
-    take: 100,
-  })
-  return orders.map(toOrderDetailDTO)
-}
-
 export type AdminOrderFilters = {
   q?: string
   orderNumber?: string
@@ -271,17 +257,6 @@ export async function getAdminOrderDetail(orderNumber: string) {
 export async function getOrderByOrderNumber(orderNumber: string) {
   const order = await prisma.order.findUnique({
     where: { orderNumber },
-    include: { items: true, shippingAddress: true, billingAddress: true },
-  })
-  return order ? toOrderDetailDTO(order) : null
-}
-
-export async function getAccountOrderDetail(
-  userId: string,
-  orderNumber: string
-) {
-  const order = await prisma.order.findFirst({
-    where: { orderNumber, userId },
     include: { items: true, shippingAddress: true, billingAddress: true },
   })
   return order ? toOrderDetailDTO(order) : null

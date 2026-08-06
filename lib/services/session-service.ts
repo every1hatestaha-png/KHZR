@@ -2,7 +2,6 @@ import "server-only"
 
 import { cookies } from "next/headers"
 import { CART_COOKIE, CART_TTL_DAYS } from "@/lib/constants"
-import { resolveCartForUser } from "@/lib/services/cart-service"
 
 export async function readToken(): Promise<string | null> {
   const store = await cookies()
@@ -20,35 +19,10 @@ export async function persistToken(token: string) {
   })
 }
 
-/** Clerk user id for the current session, or null when signed out / unconfigured. */
-export async function resolveClerkId(): Promise<string | null> {
-  if (
-    !process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ||
-    !process.env.CLERK_SECRET_KEY
-  ) {
-    return null
-  }
-  try {
-    const { auth } = await import("@clerk/nextjs/server")
-    return (await auth()).userId ?? null
-  } catch {
-    return null
-  }
-}
-
 /**
- * Resolves the token for the session: when signed in, links or merges the
- * anonymous cart into the user's account cart and refreshes the cookie.
+ * The bag token for the current guest session. Checkout and the bag are
+ * guest-first; there is no account to merge into.
  */
 export async function sessionToken(): Promise<string | null> {
-  const clerkId = await resolveClerkId()
-  let token = await readToken()
-  if (clerkId) {
-    const resolved = await resolveCartForUser(clerkId, token)
-    if (resolved) {
-      token = resolved.token
-      await persistToken(token)
-    }
-  }
-  return token
+  return readToken()
 }

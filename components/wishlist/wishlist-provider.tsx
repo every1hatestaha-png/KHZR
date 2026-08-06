@@ -3,12 +3,6 @@
 import * as React from "react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
-import {
-  clearWishlistAction,
-  getWishlistAction,
-  mergeWishlistAction,
-  toggleWishlistAction,
-} from "@/lib/actions/wishlist-actions"
 import type { ProductSummary } from "@/types"
 import { analytics, productToAnalyticsItem } from "@/lib/analytics"
 
@@ -19,7 +13,6 @@ type WishlistContextValue = {
   ids: string[]
   count: number
   hydrated: boolean
-  isSignedIn: boolean
   isInWishlist: (productSlug: string) => boolean
   toggle: (item: ProductSummary) => Promise<void>
   remove: (item: ProductSummary) => Promise<void>
@@ -57,132 +50,53 @@ function writeGuest(items: ProductSummary[]) {
   }
 }
 
-function WishlistProviderCore({
-  children,
-}: WishlistProviderProps) {
+function WishlistProviderCore({ children }: WishlistProviderProps) {
   const [items, setItems] = useState<ProductSummary[]>([])
   const [hydrated, setHydrated] = useState(false)
-  const [signedIn, setSignedIn] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-
-    async function sync() {
-      const server = await getWishlistAction()
-      const isServerSignedIn = Boolean(server.ok && server.signedIn)
-      if (!cancelled) setSignedIn(isServerSignedIn)
-
-      if (isServerSignedIn) {
-        const guest = readGuest()
-        if (guest.length > 0) {
-          const merged = await mergeWishlistAction(
-            guest.map((g) => g.productSlug)
-          )
-          if (!cancelled && merged.ok) {
-            writeGuest([])
-            setItems(merged.items ?? guest)
-            setHydrated(true)
-            toast.success("Your saved pieces are now in your account.")
-            return
-          }
-        }
-        if (!cancelled) {
-          setItems(server.ok ? (server.items ?? []) : [])
-          setHydrated(true)
-        }
-      } else {
-        const list = readGuest()
-        if (!cancelled) {
-          setItems(list)
-          setHydrated(true)
-        }
-      }
-    }
-
-    void sync()
-    return () => {
-      cancelled = true
-    }
+    const list = readGuest()
+    setItems(list)
+    setHydrated(true)
   }, [])
 
-  const toggle = useCallback(
-    async (item: ProductSummary) => {
-      const wasSaved = items.some((i) => i.productSlug === item.productSlug)
-      if (signedIn) {
-        const res = await toggleWishlistAction({ productSlug: item.productSlug })
-        if (!res.ok) {
-          toast.error(res.error ?? "Could not update your saved pieces.")
-          return
-        }
-        analytics.wishlist({
-          action: wasSaved ? "remove" : "add",
-          item: productToAnalyticsItem(item),
-          value: item.unitPrice,
-          currency: "PKR",
-        })
-        setItems(res.items ?? [])
-      } else {
-        setItems((prev) => {
-          const exists = prev.some((i) => i.productSlug === item.productSlug)
-          const next = exists
-            ? prev.filter((i) => i.productSlug !== item.productSlug)
-            : [...prev, item]
-          writeGuest(next)
-          return next
-        })
-        analytics.wishlist({
-          action: wasSaved ? "remove" : "add",
-          item: productToAnalyticsItem(item),
-          value: item.unitPrice,
-          currency: "PKR",
-        })
-      }
-    },
-    [items, signedIn]
-  )
+  const toggle = useCallback(async (item: ProductSummary) => {
+    const wasSaved = items.some((i) => i.productSlug === item.productSlug)
+    setItems((prev) => {
+      const exists = prev.some((i) => i.productSlug === item.productSlug)
+      const next = exists
+        ? prev.filter((i) => i.productSlug !== item.productSlug)
+        : [...prev, item]
+      writeGuest(next)
+      return next
+    })
+    analytics.wishlist({
+      action: wasSaved ? "remove" : "add",
+      item: productToAnalyticsItem(item),
+      value: item.unitPrice,
+      currency: "PKR",
+    })
+  }, [items])
 
-  const remove = useCallback(
-    async (item: ProductSummary) => {
-      const exists = items.some((i) => i.productSlug === item.productSlug)
-      if (!exists) return
-      const previous = items
-      const next = items.filter((i) => i.productSlug !== item.productSlug)
-      setItems(next)
-      if (!signedIn) writeGuest(next)
-
-      if (signedIn) {
-        const res = await toggleWishlistAction({ productSlug: item.productSlug })
-        if (!res.ok) {
-          setItems(previous)
-          toast.error(res.error ?? "Could not remove this saved piece.")
-          return
-        }
-        setItems(res.items ?? [])
-      }
-      analytics.wishlist({
-        action: "remove",
-        item: productToAnalyticsItem(item),
-        value: item.unitPrice,
-        currency: "PKR",
-      })
-      toast.success(`${item.name} removed from your wishlist.`)
-    },
-    [items, signedIn]
-  )
+  const remove = useCallback(async (item: ProductSummary) => {
+    const exists = items.some((i) => i.productSlug === item.productSlug)
+    if (!exists) return
+    const next = items.filter((i) => i.productSlug !== item.productSlug)
+    writeGuest(next)
+    setItems(next)
+    analytics.wishlist({
+      action: "remove",
+      item: productToAnalyticsItem(item),
+      value: item.unitPrice,
+      currency: "PKR",
+    })
+    toast.success(`${item.name} removed from your wishlist.`)
+  }, [items])
 
   const clear = useCallback(async () => {
-    if (signedIn) {
-      const res = await clearWishlistAction()
-      if (!res.ok) {
-        toast.error(res.error ?? "Could not clear your saved pieces.")
-        return
-      }
-      setItems(res.items ?? [])
-    } else {
-      writeGuest([])
-      setItems([])
-    }
-  }, [signedIn])
+    writeGuest([])
+    setItems([])
+  }, [])
 
   const ids = useMemo(() => items.map((i) => i.productSlug), [items])
   const count = useMemo(() => ids.length, [ids])
@@ -198,13 +112,12 @@ function WishlistProviderCore({
       ids,
       count,
       hydrated,
-      isSignedIn: signedIn,
       isInWishlist,
       toggle,
       remove,
       clear,
     }),
-    [items, ids, count, hydrated, signedIn, isInWishlist, toggle, remove, clear]
+    [items, ids, count, hydrated, isInWishlist, toggle, remove, clear]
   )
 
   return (

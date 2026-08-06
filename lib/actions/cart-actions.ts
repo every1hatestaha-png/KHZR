@@ -7,12 +7,10 @@ import {
   ensureCartToken,
   getCartState,
   removeCartItem,
-  resolveCartForUser,
   updateCartQuantity,
 } from "@/lib/services/cart-service"
 import {
   readToken,
-  resolveClerkId,
   sessionToken,
   persistToken,
 } from "@/lib/services/session-service"
@@ -41,17 +39,9 @@ export async function addItemAction(
   if (!allowed) return { ok: false, error: "Please slow down and try again shortly.", cart: null }
 
   const { variantId, quantity } = parsed.data
-  const clerkId = await resolveClerkId()
   let token = await readToken()
-  if (clerkId) {
-    const resolved = await resolveCartForUser(clerkId, token)
-    if (resolved) {
-      token = resolved.token
-      await persistToken(token)
-    }
-  }
   if (!token) {
-    const created = await ensureCartToken(null, clerkId)
+    const created = await ensureCartToken(null)
     if (created) {
       token = created
       await persistToken(token)

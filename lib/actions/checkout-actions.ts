@@ -3,7 +3,6 @@
 import { clearCart, getCartState, isDatabaseConfigured } from "@/lib/services/cart-service"
 import { toOrderEmailData } from "@/lib/data-access/orders"
 import { sessionToken } from "@/lib/services/session-service"
-import { resolveDbUser } from "@/lib/services/user-service"
 import {
   createLocalOrderRecord,
   nextOrderNumber,
@@ -47,6 +46,14 @@ function addressFingerprint(input: {
   return [input.houseApartment, input.streetAddress, input.area, input.city, input.province]
     .map((part) => part.trim().toLowerCase().replace(/\s+/g, " "))
     .join("|")
+}
+
+/** Splits a single full-name field into the first/last fields used on orders. */
+function splitFullName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(/\s+/)
+  const firstName = parts[0] ?? ""
+  const lastName = parts.slice(1).join(" ") || firstName
+  return { firstName, lastName }
 }
 
 async function suspiciousOrderNotes(input: {
@@ -129,13 +136,11 @@ export async function quoteCheckoutPromotionAction(input: {
   const cart = await getCartState(token)
   if (cart.lines.length === 0) return { ok: false, error: "Your bag is empty." }
   try {
-    const user = await resolveDbUser()
     const shipping = await quoteShipping({ province: input.province, city: input.city, subtotal: cart.subtotal })
     const quote = await quotePromotions({
       cart,
       shipping: shipping.shipping,
       couponCode: input.couponCode,
-      userId: user?.id,
     })
     return quote.ok ? { ok: true, quote: quote.quote } : quote
   } catch (err) {
@@ -151,8 +156,7 @@ export async function createCheckoutSessionAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Check your checkout details and try again." }
   }
   const {
-    firstName,
-    lastName,
+    fullName,
     phone,
     email,
     province,
@@ -164,8 +168,8 @@ export async function createCheckoutSessionAction(
     paymentMethod,
     notes,
     discountCode,
-    saveAddress,
   } = parsed.data
+  const { firstName, lastName } = splitFullName(fullName)
 
   try {
     assertProductionEnvironment()
@@ -219,8 +223,6 @@ export async function createCheckoutSessionAction(
     }
   }
 
-  const user = await resolveDbUser()
-
   let shippingQuote: Awaited<ReturnType<typeof quoteShipping>>
   try {
     shippingQuote = await quoteShipping({ province, city, subtotal: cart.subtotal })
@@ -231,7 +233,6 @@ export async function createCheckoutSessionAction(
     cart,
     shipping: shippingQuote.shipping,
     couponCode: discountCode,
-    userId: user?.id,
     email: email || null,
   })
   if (!promotionQuote.ok) return { ok: false, error: promotionQuote.error }
@@ -258,36 +259,10 @@ export async function createCheckoutSessionAction(
     imageUrl: line.imageUrl,
   }))
 
-  async function saveCheckoutAddress() {
-    if (!user || !saveAddress) return
-    await prisma.$transaction(async (tx) => {
-      const count = await tx.address.count({ where: { userId: user.id, type: "SHIPPING" } })
-      await tx.address.create({
-        data: {
-          userId: user.id,
-          type: "SHIPPING",
-          firstName,
-          lastName,
-          phone,
-          line1: streetAddress,
-          line2: houseApartment,
-          area,
-          city,
-          region: province,
-          postalCode: postalCode || "",
-          country: "PK",
-          deliveryNotes: notes || null,
-          isDefault: count === 0,
-        },
-      })
-    })
-  }
-
   if (paymentMethod === "cash_on_delivery") {
     try {
       const order = await createLocalOrderRecord({
         orderNumber,
-        userId: user?.id,
         email: email || null,
         phone,
         cartToken: token,
@@ -331,11 +306,6 @@ export async function createCheckoutSessionAction(
       if (created && order.email) {
         const sent = await sendOrderConfirmationEmail(toOrderEmailData(order))
         if (!sent) logCheckoutEvent("confirmation_email_failed", { orderNumber: order.orderNumber, email: maskEmail(order.email) })
-      }
-      try {
-        await saveCheckoutAddress()
-      } catch (err) {
-        logCheckoutEvent("save_address_failed", { orderNumber: order.orderNumber, reason: err instanceof Error ? err.message : "unknown" })
       }
       logCheckoutEvent(created ? "order_created" : "duplicate_order_returned", { orderNumber: order.orderNumber, phone: maskPhone(phone), email: maskEmail(email || null) })
       return { ok: true, url: `/checkout/success?order=${order.orderNumber}` }

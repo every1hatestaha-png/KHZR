@@ -57,11 +57,3 @@ export type Discount = {
   /** Minimum pre-discount subtotal required to qualify. */
   minSpend: number
 }
-
-export type WishlistActionResult = {
-  ok: boolean
-  error?: string
-  signedIn?: boolean
-  /** Full saved list from the server (signed-in sessions). */
-  items?: ProductSummary[]
-}

@@ -81,11 +81,9 @@ export default async function CheckoutSuccessPage({
         <OrderSummary order={order} />
         <div className="border-t border-hairline pt-6 text-center text-sm leading-relaxed text-stone">
           <p>
-            Sign in or create an account to follow order updates and keep saved pieces in one place.
+            We will contact you at {contact} with order updates and delivery
+            details.
           </p>
-          <Button asChild variant="luxury-link" className="mt-4">
-            <Link href="/account">Go to Account</Link>
-          </Button>
         </div>
         {!paid && !cod ? (
           <p className="text-center text-xs uppercase tracking-[0.2em] text-taupe">

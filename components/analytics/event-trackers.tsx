@@ -22,11 +22,3 @@ export function SearchTracker({ term, resultCount }: { term?: string | null; res
   }, [term, resultCount])
   return null
 }
-
-export function AuthIntentTracker({ kind }: { kind: "login" | "sign_up" }) {
-  React.useEffect(() => {
-    if (kind === "login") analytics.login()
-    else analytics.signUp()
-  }, [kind])
-  return null
-}

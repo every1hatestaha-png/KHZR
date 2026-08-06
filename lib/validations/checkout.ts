@@ -44,8 +44,7 @@ export const FULFILLMENT_STAGES = [
 ] as const
 
 export const createCheckoutSchema = z.object({
-  firstName: z.string().trim().min(1, "Enter your first name.").max(80),
-  lastName: z.string().trim().min(1, "Enter your last name.").max(80),
+  fullName: z.string().trim().min(2, "Enter your full name.").max(160),
   phone: z
     .string()
     .trim()
@@ -77,7 +76,6 @@ export const createCheckoutSchema = z.object({
   paymentMethod: z.enum(CHECKOUT_PAYMENT_METHODS),
   notes: z.string().trim().max(2000).optional().default(""),
   discountCode: z.string().trim().max(40).optional().default(""),
-  saveAddress: z.coerce.boolean().optional().default(false),
 })
 
 export const orderNumberSchema = z.object({

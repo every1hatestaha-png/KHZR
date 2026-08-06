@@ -5,18 +5,17 @@ const clerkConfigured = Boolean(
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && process.env.CLERK_SECRET_KEY
 )
 
-const isProtectedRoute = createRouteMatcher(["/account(.*)"])
 const isAdminRoute = createRouteMatcher(["/admin(.*)"])
 
 const withAuth = clerkMiddleware(async (auth, req) => {
   const session = await auth()
   const { userId } = session
 
-  if (!userId && (isProtectedRoute(req) || isAdminRoute(req))) {
+  if (!userId && isAdminRoute(req)) {
     return session.redirectToSignIn({ returnBackUrl: req.url })
   }
 
-  if (isAdminRoute(req)) return NextResponse.next()
+  return NextResponse.next()
 })
 
 export default clerkConfigured

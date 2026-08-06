@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { useWishlist } from "@/components/wishlist/wishlist-provider"
 
 export default function WishlistPage() {
-  const { items, count, hydrated, isSignedIn, remove, clear } = useWishlist()
+  const { items, count, hydrated, remove, clear } = useWishlist()
   const { addItem } = useCart()
 
   async function moveToCart(item: (typeof items)[number]) {
@@ -31,9 +31,6 @@ export default function WishlistPage() {
           {count === 0
             ? "Save pieces while you compare size, colour, and styling."
             : `${count} saved piece${count === 1 ? "" : "s"}.`}
-          {!isSignedIn
-            ? " Sign in to keep them across devices."
-            : null}
         </p>
       </header>
 

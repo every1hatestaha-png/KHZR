@@ -11,11 +11,9 @@ import {
   type CheckoutPromotionQuoteActionResult,
   type ShippingQuoteActionResult,
 } from "@/lib/actions/checkout-actions"
-import { getCheckoutAccountAction } from "@/lib/actions/account-actions"
 import { analytics, cartLineToAnalyticsItem } from "@/lib/analytics"
 import { priceBreakdownWithShipping } from "@/lib/services/pricing-service"
 import { formatMoney } from "@/lib/utils"
-import type { AccountAddressDTO, AccountProfileDTO } from "@/lib/data-access/account"
 
 const PAKISTAN_PROVINCES = [
   "Punjab",
@@ -36,8 +34,7 @@ const PAYMENT_METHODS = [
 ] as const
 
 type CheckoutFields = {
-  firstName: string
-  lastName: string
+  fullName: string
   phone: string
   email: string
   province: string
@@ -48,7 +45,6 @@ type CheckoutFields = {
   postalCode: string
   notes: string
   paymentMethod: (typeof PAYMENT_METHODS)[number]["value"]
-  saveAddress: boolean
 }
 
 export default function CheckoutPage() {
@@ -56,8 +52,7 @@ export default function CheckoutPage() {
   const { lines, subtotal, currency } = cart
 
   const [fields, setFields] = React.useState<CheckoutFields>({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     phone: "",
     email: "",
     province: "",
@@ -68,7 +63,6 @@ export default function CheckoutPage() {
     postalCode: "",
     notes: "",
     paymentMethod: "cash_on_delivery",
-    saveAddress: false,
   })
   const [code, setCode] = React.useState("")
   const [appliedCode, setAppliedCode] = React.useState<string | null>(null)
@@ -77,41 +71,10 @@ export default function CheckoutPage() {
   const [shippingQuote, setShippingQuote] = React.useState<ShippingQuoteActionResult | null>(null)
   const [promotionQuote, setPromotionQuote] = React.useState<CheckoutPromotionQuoteActionResult | null>(null)
   const [shippingPending, setShippingPending] = React.useState(false)
-  const [accountProfile, setAccountProfile] = React.useState<AccountProfileDTO | null>(null)
-  const [savedAddresses, setSavedAddresses] = React.useState<AccountAddressDTO[]>([])
-  const [selectedAddressId, setSelectedAddressId] = React.useState<string>("")
 
   const quotedShipping = shippingQuote?.ok ? shippingQuote.shipping : 0
   const fallbackPricing = priceBreakdownWithShipping(subtotal, null, quotedShipping)
   const pricing = promotionQuote?.ok ? promotionQuote.quote : fallbackPricing
-
-  React.useEffect(() => {
-    let cancelled = false
-    void getCheckoutAccountAction().then((res) => {
-      if (cancelled || !res.ok) return
-      setAccountProfile(res.profile)
-      setSavedAddresses(res.addresses)
-      const defaultAddress = res.addresses.find((address) => address.isDefault) ?? res.addresses[0]
-      setFields((current) => ({
-        ...current,
-        firstName: defaultAddress?.firstName || res.profile?.firstName || current.firstName,
-        lastName: defaultAddress?.lastName || res.profile?.lastName || current.lastName,
-        phone: defaultAddress?.phone || res.profile?.phone || current.phone,
-        email: res.profile?.email || current.email,
-        province: defaultAddress?.province || current.province,
-        city: defaultAddress?.city || current.city,
-        area: defaultAddress?.area || current.area,
-        streetAddress: defaultAddress?.streetAddress || current.streetAddress,
-        houseApartment: defaultAddress?.houseApartment || current.houseApartment,
-        postalCode: defaultAddress?.postalCode || current.postalCode,
-        notes: defaultAddress?.deliveryNotes || current.notes,
-      }))
-      if (defaultAddress) setSelectedAddressId(defaultAddress.id)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [])
 
   React.useEffect(() => {
     if (lines.length === 0) return
@@ -170,45 +133,6 @@ export default function CheckoutPage() {
     setFields((current) => ({ ...current, [key]: value }))
   }
 
-  function selectAddress(id: string) {
-    setSelectedAddressId(id)
-    const address = savedAddresses.find((item) => item.id === id)
-    if (!address) return
-    setFields((current) => ({
-      ...current,
-      firstName: address.firstName,
-      lastName: address.lastName,
-      phone: address.phone,
-      province: address.province,
-      city: address.city,
-      area: address.area,
-      streetAddress: address.streetAddress,
-      houseApartment: address.houseApartment,
-      postalCode: address.postalCode,
-      notes: address.deliveryNotes,
-      saveAddress: false,
-    }))
-  }
-
-  function useNewAddress() {
-    setSelectedAddressId("new")
-    setFields((current) => ({
-      ...current,
-      firstName: accountProfile?.firstName || current.firstName,
-      lastName: accountProfile?.lastName || current.lastName,
-      phone: accountProfile?.phone || current.phone,
-      email: accountProfile?.email || current.email,
-      province: "",
-      city: "",
-      area: "",
-      streetAddress: "",
-      houseApartment: "",
-      postalCode: "",
-      notes: "",
-      saveAddress: true,
-    }))
-  }
-
   function handleApply(e: React.FormEvent | React.MouseEvent) {
     e.preventDefault()
     if (!code.trim()) return
@@ -248,8 +172,7 @@ export default function CheckoutPage() {
   const inputClass =
     "h-12 w-full border border-hairline bg-background px-4 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
   const requiredComplete = Boolean(
-    fields.firstName &&
-      fields.lastName &&
+    fields.fullName &&
       fields.phone &&
       fields.province &&
       fields.city &&
@@ -299,16 +222,10 @@ export default function CheckoutPage() {
           <div className="flex flex-col gap-10 lg:gap-12">
             <section className="flex flex-col gap-5">
               <h2 className="font-display text-3xl font-light text-noir">Contact</h2>
-              <div className="grid gap-5 sm:grid-cols-2">
-                <label htmlFor="checkout-first-name" className="flex flex-col gap-2">
-                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">First Name</span>
-                  <input id="checkout-first-name" type="text" required autoComplete="given-name" value={fields.firstName} onChange={(e) => updateField("firstName", e.target.value)} className={inputClass} />
-                </label>
-                <label htmlFor="checkout-last-name" className="flex flex-col gap-2">
-                  <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Last Name</span>
-                  <input id="checkout-last-name" type="text" required autoComplete="family-name" value={fields.lastName} onChange={(e) => updateField("lastName", e.target.value)} className={inputClass} />
-                </label>
-              </div>
+              <label htmlFor="checkout-full-name" className="flex flex-col gap-2">
+                <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Full Name</span>
+                <input id="checkout-full-name" type="text" required autoComplete="name" value={fields.fullName} onChange={(e) => updateField("fullName", e.target.value)} className={inputClass} />
+              </label>
               <label htmlFor="checkout-phone" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Phone Number</span>
                 <input id="checkout-phone" type="tel" required autoComplete="tel" inputMode="tel" value={fields.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="03XX XXXXXXX" className={inputClass} />
@@ -321,27 +238,6 @@ export default function CheckoutPage() {
 
             <section className="flex flex-col gap-5">
               <h2 className="font-display text-3xl font-light text-noir">Delivery address</h2>
-              {savedAddresses.length > 0 ? (
-                <div className="grid gap-3">
-                  <p className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Saved Addresses</p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {savedAddresses.map((address) => (
-                      <button
-                        key={address.id}
-                        type="button"
-                        onClick={() => selectAddress(address.id)}
-                        className={`border p-4 text-left text-sm transition-colors ${selectedAddressId === address.id ? "border-noir bg-ivory/60" : "border-hairline bg-background hover:border-stone"}`}
-                      >
-                        <span className="block font-display text-lg text-noir">{address.firstName} {address.lastName}</span>
-                        <span className="mt-1 block text-stone">{address.houseApartment}, {address.streetAddress}</span>
-                        <span className="block text-stone">{address.area}, {address.city}</span>
-                        {address.isDefault ? <span className="mt-2 block text-xs uppercase tracking-[0.2em] text-taupe">Default</span> : null}
-                      </button>
-                    ))}
-                  </div>
-                  <Button type="button" variant="outline" className="w-fit" onClick={useNewAddress}>Add New Address</Button>
-                </div>
-              ) : null}
               <div className="grid gap-5 sm:grid-cols-2">
                 <label htmlFor="checkout-province" className="flex flex-col gap-2">
                   <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Province</span>
@@ -386,12 +282,6 @@ export default function CheckoutPage() {
                   className="w-full border border-hairline bg-background px-4 py-3 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
                 />
               </label>
-              {accountProfile ? (
-                <label className="flex items-center gap-3 text-sm text-stone">
-                  <input type="checkbox" checked={fields.saveAddress} onChange={(e) => updateField("saveAddress", e.target.checked)} className="accent-noir" />
-                  Save this address to my account
-                </label>
-              ) : null}
             </section>
 
             <section className="flex flex-col gap-5">

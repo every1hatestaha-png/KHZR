@@ -69,25 +69,6 @@ export async function getProductReviewSummary(productSlug: string): Promise<Revi
   }
 }
 
-export async function getReviewEligibility(userId: string | null, productSlug: string) {
-  if (!userId) return { signedIn: false, purchased: false, alreadyReviewed: false }
-  const product = await prisma.product.findUnique({ where: { slug: productSlug }, select: { id: true } })
-  if (!product) return { signedIn: true, purchased: false, alreadyReviewed: false }
-  const [purchase, existing] = await Promise.all([
-    prisma.order.findFirst({
-      where: {
-        userId,
-        status: { notIn: ["CANCELLED", "REFUNDED"] },
-        paymentStatus: { in: ["PAID", "PENDING"] },
-        items: { some: { productId: product.id } },
-      },
-      select: { id: true },
-    }),
-    prisma.review.findUnique({ where: { userId_productId: { userId, productId: product.id } }, select: { id: true } }),
-  ])
-  return { signedIn: true, purchased: Boolean(purchase), alreadyReviewed: Boolean(existing) }
-}
-
 export async function recalculateProductRating(productId: string) {
   const stats = await prisma.review.aggregate({
     where: { productId, status: "APPROVED", isApproved: true },

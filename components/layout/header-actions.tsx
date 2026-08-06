@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { Heart, Search, ShoppingBag } from "lucide-react"
 import { useCart } from "@/components/cart/cart-provider"
-import { AccountButton } from "@/components/layout/account-button"
 import { useWishlist } from "@/components/wishlist/wishlist-provider"
 import { cn } from "@/lib/utils"
 
@@ -16,7 +15,6 @@ export function HeaderActions({ className }: { className?: string }) {
     >
       <SearchLink />
       <WishlistActions />
-      <AccountButton className="hidden sm:inline-flex" />
       <CartActions />
     </div>
   )

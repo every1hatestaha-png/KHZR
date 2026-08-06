@@ -1,13 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { ReviewForm } from "@/components/reviews/review-form"
 import type { ReviewSummaryDTO } from "@/lib/data-access/reviews"
 import { formatDate } from "@/lib/utils"
 
 type Sort = "newest" | "highest" | "lowest" | "helpful"
 
-export function ProductReviews({ summary, productSlug, eligibility }: { summary: ReviewSummaryDTO; productSlug: string; eligibility: { signedIn: boolean; purchased: boolean; alreadyReviewed: boolean } }) {
+export function ProductReviews({ summary }: { summary: ReviewSummaryDTO }) {
   const [sort, setSort] = React.useState<Sort>("newest")
   const reviews = React.useMemo(() => {
     const list = [...summary.reviews]
@@ -35,7 +34,6 @@ export function ProductReviews({ summary, productSlug, eligibility }: { summary:
               </div>
             ))}
           </dl>
-          <ReviewForm productSlug={productSlug} eligibility={eligibility} />
         </aside>
         <div className="grid gap-8">
           {summary.gallery.length > 0 ? (

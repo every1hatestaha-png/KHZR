@@ -16,8 +16,7 @@ import {
 } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 import { getProductBySlug, getRelatedProducts } from "@/lib/data-access/site"
-import { getProductReviewSummary, getReviewEligibility } from "@/lib/data-access/reviews"
-import { resolveDbUser } from "@/lib/services/user-service"
+import { getProductReviewSummary } from "@/lib/data-access/reviews"
 
 export async function generateMetadata({
   params,
@@ -47,11 +46,7 @@ export default async function ProductPage({
   if (!product) notFound()
 
   const related = await getRelatedProducts(product.slug, product.collectionSlug, 4)
-  const user = await resolveDbUser()
-  const [reviewSummary, reviewEligibility] = await Promise.all([
-    getProductReviewSummary(product.slug),
-    getReviewEligibility(user?.id ?? null, product.slug),
-  ])
+  const reviewSummary = await getProductReviewSummary(product.slug)
   const available = product.variants.some((v) => v.stock > 0)
   const productUrl = `${SITE.url}/product/${product.slug}`
   const jsonLd = jsonLdProduct({
@@ -113,8 +108,6 @@ export default async function ProductPage({
 
       <ProductReviews
         summary={reviewSummary}
-        productSlug={product.slug}
-        eligibility={reviewEligibility}
       />
 
       <RecentlyViewedProducts currentSlug={product.slug} />
