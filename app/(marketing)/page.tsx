@@ -4,7 +4,7 @@ import { ProductRail } from "@/components/marketing/product-rail"
 import { BrandStatement } from "@/components/marketing/brand-statement"
 import { CategoryGrid } from "@/components/marketing/category-grid"
 import { FinalHomeCta } from "@/components/marketing/final-home-cta"
-import { getFeaturedProducts, getHomeCampaigns, getHomepageSettingsCampaign } from "@/lib/data-access/site"
+import { getFeaturedProducts, getHomepageSettingsCampaign, getSignatureSection } from "@/lib/data-access/site"
 import { buildMetadata, jsonLdItemList, jsonLdScript } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
@@ -14,23 +14,11 @@ export const metadata = buildMetadata({
 })
 
 export default async function HomePage() {
-  const [campaigns, products, settingsHero] = await Promise.all([
-    getHomeCampaigns(),
+  const [products, heroCampaign, signatureStory] = await Promise.all([
     getFeaturedProducts(),
     getHomepageSettingsCampaign(),
+    getSignatureSection(),
   ])
-
-  const [, second] = campaigns
-  const heroCampaign = settingsHero
-  const signatureStory = {
-    kicker: "Launch Edit",
-    title: "Shirts, trousers, dupattas.",
-    subtitle:
-      "Each product page lists fabric, work, included pieces, care, and size notes when provided.",
-    ctaLabel: "Shop Ready to Wear",
-    ctaHref: "/collections",
-    imageUrl: second?.imageUrl ?? products[0]?.imageUrl ?? "",
-  }
 
   return (
     <>
@@ -42,7 +30,7 @@ export default async function HomePage() {
       />
       <CategoryGrid images={products.map((product) => product.imageUrl)} />
       <BrandStatement />
-      {signatureStory.imageUrl ? <EditorialSplit campaign={signatureStory} /> : null}
+      {signatureStory ? <EditorialSplit campaign={signatureStory} /> : null}
       <FinalHomeCta />
 
       <script

@@ -751,6 +751,12 @@ export async function saveHomepageSettingsAction(input: unknown): Promise<AdminA
           announcementText: parsed.data.announcementText || null,
           announcementActive: parsed.data.announcementActive,
           homepageCategoryLinks: parseJsonText(parsed.data.homepageCategoryLinks),
+          signatureImageUrl: parsed.data.signatureImageUrl || null,
+          signatureKicker: parsed.data.signatureKicker || null,
+          signatureTitle: parsed.data.signatureTitle || null,
+          signatureSubtitle: parsed.data.signatureSubtitle || null,
+          signatureCtaLabel: parsed.data.signatureCtaLabel || null,
+          signatureCtaHref: parsed.data.signatureCtaHref || null,
         },
         create: {
           id: "store",
@@ -763,6 +769,12 @@ export async function saveHomepageSettingsAction(input: unknown): Promise<AdminA
           announcementText: parsed.data.announcementText || null,
           announcementActive: parsed.data.announcementActive,
           homepageCategoryLinks: parseJsonText(parsed.data.homepageCategoryLinks),
+          signatureImageUrl: parsed.data.signatureImageUrl || null,
+          signatureKicker: parsed.data.signatureKicker || null,
+          signatureTitle: parsed.data.signatureTitle || null,
+          signatureSubtitle: parsed.data.signatureSubtitle || null,
+          signatureCtaLabel: parsed.data.signatureCtaLabel || null,
+          signatureCtaHref: parsed.data.signatureCtaHref || null,
         },
       })
       await tx.product.updateMany({ data: { isFeatured: false } })

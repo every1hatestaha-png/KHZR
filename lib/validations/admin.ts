@@ -171,6 +171,12 @@ export const homepageSettingsSchema = z.object({
   featuredProductIds: z.array(z.string().min(1).max(160)).max(24).default([]),
   featuredCollectionIds: z.array(z.string().min(1).max(160)).max(12).default([]),
   homepageCategoryLinks: z.string().trim().max(4000).optional().default(""),
+  signatureImageUrl: z.string().trim().url().or(z.literal("")).optional().default(""),
+  signatureKicker: z.string().trim().max(120).optional().default(""),
+  signatureTitle: z.string().trim().max(200).optional().default(""),
+  signatureSubtitle: z.string().trim().max(600).optional().default(""),
+  signatureCtaLabel: z.string().trim().max(80).optional().default(""),
+  signatureCtaHref: z.string().trim().max(200).optional().default(""),
 })
 
 export const mediaAssetSchema = z.object({

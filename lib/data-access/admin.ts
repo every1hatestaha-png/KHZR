@@ -162,6 +162,12 @@ export type AdminStoreSettings = {
   heroButtonText: string
   heroButtonLink: string
   homepageCategoryLinks: string
+  signatureImageUrl: string
+  signatureKicker: string
+  signatureTitle: string
+  signatureSubtitle: string
+  signatureCtaLabel: string
+  signatureCtaHref: string
 }
 
 export type AdminMediaAsset = {
@@ -523,6 +529,12 @@ export async function getAdminStoreSettings(): Promise<AdminStoreSettings> {
     heroButtonText: row?.heroButtonText ?? "",
     heroButtonLink: row?.heroButtonLink ?? "",
     homepageCategoryLinks: jsonText(row?.homepageCategoryLinks),
+    signatureImageUrl: row?.signatureImageUrl ?? "",
+    signatureKicker: row?.signatureKicker ?? "",
+    signatureTitle: row?.signatureTitle ?? "",
+    signatureSubtitle: row?.signatureSubtitle ?? "",
+    signatureCtaLabel: row?.signatureCtaLabel ?? "",
+    signatureCtaHref: row?.signatureCtaHref ?? "",
   }
 }
 

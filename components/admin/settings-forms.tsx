@@ -105,6 +105,19 @@ export function HomepageSettingsForm({
       <ChoiceList title="Featured products" items={products.map((p) => ({ id: p.id, label: p.name }))} selected={form.featuredProductIds} onToggle={(id) => toggle("featuredProductIds", id)} />
       <ChoiceList title="Featured collections" items={collections.map((c) => ({ id: c.id, label: c.name }))} selected={form.featuredCollectionIds} onToggle={(id) => toggle("featuredCollectionIds", id)} />
       <Field label="Homepage category links JSON"><Textarea rows={4} value={form.homepageCategoryLinks} onChange={(e) => patch("homepageCategoryLinks", e.target.value)} placeholder='[{"label":"Ready to Wear","href":"/collection/ready-to-wear"}]' /></Field>
+      <fieldset className="grid gap-3">
+        <legend className="text-[0.625rem] uppercase tracking-[0.24em] text-taupe">Launch Edit / Signature section</legend>
+        <Field label="Image URL"><Input value={form.signatureImageUrl} onChange={(e) => patch("signatureImageUrl", e.target.value)} placeholder="https://res.cloudinary.com/..." /></Field>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Kicker"><Input value={form.signatureKicker} onChange={(e) => patch("signatureKicker", e.target.value)} /></Field>
+          <Field label="Title"><Input value={form.signatureTitle} onChange={(e) => patch("signatureTitle", e.target.value)} /></Field>
+        </div>
+        <Field label="Subtitle"><Textarea rows={3} value={form.signatureSubtitle} onChange={(e) => patch("signatureSubtitle", e.target.value)} /></Field>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="CTA label"><Input value={form.signatureCtaLabel} onChange={(e) => patch("signatureCtaLabel", e.target.value)} /></Field>
+          <Field label="CTA link"><Input value={form.signatureCtaHref} onChange={(e) => patch("signatureCtaHref", e.target.value)} /></Field>
+        </div>
+      </fieldset>
       <Button type="submit" disabled={saving} className="w-fit">Save homepage</Button>
     </form>
   )

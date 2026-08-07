@@ -329,6 +329,20 @@ export async function getHomepageSettingsCampaign(): Promise<CampaignDTO | null>
   }
 }
 
+export async function getSignatureSection(): Promise<CampaignDTO | null> {
+  if (!isDatabaseConfigured()) return null
+  const row = await safeQuery(() => prisma.storeSettings.findUnique({ where: { id: "store" } }))
+  if (!row?.signatureImageUrl) return null
+  return {
+    kicker: row.signatureKicker,
+    title: row.signatureTitle ?? "Launch Edit",
+    subtitle: row.signatureSubtitle,
+    ctaLabel: row.signatureCtaLabel,
+    ctaHref: row.signatureCtaHref,
+    imageUrl: row.signatureImageUrl,
+  }
+}
+
 export async function getAnnouncementSettings(): Promise<{ active: boolean; text: string }> {
   if (!isDatabaseConfigured()) return { active: false, text: "Coming Soon" }
   const row = await safeQuery(() =>

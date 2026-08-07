@@ -486,6 +486,12 @@ model StoreSettings {
   heroButtonText        String?
   heroButtonLink        String?
   homepageCategoryLinks Json?
+  signatureImageUrl     String?
+  signatureKicker       String?
+  signatureTitle        String?
+  signatureSubtitle     String?
+  signatureCtaLabel     String?
+  signatureCtaHref      String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
