@@ -9,8 +9,7 @@ const COLLECTIONS = visibleLaunchCollections()
 
 export const metadata = buildMetadata({
   title: "Ready to Wear",
-  description:
-    "Shop KHZR ready-to-wear eastern dresses in Pakistan, including Printed Pret and Embroidered Pret.",
+  description: "Shop KHZR ready-to-wear eastern dresses in Pakistan.",
   path: "/collections",
   image: COLLECTIONS[0].imageUrl,
 })
@@ -23,7 +22,7 @@ export default async function CollectionsPage({ searchParams }: { searchParams: 
       <PageIntro
         kicker="Shop"
         title="Ready to Wear"
-        description="Browse launch edits for Pakistani women: New Arrivals, Printed Pret, and Embroidered Pret in PKR."
+        description="Browse launch edits for Pakistani women: New Arrivals and Ready to Wear in PKR."
       />
       <ul className="mx-auto grid max-w-[1400px] gap-12 px-5 pb-24 lg:grid-cols-2 lg:gap-x-10 lg:gap-y-20 lg:px-10">
         {COLLECTIONS.map((c, i) => (

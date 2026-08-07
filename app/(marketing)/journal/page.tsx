@@ -24,7 +24,7 @@ export default function JournalPage() {
           Shop the launch edit.
         </p>
         <p className="max-w-md text-sm leading-relaxed text-stone">
-          Browse New Arrivals, Ready to Wear, Printed Pret, and Embroidered Pret.
+          Browse New Arrivals and Ready to Wear.
         </p>
         <Button asChild variant="luxury-link" className="mt-2">
           <Link href="/collections">Shop Ready to Wear</Link>

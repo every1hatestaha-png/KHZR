@@ -10,8 +10,6 @@ import { buildMetadata } from "@/lib/seo"
 
 const SUGGESTIONS = [
   { label: "Ready to Wear", href: "/collection/ready-to-wear" },
-  { label: "Printed Pret", href: "/collection/printed-pret" },
-  { label: "Embroidered Pret", href: "/collection/embroidered-pret" },
   { label: "New Arrivals", href: "/collection/new-arrivals" },
 ]
 
@@ -76,7 +74,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           ) : !hasQuery ? (
             <div className="mx-auto max-w-2xl text-center">
               <p className="font-display text-3xl font-light text-noir">Search by product name, color, fabric, or collection.</p>
-              <p className="mt-4 text-sm leading-relaxed text-stone">Try Ready to Wear, Printed Pret, Embroidered Pret, or a colour from the launch edit.</p>
+              <p className="mt-4 text-sm leading-relaxed text-stone">Try Ready to Wear, New Arrivals, or a colour from the launch edit.</p>
             </div>
           ) : products.length === 0 ? (
             <div className="mx-auto max-w-2xl text-center">

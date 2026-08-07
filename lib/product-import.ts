@@ -53,8 +53,8 @@ export const PRODUCT_IMPORT_HEADERS = [
 
 export const PRODUCT_IMPORT_SAMPLE_ROWS = [
   [
-    "Ivory Printed Pret Kurta",
-    "ivory-printed-pret-kurta",
+    "Ivory Ready to Wear Kurta",
+    "ivory-ready-to-wear-kurta",
     "Printed lawn kurta for everyday wear",
     "A relaxed eastern ready-to-wear kurta with a clean line.",
     "8500",
@@ -70,10 +70,10 @@ export const PRODUCT_IMPORT_SAMPLE_ROWS = [
     "Summer",
     "Relaxed fit. Model wears S.",
     "Gentle hand wash separately.",
-    "Ready to Wear|Printed Pret|New Arrivals",
+    "Ready to Wear|New Arrivals",
     "https://example.com/images/ivory-kurta-1.jpg|https://example.com/images/ivory-kurta-2.jpg",
-    "Ivory Printed Pret Kurta - KHZR",
-    "Shop the Ivory Printed Pret Kurta by KHZR in Pakistan.",
+    "Ivory Ready to Wear Kurta - KHZR",
+    "Shop the Ivory Ready to Wear Kurta by KHZR in Pakistan.",
     "KHZR-IVORY-KURTA-S",
     "4",
     "yes",

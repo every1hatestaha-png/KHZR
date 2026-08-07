@@ -1,6 +1,9 @@
 import { AdminNav } from "@/components/admin/admin-nav"
 import { SITE } from "@/lib/constants"
-import { getAdminAccess } from "@/lib/services/admin-auth"
+import {
+  ADMIN_DENIAL_MESSAGE,
+  getAdminAccess,
+} from "@/lib/services/admin-auth"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
@@ -35,7 +38,7 @@ export default async function AdminLayout({
           Administrator access required.
         </h1>
         <p className="mt-5 text-sm leading-relaxed text-stone">
-          This account is signed in, but it is not authorized to manage KHZR. Ask the store owner to grant administrator access for a verified email.
+          {ADMIN_DENIAL_MESSAGE[access.reason]}
         </p>
       </main>
     )

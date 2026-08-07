@@ -1,15 +1,12 @@
 import type { MetadataRoute } from "next"
 import { SITE } from "@/lib/constants"
 import { isDatabaseConfigured } from "@/lib/services/cart-service"
-import { FALLBACK_PRODUCTS } from "@/lib/fallback-content"
 
 const STATIC_ROUTES = [
   "",
   "/collections",
   "/collection/new-arrivals",
   "/collection/ready-to-wear",
-  "/collection/printed-pret",
-  "/collection/embroidered-pret",
   "/about",
   "/contact",
   "/privacy",
@@ -18,8 +15,6 @@ const STATIC_ROUTES = [
   "/size-fit",
   "/fabric-care",
 ]
-
-const FALLBACK_PRODUCT_SLUGS = FALLBACK_PRODUCTS.map((p) => p.slug)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = STATIC_ROUTES.map((route) => ({
@@ -58,17 +53,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }))
       )
     } catch {
-      // Database unreachable — fall through to the editorial catalogue.
+      // Database unreachable — publish static routes only. Product and
+      // collection URLs are never synthesised from a hardcoded catalogue.
     }
-  } else {
-    routes.push(
-      ...FALLBACK_PRODUCT_SLUGS.map((slug) => ({
-        url: `${SITE.url}/product/${slug}`,
-        lastModified: new Date(),
-        changeFrequency: "weekly" as const,
-        priority: 0.8,
-      }))
-    )
   }
 
   const byUrl = new Map<string, MetadataRoute.Sitemap[number]>()

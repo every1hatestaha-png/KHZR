@@ -28,8 +28,6 @@ export const SITE = {
 export const NAV_LINKS = [
   { label: "New Arrivals", href: "/collection/new-arrivals" },
   { label: "Ready to Wear", href: "/collection/ready-to-wear" },
-  { label: "Printed Pret", href: "/collection/printed-pret" },
-  { label: "Embroidered Pret", href: "/collection/embroidered-pret" },
 ] as const
 
 export const FOOTER_LINKS = {
@@ -45,8 +43,6 @@ export const FOOTER_LINKS = {
   shop: [
     { label: "New Arrivals", href: "/collection/new-arrivals" },
     { label: "Ready to Wear", href: "/collection/ready-to-wear" },
-    { label: "Printed Pret", href: "/collection/printed-pret" },
-    { label: "Embroidered Pret", href: "/collection/embroidered-pret" },
   ],
 } as const
 

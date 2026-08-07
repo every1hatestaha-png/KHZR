@@ -15,18 +15,6 @@ const CATEGORIES = [
     imageUrl:
       "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?auto=format&fit=crop&w=1400&q=80",
   },
-  {
-    label: "Printed Pret",
-    href: "/collection/printed-pret",
-    imageUrl:
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    label: "Embroidered Pret",
-    href: "/collection/embroidered-pret",
-    imageUrl:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1400&q=80",
-  },
 ]
 
 export function CategoryGrid({ images = [] }: { images?: string[] }) {
@@ -42,7 +30,7 @@ export function CategoryGrid({ images = [] }: { images?: string[] }) {
           </h2>
         </div>
 
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:gap-5">
           {CATEGORIES.map((category, i) => (
             <Reveal as="li" key={category.label} delay={i * 0.08} y={24}>
               <Link
@@ -53,7 +41,7 @@ export function CategoryGrid({ images = [] }: { images?: string[] }) {
                   <LazyImage
                     src={images[i] ?? category.imageUrl}
                     alt=""
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
                     className="object-cover transition-transform duration-[1200ms] ease-lux group-hover:scale-[1.025]"
                   />
                   <div

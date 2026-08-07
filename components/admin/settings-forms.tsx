@@ -104,7 +104,7 @@ export function HomepageSettingsForm({
       </div>
       <ChoiceList title="Featured products" items={products.map((p) => ({ id: p.id, label: p.name }))} selected={form.featuredProductIds} onToggle={(id) => toggle("featuredProductIds", id)} />
       <ChoiceList title="Featured collections" items={collections.map((c) => ({ id: c.id, label: c.name }))} selected={form.featuredCollectionIds} onToggle={(id) => toggle("featuredCollectionIds", id)} />
-      <Field label="Homepage category links JSON"><Textarea rows={4} value={form.homepageCategoryLinks} onChange={(e) => patch("homepageCategoryLinks", e.target.value)} placeholder='[{"label":"Printed Pret","href":"/collection/printed-pret"}]' /></Field>
+      <Field label="Homepage category links JSON"><Textarea rows={4} value={form.homepageCategoryLinks} onChange={(e) => patch("homepageCategoryLinks", e.target.value)} placeholder='[{"label":"Ready to Wear","href":"/collection/ready-to-wear"}]' /></Field>
       <Button type="submit" disabled={saving} className="w-fit">Save homepage</Button>
     </form>
   )

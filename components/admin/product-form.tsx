@@ -232,7 +232,7 @@ export function ProductForm({ mode, initial, collections }: ProductFormProps) {
                 setSlugTouched(true)
                 setSlug(e.target.value)
               }}
-              placeholder="ivory-printed-pret-kurta"
+              placeholder="ivory-ready-to-wear-kurta"
               className="h-10 rounded-none border-hairline"
             />
           </Field>
