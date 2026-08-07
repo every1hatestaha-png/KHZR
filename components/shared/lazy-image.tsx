@@ -11,6 +11,8 @@ type LazyImageProps = Omit<
   eager?: boolean
   /** Force a CSS-relative default sizes when sizes is omitted */
   sizes?: string
+  /** Called after the image element has loaded */
+  onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void
 }
 
 export function LazyImage({
@@ -20,6 +22,7 @@ export function LazyImage({
   alt,
   sizes,
   fill = true,
+  onLoad,
   ...props
 }: LazyImageProps) {
   const [loaded, setLoaded] = React.useState(eager)
@@ -37,7 +40,10 @@ export function LazyImage({
         loaded ? "opacity-100" : "opacity-0",
         className
       )}
-      onLoad={() => setLoaded(true)}
+      onLoad={(e) => {
+        setLoaded(true)
+        onLoad?.(e)
+      }}
       {...props}
     />
   )
