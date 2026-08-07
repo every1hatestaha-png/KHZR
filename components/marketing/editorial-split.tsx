@@ -26,12 +26,12 @@ export function EditorialSplit({
           reverse && "lg:order-2"
         )}
       >
-        <ImageReveal className="relative aspect-[4/5] w-full bg-ivory lg:aspect-[5/6]">
+        <ImageReveal className="relative aspect-[3/4] w-full bg-ivory lg:aspect-[9/16]">
           <LazyImage
             src={campaign.imageUrl}
             alt=""
             sizes="(max-width: 1024px) 100vw, 55vw"
-            className="object-cover"
+            className="object-contain"
           />
         </ImageReveal>
       </div>

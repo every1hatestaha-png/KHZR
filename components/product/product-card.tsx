@@ -33,14 +33,14 @@ export function ProductCard({ product }: { product: ProductCardDTO }) {
       <div className="relative overflow-hidden bg-ivory/80">
         <Link
           href={`/product/${product.slug}`}
-          className="block aspect-[3/4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne sm:aspect-[2/3]"
+          className="block aspect-[9/16] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
           aria-label={product.name}
         >
           <LazyImage
             src={product.imageUrl}
             alt={product.name}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="h-full w-full object-cover transition-transform duration-[700ms] ease-lux group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            className="h-full w-full object-contain"
           />
         </Link>
 

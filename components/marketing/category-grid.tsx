@@ -37,12 +37,12 @@ export function CategoryGrid({ images = [] }: { images?: string[] }) {
                 href={category.href}
                 className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-champagne"
               >
-                <div className="relative aspect-[4/5] overflow-hidden bg-sand">
+                <div className="relative aspect-[9/16] overflow-hidden bg-sand">
                   <LazyImage
                     src={images[i] ?? category.imageUrl}
                     alt=""
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 50vw"
-                    className="object-cover transition-transform duration-[1200ms] ease-lux group-hover:scale-[1.025]"
+                    className="object-contain"
                   />
                   <div
                     aria-hidden
