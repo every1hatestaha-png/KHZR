@@ -202,7 +202,7 @@ export async function createLocalOrderRecord(
   const orderNumber = input.orderNumber || (await nextOrderNumber())
 
   return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${input.cartToken}))`
+    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtext(${input.cartToken}))::text AS lock`
     const duplicate = await findDuplicateLocalOrder(tx, input)
     if (duplicate) {
       console.info(JSON.stringify({ scope: "checkout", event: "duplicate_order_detected", orderNumber: duplicate.orderNumber }))

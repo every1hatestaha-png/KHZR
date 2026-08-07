@@ -85,9 +85,9 @@ export function ProductGallery({
   }
 
   return (
-    <div className="flex flex-col gap-5" role="region" aria-label="Product gallery">
+    <div className="flex flex-col gap-3 lg:gap-5" role="region" aria-label="Product gallery">
       <div
-        className="group relative w-full touch-pan-y overflow-hidden bg-ivory lg:h-[72vh] lg:min-h-[560px] lg:max-h-[760px]"
+        className="group relative max-h-[72svh] w-full touch-pan-y overflow-hidden bg-ivory lg:h-[72vh] lg:min-h-[560px] lg:max-h-[760px]"
         style={{ aspectRatio: ratio ? `${ratio}` : "4 / 5" }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
@@ -135,7 +135,7 @@ export function ProductGallery({
       </div>
 
       {total > 1 ? (
-        <div className="grid grid-flow-col auto-cols-[5.25rem] gap-3 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] lg:auto-cols-[5.5rem]" role="group" aria-label="Product images">
+        <div className="grid grid-flow-col auto-cols-[4.25rem] gap-2 overflow-x-auto overscroll-x-contain pb-2 [-webkit-overflow-scrolling:touch] lg:auto-cols-[5.5rem] lg:gap-3" role="group" aria-label="Product images">
           {images.map((src, i) => (
             <button
               key={src}

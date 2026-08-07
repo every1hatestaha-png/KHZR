@@ -12,8 +12,9 @@ import {
   type ShippingQuoteActionResult,
 } from "@/lib/actions/checkout-actions"
 import { analytics, cartLineToAnalyticsItem } from "@/lib/analytics"
+import { normalizePakistanMobile } from "@/lib/pakistan-phone"
 import { priceBreakdownWithShipping } from "@/lib/services/pricing-service"
-import { formatMoney } from "@/lib/utils"
+import { cn, formatMoney } from "@/lib/utils"
 
 const PAKISTAN_PROVINCES = [
   "Punjab",
@@ -47,6 +48,79 @@ type CheckoutFields = {
   paymentMethod: (typeof PAYMENT_METHODS)[number]["value"]
 }
 
+type FieldName =
+  | "fullName"
+  | "phone"
+  | "email"
+  | "province"
+  | "city"
+  | "area"
+  | "streetAddress"
+  | "houseApartment"
+
+type CheckoutErrors = Partial<Record<FieldName, string>>
+
+const REQUIRED_FIELD_MESSAGES: Record<Exclude<FieldName, "email">, string> = {
+  fullName: "Enter your full name.",
+  phone: "Enter a valid Pakistan mobile number.",
+  province: "Select your province.",
+  city: "Enter your city.",
+  area: "Enter your area.",
+  streetAddress: "Enter your street address.",
+  houseApartment: "Enter your house or apartment.",
+}
+
+function validateField(name: FieldName, value: string): string | undefined {
+  switch (name) {
+    case "fullName":
+      return !value.trim() || value.trim().length < 2
+        ? REQUIRED_FIELD_MESSAGES.fullName
+        : undefined
+    case "phone":
+      return !value.trim() || !normalizePakistanMobile(value)
+        ? REQUIRED_FIELD_MESSAGES.phone
+        : undefined
+    case "email":
+      return value.trim() && !/^\S+@\S+\.\S+$/.test(value.trim())
+        ? "Enter a valid email address."
+        : undefined
+    case "province":
+      return !value ? REQUIRED_FIELD_MESSAGES.province : undefined
+    case "city":
+      return !value.trim() ? REQUIRED_FIELD_MESSAGES.city : undefined
+    case "area":
+      return !value.trim() ? REQUIRED_FIELD_MESSAGES.area : undefined
+    case "streetAddress":
+      return !value.trim() ? REQUIRED_FIELD_MESSAGES.streetAddress : undefined
+    case "houseApartment":
+      return !value.trim() ? REQUIRED_FIELD_MESSAGES.houseApartment : undefined
+    default:
+      return undefined
+  }
+}
+
+function validateCheckoutFields(fields: CheckoutFields): CheckoutErrors {
+  const errors: CheckoutErrors = {}
+  const names: FieldName[] = [
+    "fullName",
+    "phone",
+    "province",
+    "city",
+    "area",
+    "streetAddress",
+    "houseApartment",
+  ]
+  for (const name of names) {
+    const message = validateField(name, fields[name])
+    if (message) errors[name] = message
+  }
+  const emailMessage = validateField("email", fields.email)
+  if (emailMessage) errors.email = emailMessage
+  return errors
+}
+
+const fieldErrorId = (name: FieldName) => `checkout-${name}-error`
+
 export default function CheckoutPage() {
   const { cart } = useCart()
   const { lines, subtotal, currency } = cart
@@ -68,6 +142,7 @@ export default function CheckoutPage() {
   const [appliedCode, setAppliedCode] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [errors, setErrors] = React.useState<CheckoutErrors>({})
   const [shippingQuote, setShippingQuote] = React.useState<ShippingQuoteActionResult | null>(null)
   const [promotionQuote, setPromotionQuote] = React.useState<CheckoutPromotionQuoteActionResult | null>(null)
   const [shippingPending, setShippingPending] = React.useState(false)
@@ -131,6 +206,26 @@ export default function CheckoutPage() {
     value: CheckoutFields[K]
   ) {
     setFields((current) => ({ ...current, [key]: value }))
+    const name = key as FieldName
+    setErrors((current) => {
+      if (!current[name]) return current
+      const next = { ...current }
+      delete next[name]
+      return next
+    })
+  }
+
+  function handleFieldBlur(name: FieldName, value: string) {
+    setErrors((current) => {
+      const message = validateField(name, value)
+      if (!message) {
+        if (!current[name]) return current
+        const next = { ...current }
+        delete next[name]
+        return next
+      }
+      return { ...current, [name]: message }
+    })
   }
 
   function handleApply(e: React.FormEvent | React.MouseEvent) {
@@ -150,11 +245,21 @@ export default function CheckoutPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (pending) return
+    const fieldErrors = validateCheckoutFields(fields)
+    if (Object.keys(fieldErrors).length > 0) {
+      setErrors(fieldErrors)
+      setError(null)
+      return
+    }
+    setErrors({})
     setPending(true)
     setError(null)
     if (!shippingQuote?.ok) {
       setPending(false)
-      setError(shippingQuote?.error ?? "Shipping could not be calculated for this address.")
+      setError(
+        shippingQuote?.error ??
+          "Shipping could not be calculated for this address. Check that your province and city are correct."
+      )
       return
     }
     const res = await createCheckoutSessionAction({
@@ -171,14 +276,18 @@ export default function CheckoutPage() {
 
   const inputClass =
     "h-12 w-full border border-hairline bg-background px-4 text-sm text-noir placeholder:text-taupe/60 focus:border-noir focus:outline-none transition-colors duration-300"
+  const errorClass = "text-[0.6875rem] leading-relaxed text-destructive"
+  const validPhone = Boolean(
+    fields.phone.trim() && normalizePakistanMobile(fields.phone)
+  )
   const requiredComplete = Boolean(
-    fields.fullName &&
-      fields.phone &&
+    fields.fullName.trim().length >= 2 &&
+      validPhone &&
       fields.province &&
-      fields.city &&
-      fields.area &&
-      fields.streetAddress &&
-      fields.houseApartment &&
+      fields.city.trim() &&
+      fields.area.trim() &&
+      fields.streetAddress.trim() &&
+      fields.houseApartment.trim() &&
       fields.paymentMethod &&
       shippingQuote?.ok
   )
@@ -224,15 +333,24 @@ export default function CheckoutPage() {
               <h2 className="font-display text-3xl font-light text-noir">Contact</h2>
               <label htmlFor="checkout-full-name" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Full Name</span>
-                <input id="checkout-full-name" type="text" required autoComplete="name" value={fields.fullName} onChange={(e) => updateField("fullName", e.target.value)} className={inputClass} />
+                <input id="checkout-full-name" type="text" required autoComplete="name" value={fields.fullName} onChange={(e) => updateField("fullName", e.target.value)} onBlur={(e) => handleFieldBlur("fullName", e.target.value)} aria-invalid={Boolean(errors.fullName)} aria-describedby={errors.fullName ? fieldErrorId("fullName") : undefined} className={cn(inputClass, errors.fullName && "border-destructive")} />
+                {errors.fullName ? (
+                  <p id={fieldErrorId("fullName")} role="alert" className={errorClass}>{errors.fullName}</p>
+                ) : null}
               </label>
               <label htmlFor="checkout-phone" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Phone Number</span>
-                <input id="checkout-phone" type="tel" required autoComplete="tel" inputMode="tel" value={fields.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="03XX XXXXXXX" className={inputClass} />
+                <input id="checkout-phone" type="tel" required autoComplete="tel" inputMode="tel" value={fields.phone} onChange={(e) => updateField("phone", e.target.value)} onBlur={(e) => handleFieldBlur("phone", e.target.value)} placeholder="03XX XXXXXXX" aria-invalid={Boolean(errors.phone)} aria-describedby={errors.phone ? fieldErrorId("phone") : undefined} className={cn(inputClass, errors.phone && "border-destructive")} />
+                {errors.phone ? (
+                  <p id={fieldErrorId("phone")} role="alert" className={errorClass}>{errors.phone}</p>
+                ) : null}
               </label>
               <label htmlFor="checkout-email" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Email <span className="normal-case tracking-normal">(optional)</span></span>
-                <input id="checkout-email" type="email" autoComplete="email" value={fields.email} onChange={(e) => updateField("email", e.target.value)} placeholder="you@example.com" className={inputClass} />
+                <input id="checkout-email" type="email" autoComplete="email" value={fields.email} onChange={(e) => updateField("email", e.target.value)} onBlur={(e) => handleFieldBlur("email", e.target.value)} placeholder="you@example.com" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? fieldErrorId("email") : undefined} className={cn(inputClass, errors.email && "border-destructive")} />
+                {errors.email ? (
+                  <p id={fieldErrorId("email")} role="alert" className={errorClass}>{errors.email}</p>
+                ) : null}
               </label>
             </section>
 
@@ -241,28 +359,43 @@ export default function CheckoutPage() {
               <div className="grid gap-5 sm:grid-cols-2">
                 <label htmlFor="checkout-province" className="flex flex-col gap-2">
                   <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Province</span>
-                  <select id="checkout-province" required autoComplete="address-level1" value={fields.province} onChange={(e) => updateField("province", e.target.value)} className={inputClass}>
+                  <select id="checkout-province" required autoComplete="address-level1" value={fields.province} onChange={(e) => updateField("province", e.target.value)} onBlur={(e) => handleFieldBlur("province", e.target.value)} aria-invalid={Boolean(errors.province)} aria-describedby={errors.province ? fieldErrorId("province") : undefined} className={cn(inputClass, errors.province && "border-destructive")}>
                     <option value="">Select province</option>
                     {PAKISTAN_PROVINCES.map((province) => <option key={province} value={province}>{province}</option>)}
                   </select>
+                  {errors.province ? (
+                    <p id={fieldErrorId("province")} role="alert" className={errorClass}>{errors.province}</p>
+                  ) : null}
                 </label>
                 <label htmlFor="checkout-city" className="flex flex-col gap-2">
                   <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">City</span>
-                  <input id="checkout-city" type="text" required autoComplete="address-level2" value={fields.city} onChange={(e) => updateField("city", e.target.value)} className={inputClass} />
+                  <input id="checkout-city" type="text" required autoComplete="address-level2" value={fields.city} onChange={(e) => updateField("city", e.target.value)} onBlur={(e) => handleFieldBlur("city", e.target.value)} aria-invalid={Boolean(errors.city)} aria-describedby={errors.city ? fieldErrorId("city") : undefined} className={cn(inputClass, errors.city && "border-destructive")} />
+                  {errors.city ? (
+                    <p id={fieldErrorId("city")} role="alert" className={errorClass}>{errors.city}</p>
+                  ) : null}
                 </label>
               </div>
               <label htmlFor="checkout-area" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Area</span>
-                <input id="checkout-area" type="text" required value={fields.area} onChange={(e) => updateField("area", e.target.value)} placeholder="DHA, Gulberg, Clifton..." className={inputClass} />
+                <input id="checkout-area" type="text" required value={fields.area} onChange={(e) => updateField("area", e.target.value)} onBlur={(e) => handleFieldBlur("area", e.target.value)} placeholder="DHA, Gulberg, Clifton..." aria-invalid={Boolean(errors.area)} aria-describedby={errors.area ? fieldErrorId("area") : undefined} className={cn(inputClass, errors.area && "border-destructive")} />
+                {errors.area ? (
+                  <p id={fieldErrorId("area")} role="alert" className={errorClass}>{errors.area}</p>
+                ) : null}
               </label>
               <label htmlFor="checkout-street" className="flex flex-col gap-2">
                 <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Street Address</span>
-                <input id="checkout-street" type="text" required autoComplete="street-address" value={fields.streetAddress} onChange={(e) => updateField("streetAddress", e.target.value)} className={inputClass} />
+                <input id="checkout-street" type="text" required autoComplete="street-address" value={fields.streetAddress} onChange={(e) => updateField("streetAddress", e.target.value)} onBlur={(e) => handleFieldBlur("streetAddress", e.target.value)} aria-invalid={Boolean(errors.streetAddress)} aria-describedby={errors.streetAddress ? fieldErrorId("streetAddress") : undefined} className={cn(inputClass, errors.streetAddress && "border-destructive")} />
+                {errors.streetAddress ? (
+                  <p id={fieldErrorId("streetAddress")} role="alert" className={errorClass}>{errors.streetAddress}</p>
+                ) : null}
               </label>
               <div className="grid gap-5 sm:grid-cols-2">
                 <label htmlFor="checkout-house" className="flex flex-col gap-2">
                   <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">House/Apartment</span>
-                  <input id="checkout-house" type="text" required value={fields.houseApartment} onChange={(e) => updateField("houseApartment", e.target.value)} className={inputClass} />
+                  <input id="checkout-house" type="text" required value={fields.houseApartment} onChange={(e) => updateField("houseApartment", e.target.value)} onBlur={(e) => handleFieldBlur("houseApartment", e.target.value)} aria-invalid={Boolean(errors.houseApartment)} aria-describedby={errors.houseApartment ? fieldErrorId("houseApartment") : undefined} className={cn(inputClass, errors.houseApartment && "border-destructive")} />
+                  {errors.houseApartment ? (
+                    <p id={fieldErrorId("houseApartment")} role="alert" className={errorClass}>{errors.houseApartment}</p>
+                  ) : null}
                 </label>
                 <label htmlFor="checkout-postal" className="flex flex-col gap-2">
                   <span className="text-[0.6875rem] uppercase tracking-[0.24em] text-taupe">Postal Code <span className="normal-case tracking-normal">(optional)</span></span>
@@ -465,6 +598,25 @@ export default function CheckoutPage() {
                 </dd>
               </div>
             </dl>
+
+            {!pending && !requiredComplete ? (
+              <div className="mt-6 flex flex-col gap-2 text-sm leading-relaxed text-stone">
+                {shippingPending ? (
+                  <p>Calculating shipping for your address…</p>
+                ) : shippingQuote && !shippingQuote.ok ? (
+                  <p
+                    role="alert"
+                    className="border border-hairline bg-ivory/50 px-4 py-3 text-noir"
+                  >
+                    {shippingQuote.error ?? "Shipping could not be calculated for this address."}
+                  </p>
+                ) : (
+                  <p role="alert">
+                    Review the required fields above to place your order.
+                  </p>
+                )}
+              </div>
+            ) : null}
 
             <Button
               type="submit"

@@ -1,4 +1,7 @@
 import { createHash } from "node:crypto"
+import { normalizePakistanMobile } from "@/lib/pakistan-phone"
+
+export { normalizePakistanMobile }
 
 const PLACEHOLDER_VALUES = new Set([
   "test",
@@ -18,18 +21,6 @@ const PLACEHOLDER_VALUES = new Set([
   "house",
   "home",
 ])
-
-export function normalizePakistanMobile(value: string): string | null {
-  const digits = value.replace(/\D/g, "")
-  const normalized = digits.startsWith("0092")
-    ? `0${digits.slice(4)}`
-    : digits.startsWith("92")
-      ? `0${digits.slice(2)}`
-      : digits.startsWith("3") && digits.length === 10
-        ? `0${digits}`
-        : digits
-  return /^03\d{9}$/.test(normalized) ? normalized : null
-}
 
 function compact(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ")
