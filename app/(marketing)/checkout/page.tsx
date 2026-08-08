@@ -292,6 +292,35 @@ export default function CheckoutPage() {
       shippingQuote?.ok
   )
 
+  const diag = process.env.NODE_ENV !== "production" || new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : ""
+  ).has("diag")
+    ? {
+        "fullName valid": fields.fullName.trim().length >= 2,
+        "phone valid": validPhone,
+        "phone raw": JSON.stringify(fields.phone),
+        "province valid": Boolean(fields.province),
+        "province raw": JSON.stringify(fields.province),
+        "city valid": Boolean(fields.city.trim()),
+        "city raw": JSON.stringify(fields.city),
+        "area valid": Boolean(fields.area.trim()),
+        "area raw": JSON.stringify(fields.area),
+        "streetAddress valid": Boolean(fields.streetAddress.trim()),
+        "streetAddress raw": JSON.stringify(fields.streetAddress),
+        "houseApartment valid": Boolean(fields.houseApartment.trim()),
+        "houseApartment raw": JSON.stringify(fields.houseApartment),
+        "paymentMethod valid": Boolean(fields.paymentMethod),
+        "paymentMethod raw": JSON.stringify(fields.paymentMethod),
+        "shippingQuote exists": shippingQuote !== null && shippingQuote !== undefined,
+        "shippingQuote.ok": Boolean(shippingQuote?.ok),
+        "shippingQuote error": shippingQuote?.ok ? null : (shippingQuote?.error ?? null),
+        "shippingPending": shippingPending,
+        "pending": pending,
+        "cart lines.length": lines.length,
+        "requiredComplete": requiredComplete,
+      }
+    : null
+
   return (
     <div className="mx-auto max-w-[1280px] px-4 pb-24 pt-12 sm:px-5 sm:pt-14 lg:px-10 lg:pt-24">
       <header className="border-b border-hairline pb-9">
@@ -626,6 +655,12 @@ export default function CheckoutPage() {
             >
               {pending ? "Placing order..." : "Place Order"}
             </Button>
+
+            {diag ? (
+              <pre className="mt-4 whitespace-pre-wrap break-words border border-dashed border-stone/40 bg-background/60 p-3 font-mono text-[0.625rem] leading-relaxed text-stone">
+                {JSON.stringify(diag, null, 2)}
+              </pre>
+            ) : null}
 
             <Button
               asChild
