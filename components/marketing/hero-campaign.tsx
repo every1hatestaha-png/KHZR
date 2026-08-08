@@ -4,22 +4,62 @@ import { LazyImage } from "@/components/shared/lazy-image"
 import { Button } from "@/components/ui/button"
 import type { CampaignDTO } from "@/lib/data-access/site"
 
+const NEXT_IMAGE_QUALITY = 75
+const MOBILE_BREAKPOINT = 767
+const MOBILE_SRCSET_WIDTHS = [640, 750, 828]
+const DESKTOP_SRCSET_WIDTHS = [640, 750, 828, 1080, 1200, 1920, 2048, 3840]
+
+function optimizedImageSrc(src: string, width: number) {
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${width}&q=${NEXT_IMAGE_QUALITY}`
+}
+
+function buildSrcSet(src: string, widths: number[]) {
+  return widths.map((w) => `${optimizedImageSrc(src, w)} ${w}w`).join(", ")
+}
+
 export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
+  const mobileSrcSet = campaign.mobileImageUrl
+    ? buildSrcSet(campaign.mobileImageUrl, MOBILE_SRCSET_WIDTHS)
+    : ""
+  const desktopSrcSet = buildSrcSet(campaign.imageUrl, DESKTOP_SRCSET_WIDTHS)
+
   return (
     <section
       className="relative flex min-h-[78svh] items-center overflow-hidden bg-ivory sm:min-h-[84svh] lg:h-[75vh] lg:min-h-0"
       aria-label={campaign.title}
     >
+      {campaign.mobileImageUrl ? (
+        <link
+          rel="preload"
+          as="image"
+          media={`(max-width: ${MOBILE_BREAKPOINT}px)`}
+          imageSrcSet={mobileSrcSet}
+          imageSizes="100vw"
+          fetchPriority="high"
+        />
+      ) : null}
+      <link
+        rel="preload"
+        as="image"
+        media={`(min-width: ${MOBILE_BREAKPOINT + 1}px)`}
+        imageSrcSet={desktopSrcSet}
+        imageSizes="100vw"
+        fetchPriority="high"
+      />
       <picture>
         {campaign.mobileImageUrl ? (
-          <source media="(max-width: 767px)" srcSet={campaign.mobileImageUrl} />
+          <source
+            media={`(max-width: ${MOBILE_BREAKPOINT}px)`}
+            srcSet={mobileSrcSet}
+            sizes="100vw"
+          />
         ) : null}
         <LazyImage
           src={campaign.imageUrl}
           alt=""
           eager
           fill
-          priority
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover object-[68%_center] sm:object-[70%_center] lg:object-[74%_center]"
         />
