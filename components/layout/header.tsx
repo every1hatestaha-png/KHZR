@@ -16,6 +16,12 @@ const MobileMenu = dynamic(
 export function Header() {
   const scrolled = useScrollPosition(12)
   const [menuOpen, setMenuOpen] = React.useState(false)
+  const [menuMounted, setMenuMounted] = React.useState(false)
+
+  function openMenu() {
+    setMenuOpen(true)
+    setMenuMounted(true)
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -31,7 +37,7 @@ export function Header() {
           <div className="flex items-center">
             <button
               type="button"
-              onClick={() => setMenuOpen(true)}
+              onClick={openMenu}
               aria-label="Open menu"
               aria-expanded={menuOpen}
               className="inline-flex size-11 items-center justify-center rounded-none text-noir transition-colors hover:text-stone focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-champagne"
@@ -55,7 +61,9 @@ export function Header() {
           </div>
         </div>
       </div>
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      {menuMounted ? (
+        <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      ) : null}
     </header>
   )
 }

@@ -3,7 +3,7 @@
 import * as React from "react"
 import dynamic from "next/dynamic"
 import { Toaster } from "@/components/ui/sonner"
-import { CartProvider } from "@/components/cart/cart-provider"
+import { CartProvider, useCart } from "@/components/cart/cart-provider"
 import { WishlistProvider } from "@/components/wishlist/wishlist-provider"
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider"
 
@@ -13,13 +13,25 @@ const CartDrawer = dynamic(
   { ssr: false }
 )
 
+function CartDrawerGate() {
+  const { isOpen } = useCart()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    if (isOpen) setMounted(true)
+  }, [isOpen])
+
+  if (!mounted) return null
+  return <CartDrawer />
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       <CartProvider>
         <WishlistProvider>
           {children}
-          <CartDrawer />
+          <CartDrawerGate />
           <React.Suspense fallback={null}>
             <AnalyticsProvider />
           </React.Suspense>

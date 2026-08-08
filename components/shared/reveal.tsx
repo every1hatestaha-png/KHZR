@@ -1,9 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { motion, useReducedMotion, type Transition } from "framer-motion"
+import { useInView } from "@/hooks/use-in-view"
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
 
-const EASE: Transition["ease"] = [0.16, 1, 0.3, 1]
+const EASE = [0.16, 1, 0.3, 1] as const
+const EASE_CSS = `cubic-bezier(${EASE.join(",")})`
 
 type RevealProps = {
   children: React.ReactNode
@@ -25,16 +27,22 @@ export function Reveal({
   as = "div",
 }: RevealProps) {
   const reduceMotion = useReducedMotion()
-  const Comp = motion[as]
+  const { ref, inView } = useInView<HTMLElement>({ once, margin: "-72px" })
+  const Comp = as as React.ElementType
+
+  const show = inView || reduceMotion
+
+  const style: React.CSSProperties = {
+    opacity: show ? 1 : 0,
+    transform: show ? "none" : `translate3d(0, ${y}px, 0)`,
+    transition: reduceMotion
+      ? "none"
+      : `opacity ${duration}s ${EASE_CSS} ${delay}s, transform ${duration}s ${EASE_CSS} ${delay}s`,
+    willChange: show ? "auto" : "opacity, transform",
+  }
 
   return (
-    <Comp
-      className={className}
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y }}
-      whileInView={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      viewport={{ once, margin: "-72px" }}
-      transition={{ duration: reduceMotion ? 0.01 : duration, delay: reduceMotion ? 0 : delay, ease: EASE }}
-    >
+    <Comp ref={ref} className={className} style={style}>
       {children}
     </Comp>
   )

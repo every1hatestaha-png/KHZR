@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { motion, useReducedMotion } from "framer-motion"
+import { useInView } from "@/hooks/use-in-view"
+import { useReducedMotion } from "@/hooks/use-reduced-motion"
 import { cn } from "@/lib/utils"
 
 const EASE = [0.22, 1, 0.36, 1] as const
+const EASE_CSS = `cubic-bezier(${EASE.join(",")})`
 
 type ImageRevealProps = {
   children: React.ReactNode
@@ -29,30 +31,35 @@ export function ImageReveal({
   from = "bottom",
 }: ImageRevealProps) {
   const reduceMotion = useReducedMotion()
+  const { ref, inView } = useInView<HTMLDivElement>({ once: true, margin: "-64px" })
+
+  const show = inView || reduceMotion
 
   return (
-    <motion.div
+    <div
+      ref={ref}
       className={cn("overflow-hidden", className)}
-      initial={
-        reduceMotion ? { opacity: 0 } : { clipPath: INSETS[from] }
-      }
-      whileInView={
+      style={
         reduceMotion
-          ? { opacity: 1 }
-          : { clipPath: "inset(0% 0% 0% 0%)" }
+          ? { opacity: show ? 1 : 0, transition: `opacity 0.01s linear` }
+          : {
+              clipPath: show ? "inset(0% 0% 0% 0%)" : INSETS[from],
+              transition: `clip-path ${duration}s ${EASE_CSS} ${delay}s`,
+              willChange: show ? "auto" : "clip-path",
+            }
       }
-      viewport={{ once: true, margin: "-64px" }}
-      transition={{ duration: reduceMotion ? 0.01 : duration, delay: reduceMotion ? 0 : delay, ease: EASE }}
     >
-      <motion.div
-        initial={reduceMotion ? undefined : { scale: 1.03 }}
-        whileInView={reduceMotion ? undefined : { scale: 1 }}
-        viewport={{ once: true, margin: "-64px" }}
-        transition={{ duration: reduceMotion ? 0.01 : duration, delay: reduceMotion ? 0 : delay, ease: EASE }}
+      <div
         className="h-full w-full"
+        style={{
+          transform: reduceMotion || show ? "none" : "scale(1.03)",
+          transition: reduceMotion
+            ? "none"
+            : `transform ${duration}s ${EASE_CSS} ${delay}s`,
+        }}
       >
         {children}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   )
 }
