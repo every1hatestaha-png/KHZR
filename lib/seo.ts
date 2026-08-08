@@ -87,7 +87,6 @@ export function jsonLdOrganization() {
     slogan: SITE.tagline,
     description: SITE.description,
     email: SITE.email,
-    telephone: SITE.phone,
     address: {
       "@type": "PostalAddress",
       streetAddress: SITE.address.line1,
@@ -96,7 +95,6 @@ export function jsonLdOrganization() {
       postalCode: SITE.address.postalCode,
       addressCountry: SITE.address.country,
     },
-    sameAs: Object.values(SITE.social),
   }
 }
 
@@ -110,13 +108,21 @@ export function jsonLdWebsite() {
     url: SITE.url,
     description: SITE.description,
     publisher: { "@id": `${SITE.url}/#organization` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE.url}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   }
 }
 
 export function jsonLdProduct(input: {
   name: string
   description?: string | null
-  image?: string | null
+  image?: string[] | string | null
   price: string
   currency?: string
   sku?: string | null
@@ -131,7 +137,11 @@ export function jsonLdProduct(input: {
     "@id": `${input.url}#product`,
     name: input.name,
     description: input.description ?? undefined,
-    image: input.image ?? undefined,
+    image: Array.isArray(input.image)
+      ? input.image
+      : input.image
+        ? [input.image]
+        : undefined,
     sku: input.sku ?? undefined,
     brand: { "@type": "Brand", name: SITE.name },
     category: input.collectionName ?? undefined,

@@ -82,9 +82,6 @@ export default function AboutPage() {
               {SITE.email}
             </a>
             <p className="text-taupe">
-              {SITE.phone}
-            </p>
-            <p className="text-taupe">
               {SITE.address.line1} · {SITE.address.city}, {SITE.address.region}{" "}
               {SITE.address.postalCode}
             </p>

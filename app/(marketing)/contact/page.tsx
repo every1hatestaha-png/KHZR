@@ -11,9 +11,7 @@ export const metadata = buildMetadata({
 })
 
 const TOPICS = [
-  { label: "Client Care", value: "care@khzr.example.com" },
-  { label: "Press", value: "press@khzr.example.com" },
-  { label: "Studio", value: "studio@khzr.example.com" },
+  { label: "Client Care", value: SITE.email },
 ]
 
 export default function ContactPage() {

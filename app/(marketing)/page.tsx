@@ -9,6 +9,7 @@ import { buildMetadata, jsonLdItemList, jsonLdScript } from "@/lib/seo"
 import { SITE } from "@/lib/constants"
 
 export const metadata = buildMetadata({
+  title: "Ready-to-Wear Eastern Dresses for Women in Pakistan",
   description: SITE.description,
   path: "/",
 })

@@ -7,7 +7,6 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://khzr.studio",
   locale: "en_PK",
   email: "care@khzr.studio",
-  phone: "+92 300 0000000",
   address: {
     line1: "KHZR Studio",
     line2: "",
@@ -15,10 +14,6 @@ export const SITE = {
     region: "Punjab",
     postalCode: "54000",
     country: "PK",
-  },
-  social: {
-    instagram: "https://instagram.com",
-    pinterest: "https://pinterest.com",
   },
   freeShippingThreshold: 6000,
   shippingNote: "Complimentary shipping on eligible Pakistan orders",

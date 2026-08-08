@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next"
 import { SITE } from "@/lib/constants"
+import { getLaunchCollection } from "@/lib/launch-collections"
 import { isDatabaseConfigured } from "@/lib/services/cart-service"
 
 const STATIC_ROUTES = [
@@ -9,8 +10,6 @@ const STATIC_ROUTES = [
   "/collection/ready-to-wear",
   "/about",
   "/contact",
-  "/privacy",
-  "/terms",
   "/shipping-returns",
   "/size-fit",
   "/fabric-care",
@@ -44,14 +43,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: p.updatedAt,
           changeFrequency: "weekly" as const,
           priority: 0.8,
-        })),
-        ...collections.map((c) => ({
+        }))
+      )
+
+      // Only indexable launch collections belong in the sitemap. Legacy
+      // redirect collections (which render as noindex compatibility pages)
+      // are excluded even when the database row is marked published.
+      for (const c of collections) {
+        const launch = getLaunchCollection(c.slug)
+        if (!launch || launch.legacy) continue
+        routes.push({
           url: `${SITE.url}/collection/${c.slug}`,
           lastModified: c.updatedAt,
           changeFrequency: "weekly" as const,
           priority: 0.8,
-        }))
-      )
+        })
+      }
     } catch {
       // Database unreachable — publish static routes only. Product and
       // collection URLs are never synthesised from a hardcoded catalogue.

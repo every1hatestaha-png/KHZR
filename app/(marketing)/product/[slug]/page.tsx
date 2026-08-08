@@ -52,7 +52,7 @@ export default async function ProductPage({
   const jsonLd = jsonLdProduct({
     name: product.name,
     description: product.description,
-    image: product.images[0],
+    image: product.images,
     price: product.price.toFixed(2),
     currency: product.currency,
     sku: product.sku,

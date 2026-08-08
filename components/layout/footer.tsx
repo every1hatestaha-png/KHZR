@@ -36,7 +36,7 @@ export function Footer() {
   return (
     <footer className="mt-24 border-t border-hairline bg-ivory/60">
       <div className="mx-auto max-w-[1400px] px-4 pb-8 pt-14 sm:px-5 lg:px-10 lg:pt-24">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr] lg:gap-12">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-12">
           <div className="flex flex-col gap-6 sm:col-span-2 lg:col-span-1">
             <p className="font-display text-3xl font-light leading-snug text-noir lg:text-4xl">
               A clear line,
@@ -53,13 +53,6 @@ export function Footer() {
           <FooterColumn title="Shop" links={FOOTER_LINKS.shop} />
           <FooterColumn title="The House" links={FOOTER_LINKS.house} />
           <FooterColumn title="Client Care" links={FOOTER_LINKS.client} />
-          <FooterColumn
-            title="Follow"
-            links={[
-              { label: "Instagram", href: SITE.social.instagram },
-              { label: "Pinterest", href: SITE.social.pinterest },
-            ]}
-          />
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-hairline pt-6 lg:mt-16 lg:flex-row lg:items-center lg:justify-between">

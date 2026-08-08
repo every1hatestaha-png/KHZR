@@ -24,12 +24,19 @@ export async function generateMetadata({
 }) {
   const { slug } = await params
   const collection = getLaunchCollection(slug)
-  if (!collection) return {}
+  if (!collection) {
+    return buildMetadata({
+      title: "Collection",
+      path: `/collection/${slug}`,
+      noindex: true,
+    })
+  }
   return buildMetadata({
     title: collection.name,
     description: collection.description,
     path: `/collection/${slug}`,
     image: collection.imageUrl,
+    noindex: collection.legacy === true,
   })
 }
 
