@@ -297,25 +297,6 @@ export function ProductBuybox({ product }: { product: ProductDetailDTO }) {
       <div className="mt-10">
         <ProductAccordions product={product} />
       </div>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-background/95 px-4 py-3 backdrop-blur-md lg:hidden">
-        <div className="mx-auto flex max-w-md items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-base font-light text-noir">
-              {product.name}
-            </p>
-            <Price value={product.price} compareAt={product.compareAtPrice} className="text-xs" />
-          </div>
-          <Button
-            size="sm"
-            className="min-h-11 shrink-0 px-5"
-            onClick={handleAdd}
-            disabled={soldOut}
-          >
-            {addLabel}
-          </Button>
-        </div>
-      </div>
     </div>
   )
 }

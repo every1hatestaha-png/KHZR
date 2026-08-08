@@ -69,7 +69,7 @@ export default async function ProductPage({
 
   return (
     <>
-      <section className="mx-auto max-w-[1500px] px-4 pb-32 pt-6 sm:px-5 lg:px-10 lg:pb-28 lg:pt-12">
+      <section className="mx-auto max-w-[1500px] px-4 pb-20 pt-6 sm:px-5 lg:px-10 lg:pb-28 lg:pt-12">
         <nav aria-label="Breadcrumb" className="mb-8 lg:mb-10">
           <ol className="flex flex-wrap items-center gap-2 text-[0.6875rem] font-medium uppercase tracking-[0.24em] text-taupe">
             <li>

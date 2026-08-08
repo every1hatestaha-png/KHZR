@@ -121,6 +121,26 @@ function validateCheckoutFields(fields: CheckoutFields): CheckoutErrors {
 
 const fieldErrorId = (name: FieldName) => `checkout-${name}-error`
 
+/**
+ * Customer-facing shipping status text. Never exposes internal errors,
+ * rate-limit counts, or technical details.
+ */
+function shippingQuoteNotice(input: {
+  shippingPending: boolean
+  shippingQuote: ShippingQuoteActionResult | null
+}): string | null {
+  if (input.shippingPending) return "Calculating shipping…"
+  if (!input.shippingQuote) {
+    return "Complete your delivery address to calculate shipping."
+  }
+  if (!input.shippingQuote.ok) {
+    return /too many/i.test(input.shippingQuote.error ?? "")
+      ? "Shipping could not be calculated right now. Please wait a moment and try again."
+      : "We could not calculate shipping for this address. Please review your delivery details."
+  }
+  return null
+}
+
 export default function CheckoutPage() {
   const { cart } = useCart()
   const { lines, subtotal, currency } = cart
@@ -257,7 +277,7 @@ export default function CheckoutPage() {
     if (!shippingQuote?.ok) {
       setPending(false)
       setError(
-        shippingQuote?.error ??
+        shippingNotice ??
           "Shipping could not be calculated for this address. Check that your province and city are correct."
       )
       return
@@ -291,6 +311,7 @@ export default function CheckoutPage() {
       fields.paymentMethod &&
       shippingQuote?.ok
   )
+  const shippingNotice = shippingQuoteNotice({ shippingPending, shippingQuote })
 
   return (
     <div className="mx-auto max-w-[1280px] px-4 pb-24 pt-12 sm:px-5 sm:pt-14 lg:px-10 lg:pt-24">
@@ -416,6 +437,16 @@ export default function CheckoutPage() {
                 />
               </label>
             </section>
+
+            {shippingNotice ? (
+              <div
+                role="status"
+                aria-live="polite"
+                className="border border-hairline bg-ivory/50 px-4 py-3 text-sm leading-relaxed text-noir"
+              >
+                {shippingNotice}
+              </div>
+            ) : null}
 
             <section className="flex flex-col gap-5">
               <h2 className="font-display text-3xl font-light text-noir">Payment method</h2>
@@ -574,7 +605,7 @@ export default function CheckoutPage() {
                       ? pricing.shipping === 0
                         ? "Free shipping applied"
                         : formatMoney(pricing.shipping, currency)
-                      : shippingQuote?.error ?? "Shipping calculated at checkout."}
+                      : "Shipping could not be calculated."}
                 </dd>
               </div>
               {shippingQuote?.ok ? (
@@ -601,14 +632,12 @@ export default function CheckoutPage() {
 
             {!pending && !requiredComplete ? (
               <div className="mt-6 flex flex-col gap-2 text-sm leading-relaxed text-stone">
-                {shippingPending ? (
-                  <p>Calculating shipping for your address…</p>
-                ) : shippingQuote && !shippingQuote.ok ? (
+                {shippingNotice ? (
                   <p
                     role="alert"
                     className="border border-hairline bg-ivory/50 px-4 py-3 text-noir"
                   >
-                    {shippingQuote.error ?? "Shipping could not be calculated for this address."}
+                    {shippingNotice}
                   </p>
                 ) : (
                   <p role="alert">
