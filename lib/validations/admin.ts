@@ -161,6 +161,7 @@ export const storeSettingsSchema = z.object({
 
 export const homepageSettingsSchema = z.object({
   heroImageUrl: z.string().trim().url().or(z.literal("")).optional().default(""),
+  heroMobileImageUrl: z.string().trim().url().or(z.literal("")).optional().default(""),
   heroLabel: z.string().trim().max(120).optional().default(""),
   heroHeading: z.string().trim().max(200).optional().default(""),
   heroDescription: z.string().trim().max(600).optional().default(""),

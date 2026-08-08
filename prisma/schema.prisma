@@ -480,6 +480,7 @@ model StoreSettings {
   announcementText      String?
   announcementActive    Boolean  @default(false)
   heroImageUrl          String?
+  heroMobileImageUrl    String?
   heroLabel             String?
   heroHeading           String?
   heroDescription       String?

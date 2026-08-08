@@ -156,6 +156,7 @@ export type AdminStoreSettings = {
   announcementText: string
   announcementActive: boolean
   heroImageUrl: string
+  heroMobileImageUrl: string
   heroLabel: string
   heroHeading: string
   heroDescription: string
@@ -523,6 +524,7 @@ export async function getAdminStoreSettings(): Promise<AdminStoreSettings> {
     announcementText: row?.announcementText ?? "",
     announcementActive: row?.announcementActive ?? false,
     heroImageUrl: row?.heroImageUrl ?? "",
+    heroMobileImageUrl: row?.heroMobileImageUrl ?? "",
     heroLabel: row?.heroLabel ?? "",
     heroHeading: row?.heroHeading ?? "",
     heroDescription: row?.heroDescription ?? "",

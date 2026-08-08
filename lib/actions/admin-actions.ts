@@ -683,7 +683,9 @@ export async function deleteMediaAssetAction(id: string): Promise<AdminActionRes
   const [products, collections, settings] = await Promise.all([
     prisma.productMedia.count({ where: { url: asset.url } }),
     prisma.collection.count({ where: { imageUrl: asset.url } }),
-    prisma.storeSettings.count({ where: { heroImageUrl: asset.url } }),
+    prisma.storeSettings.count({
+      where: { OR: [{ heroImageUrl: asset.url }, { heroMobileImageUrl: asset.url }] },
+    }),
   ])
   if (products + collections + settings > 0) {
     return { ok: false, error: "This image is in use. Remove it from products, collections or homepage first." }
@@ -743,6 +745,7 @@ export async function saveHomepageSettingsAction(input: unknown): Promise<AdminA
         where: { id: "store" },
         update: {
           heroImageUrl: parsed.data.heroImageUrl || null,
+          heroMobileImageUrl: parsed.data.heroMobileImageUrl || null,
           heroLabel: parsed.data.heroLabel || null,
           heroHeading: parsed.data.heroHeading || null,
           heroDescription: parsed.data.heroDescription || null,
@@ -761,6 +764,7 @@ export async function saveHomepageSettingsAction(input: unknown): Promise<AdminA
         create: {
           id: "store",
           heroImageUrl: parsed.data.heroImageUrl || null,
+          heroMobileImageUrl: parsed.data.heroMobileImageUrl || null,
           heroLabel: parsed.data.heroLabel || null,
           heroHeading: parsed.data.heroHeading || null,
           heroDescription: parsed.data.heroDescription || null,

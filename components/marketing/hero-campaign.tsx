@@ -10,15 +10,20 @@ export function HeroCampaign({ campaign }: { campaign: CampaignDTO }) {
       className="relative flex min-h-[78svh] items-center overflow-hidden bg-ivory sm:min-h-[84svh] lg:h-[75vh] lg:min-h-0"
       aria-label={campaign.title}
     >
-      <LazyImage
-        src={campaign.imageUrl}
-        alt=""
-        eager
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-[68%_center] sm:object-[70%_center] lg:object-[74%_center]"
-      />
+      <picture>
+        {campaign.mobileImageUrl ? (
+          <source media="(max-width: 767px)" srcSet={campaign.mobileImageUrl} />
+        ) : null}
+        <LazyImage
+          src={campaign.imageUrl}
+          alt=""
+          eager
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[68%_center] sm:object-[70%_center] lg:object-[74%_center]"
+        />
+      </picture>
       <div
         aria-hidden
         className="absolute inset-y-0 left-0 w-full bg-gradient-to-r from-noir/70 via-noir/34 to-transparent lg:w-[62%]"

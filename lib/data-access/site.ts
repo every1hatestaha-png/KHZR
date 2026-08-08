@@ -10,6 +10,7 @@ export type CampaignDTO = {
   ctaLabel: string | null
   ctaHref: string | null
   imageUrl: string
+  mobileImageUrl: string | null
 }
 
 export type ProductCardDTO = {
@@ -312,6 +313,7 @@ export async function getHomeCampaigns(): Promise<CampaignDTO[]> {
     ctaLabel: c.ctaLabel,
     ctaHref: c.ctaHref,
     imageUrl: c.imageUrl,
+    mobileImageUrl: null,
   }))
 }
 
@@ -326,6 +328,7 @@ export async function getHomepageSettingsCampaign(): Promise<CampaignDTO | null>
     ctaLabel: row.heroButtonText,
     ctaHref: row.heroButtonLink,
     imageUrl: row.heroImageUrl,
+    mobileImageUrl: row.heroMobileImageUrl,
   }
 }
 
@@ -340,6 +343,7 @@ export async function getSignatureSection(): Promise<CampaignDTO | null> {
     ctaLabel: row.signatureCtaLabel,
     ctaHref: row.signatureCtaHref,
     imageUrl: row.signatureImageUrl,
+    mobileImageUrl: null,
   }
 }
 

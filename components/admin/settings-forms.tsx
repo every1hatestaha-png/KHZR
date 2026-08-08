@@ -92,6 +92,7 @@ export function HomepageSettingsForm({
     <form onSubmit={save} className="grid gap-6 border border-hairline bg-card p-5">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Hero image URL"><Input value={form.heroImageUrl} onChange={(e) => patch("heroImageUrl", e.target.value)} /></Field>
+        <Field label="Hero image URL (mobile)"><Input value={form.heroMobileImageUrl} onChange={(e) => patch("heroMobileImageUrl", e.target.value)} /></Field>
         <Field label="Hero label"><Input value={form.heroLabel} onChange={(e) => patch("heroLabel", e.target.value)} /></Field>
         <Field label="Hero heading"><Input value={form.heroHeading} onChange={(e) => patch("heroHeading", e.target.value)} /></Field>
         <Field label="Hero button text"><Input value={form.heroButtonText} onChange={(e) => patch("heroButtonText", e.target.value)} /></Field>

@@ -48,8 +48,8 @@ export function validateCheckoutAddress(input: {
     input.houseApartment,
   ]
   if (fields.some(isPlaceholder)) return "Enter complete delivery details, not placeholder text."
-  if (input.streetAddress.trim().length < 8) return "Enter a complete street address."
-  if (input.houseApartment.trim().length < 2) return "Enter your house or apartment details."
+  if (!input.streetAddress.trim()) return "Enter your street address."
+  if (!input.houseApartment.trim()) return "Enter your house or apartment details."
   return null
 }
 
